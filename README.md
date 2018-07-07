@@ -64,6 +64,14 @@ Yes:
 # mod.rb
 MEANING_OF_LIFE = 42
 
+class C
+  def foo; "bar"; end
+end
+
 # meaner.rb
 mod = import('./mod')
+mod::MEANING_OF_LIFE #=> 42
+
+c = mod::C.new
+c.foo #=> "bar"
 ```
