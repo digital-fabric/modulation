@@ -2,7 +2,7 @@ require 'fileutils'
 
 # Kernel extensions - modul's API
 module Kernel
-  # Returns an encapsulated imported module
+  # Returns an encapsulated imported module.
   # @param fn [String] module file name
   # @return [Class] module facade
   def import(fn)
@@ -10,11 +10,10 @@ module Kernel
   end
 
   # Creates a namespace sub-module and exposes to the outside world if a name
-  # is given
+  # is given.
   # @param name [String, nil] namespace name.
   # @param block [Proc] namespace block
   def namespace(name = nil, &block)
-    # puts "namespace caller: #{caller.inspect}"
     module_info = {
       module: self,
       name: name,
@@ -26,101 +25,16 @@ end
 
 # Object extensions
 class Object
-  # Returns the objects metaclass
-  #   (shamelessly stolen from the metaid gem)
-  #
+  # Returns the objects metaclass (shamelessly stolen from the metaid gem).
   # @return [Class] object's metaclass
   def metaclass; class << self; self; end; end
-end
-
-# Encapsulated module extensions
-module ModuleFacadeExtensions
-  # Checks if the given constant is defined on the metaclass, and if so defines
-  # the constant on self and returns its value. This is essential to supporting
-  # constants in modules
-  #
-  # @param name [Symbol] constant name
-  # @return [any] constant value
-  def const_missing(name)
-    puts "const_missing #{name.inspect}"
-    if metaclass.const_defined?(name)
-      unless @__exported_symbols.include?(name)
-        raise NameError, "Private constant `#{name}' accessed in #{inspect}", caller
-      end
-      metaclass.const_get(name).tap {|value| const_set(name, value)}
-    else
-      super
-    end
-  end
-
-  # read and write module information
-  attr_accessor :__module_info
-
-  # Sets exported_symbols ivar and marks all non-exported methods as private
-  #
-  # @param m [Module] imported module
-  # @param symbols [Array] array of exported symbols
-  # @return [void]
-  def __set_exported_symbols(m, symbols)
-    @__exported_symbols = symbols
-    m.instance_methods(false).each do |m|
-      metaclass.send(:private, m) unless symbols.include?(m)
-    end
-  end
-
-  # Returns a text representation of the module for inspection
-  # @return [String] module string representation
-  def inspect
-    module_name = name || 'ModuleFacade'
-    if __module_info[:location]
-      "#{module_name}:#{__module_info[:location]}"
-    else
-      "#{module_name}"
-    end
-  end
-end
-
-module ModuleFacadeMetaclassMethods
-  # Adds given symbols to the exported_symbols array
-  # @param symbols [Array] array of symbols
-  # @return [void]
-  def export(*symbols)
-    symbols = symbols.first if Array === symbols.first
-    __exported_symbols.concat(symbols)
-  end
-
-  # Sets a module's value, so when imported it will represent the given value,
-  # instead of a module facade
-  # @param v [Symbol, any] symbol or value
-  # @return [void]
-  def export_default(v)
-    v = const_get(v) if v.is_a?(Symbol) && const_defined?(v)
-    @__export_default_block.call(v) if @__export_default_block
-  end
-  
-  # read and write module info
-  attr_accessor :__module_info
-  
-  # Returns exported_symbols array
-  # @return [Array] array of exported symbols
-  def __exported_symbols
-    @exported_symbols ||= []
-  end
-
-  # Sets export_default block, used for setting the returned module
-  # object to a class or constant
-  # @param block [Proc] default export block
-  # @return [void]
-  def __export_default_block=(block)
-    @__export_default_block = block
-  end
 end
 
 class Modul
   @@loaded_modules = {}
 
-  # Imports a module from a file. If the module is already loaded, returns the
-  # loaded module.
+  # Imports a module from a file
+  # If the module is already loaded, returns the loaded module.
   # @param fn [String] source file name (with or without extension)
   # @return [ModuleFacade] loaded module object
   def self.import_module(fn)
@@ -162,12 +76,11 @@ class Modul
   end
 
   # Initializes a new module ready to evaluate a file module
-  # The given block is used to pass the value given to `export_default`
-  # 
+  # @note The given block is used to pass the value given to `export_default`
   # @return [Module] new module
   def self.initialize_module(&export_default_block)
     Module.new.tap do |m|
-      m.include(ModuleFacadeExtensions)
+      m.include(ModuleFacadeMethods)
       m.metaclass.include(ModuleFacadeMetaclassMethods)
       m.__export_default_block = export_default_block
     end
@@ -214,13 +127,87 @@ class Modul
       container.define_method(name) {namespace}
     end
   end
-end
 
-# A ModuleFacade encapsulates an imported module or a namespace
-class ModuleFacade
-  # Creates a new subclass of ModuleFacade, yielding it to the given block
-  # @return [Class] new module facade
-  def self.new_module
-    Class.new(self).tap {|m| yield m}
+  # Module façade methods
+  module ModuleFacadeMethods
+    # Responds to missing constants by checking metaclass
+    # If the given constant is defined on the metaclass, the same constant is
+    # defined on self and its value is returned. This is essential to 
+    # supporting constants in modules.
+    # @param name [Symbol] constant name
+    # @return [any] constant value
+    def const_missing(name)
+      if metaclass.const_defined?(name)
+        unless @__exported_symbols.include?(name)
+          raise NameError, "Private constant `#{name}' accessed in #{inspect}", caller
+        end
+        metaclass.const_get(name).tap {|value| const_set(name, value)}
+      else
+        super
+      end
+    end
+
+    # read and write module information
+    attr_accessor :__module_info
+
+    # Sets exported_symbols ivar and marks all non-exported methods as private
+    # @param m [Module] imported module
+    # @param symbols [Array] array of exported symbols
+    # @return [void]
+    def __set_exported_symbols(m, symbols)
+      @__exported_symbols = symbols
+      m.instance_methods(false).each do |m|
+        metaclass.send(:private, m) unless symbols.include?(m)
+      end
+    end
+
+    # Returns a text representation of the module for inspection
+    # @return [String] module string representation
+    def inspect
+      module_name = name || 'ModuleFacade'
+      if __module_info[:location]
+        "#{module_name}:#{__module_info[:location]}"
+      else
+        "#{module_name}"
+      end
+    end
+  end
+
+  # Module façade metaclass methods
+  module ModuleFacadeMetaclassMethods
+    # Adds given symbols to the exported_symbols array
+    # @param symbols [Array] array of symbols
+    # @return [void]
+    def export(*symbols)
+      symbols = symbols.first if Array === symbols.first
+      __exported_symbols.concat(symbols)
+    end
+  
+    # Sets a module's value, so when imported it will represent the given value,
+    # instead of a module facade
+    # @param v [Symbol, any] symbol or value
+    # @return [void]
+    def export_default(v)
+      v = const_get(v) if v.is_a?(Symbol) && const_defined?(v)
+      @__export_default_block.call(v) if @__export_default_block
+    end
+    
+    # read and write module info
+    attr_accessor :__module_info
+    
+    # Returns exported_symbols array
+    # @return [Array] array of exported symbols
+    def __exported_symbols
+      @exported_symbols ||= []
+    end
+  
+    # Sets export_default block, used for setting the returned module object to
+    # a class or constant
+    # @param block [Proc] default export block
+    # @return [void]
+    def __export_default_block=(block)
+      @__export_default_block = block
+    end
   end
 end
+

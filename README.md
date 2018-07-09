@@ -203,6 +203,47 @@ end
 what = ::MEANING_OF_LIFE
 ```
 
+## Coding style recommendations
+
+* Import modules into constants, not into variables:
+
+  ```ruby
+  Settings = import('./settings')
+  ```
+
+* Place your exports at the top of your module or namespace:
+
+  ```ruby
+  export :foo, :bar, :baz
+
+  ...
+  ```
+
+* Place your imports at the top of your module:
+
+  ```ruby
+  Foo = import('./foo')
+  Bar = import('./bar')
+  Baz = import('./baz')
+
+  ...
+  ```
+
+* If coding in functional style (i.e. no instance variables), use namespaces to
+  separate between functionalities:
+
+  ```ruby
+  namespace :Subscriptions do
+    ...
+  end
+
+  namespace :Events do
+     ...
+  end
+
+  ...
+  ```
+
 ## Known limitations and problems
 
 - Modul is not production-ready.
