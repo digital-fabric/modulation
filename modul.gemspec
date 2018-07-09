@@ -1,9 +1,9 @@
 Gem::Specification.new do |s|
   s.name        = 'modul'
-  s.version     = '0.2'
+  s.version     = '0.3'
   s.licenses    = ['MIT']
-  s.summary     = 'Alternative module system for Ruby'
-  s.description = 'Better code-separation and less boiler plate'
+  s.summary     = 'Modul: better dependencies for Ruby'
+  s.description = 'Modul: better dependencies for Ruby'
   s.author      = 'Sharon Rosner'
   s.email       = 'ciconia@gmail.com'
   s.files       = ['lib/modul.rb']
@@ -11,4 +11,6 @@ Gem::Specification.new do |s|
   s.metadata    = {
     "source_code_uri" => "https://github.com/ciconia/modul"
   }
+  s.rdoc_options = ["--title", "Modul", "--main", "README.md"]
+  s.extra_rdoc_files = ["README.md"]
 end
