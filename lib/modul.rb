@@ -82,7 +82,7 @@ end
 
 module ModuleFacadeMetaclassMethods
   # Adds given symbols to the exported_symbols array
-  # @param *symbols [Array] array of symbols
+  # @param symbols [Array] array of symbols
   # @return [void]
   def export(*symbols)
     symbols = symbols.first if Array === symbols.first
@@ -94,7 +94,8 @@ module ModuleFacadeMetaclassMethods
   # @param v [Symbol, any] symbol or value
   # @return [void]
   def export_default(v)
-    v = const_get(v) if v.is_a?(Symbol) && const_defined?(v)@__export_default_block.call(v) if @__export_default_block
+    v = const_get(v) if v.is_a?(Symbol) && const_defined?(v)
+    @__export_default_block.call(v) if @__export_default_block
   end
   
   # read and write module info
@@ -148,7 +149,7 @@ class Modul
   end
 
   # Loads a module from file or block, wrapping it in a module facade
-  # @param fn [String] module filename
+  # @param info [Hash] module info
   # @param block [Proc] module block
   # @return [Class] module facade
   def self.make_module(info, &block)
@@ -175,7 +176,7 @@ class Modul
   # Loads a source file or a block into the given module
   # @param m [Module] module
   # @param fn [String] source file path
-  # @param &block [Proc] module block (for namespaces)
+  # @param block [Proc] module block (for namespaces)
   # @return [void]
   def self.load_module_code(m, fn, &block)
     if block
