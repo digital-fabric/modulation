@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'modul'
-  s.version     = '0.3'
+  s.version     = '0.3.1'
   s.licenses    = ['MIT']
   s.summary     = 'Modul: better dependencies for Ruby'
   s.description = 'Modul: better dependencies for Ruby'
@@ -11,6 +11,6 @@ Gem::Specification.new do |s|
   s.metadata    = {
     "source_code_uri" => "https://github.com/ciconia/modul"
   }
-  s.rdoc_options = ["--title", "Modul", "--main", "README.md"]
+  s.rdoc_options = ["--title", "Modul", "--main", "README"]
   s.extra_rdoc_files = ["README.md"]
 end
