@@ -180,11 +180,11 @@ class Modul
     def const_missing(name)
       if metaclass.const_defined?(name)
         unless @__exported_symbols.include?(name)
-          raise NameError, "Private constant `#{name}' accessed in #{inspect}", caller
+          raise NameError, "private constant `#{name}' accessed in #{inspect}", caller
         end
         metaclass.const_get(name).tap {|value| const_set(name, value)}
       else
-        super
+        raise NameError, "uninitialized constant #{inspect}::#{name}", caller
       end
     end
 
