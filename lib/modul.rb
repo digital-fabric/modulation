@@ -84,7 +84,25 @@ class Modul
     m.__module_info = info
     load_module_code(m, info, &block)
 
-    export_default || module_facade(m)
+    if export_default
+      transform_export_default_value(export_default, m)
+    else
+      module_facade(m)
+    end
+  end
+
+  # Returns exported value for a default export
+  # If the given value is a symbol, returns the value of the corresponding
+  # constant.
+  # @param value [any] export_default value
+  # @param mod [Module] module
+  # @return [any] exported value
+  def self.transform_export_default_value(value, mod)
+    if value.is_a?(Symbol) && mod.const_defined?(value)
+      mod.const_get(value)
+    else
+      value
+    end
   end
 
   # Initializes a new module ready to evaluate a file module
@@ -173,7 +191,7 @@ class Modul
   module ModuleFacadeMethods
     # Responds to missing constants by checking metaclass
     # If the given constant is defined on the metaclass, the same constant is
-    # defined on self and its value is returned. This is essential to 
+    # defined on self and its value is returned. This is essential to
     # supporting constants in modules.
     # @param name [Symbol] constant name
     # @return [any] constant value
@@ -223,25 +241,24 @@ class Modul
       symbols = symbols.first if Array === symbols.first
       __exported_symbols.concat(symbols)
     end
-  
+
     # Sets a module's value, so when imported it will represent the given value,
     # instead of a module facade
     # @param v [Symbol, any] symbol or value
     # @return [void]
     def export_default(v)
-      v = const_get(v) if v.is_a?(Symbol) && const_defined?(v)
       @__export_default_block.call(v) if @__export_default_block
     end
-    
+
     # read and write module info
     attr_accessor :__module_info
-    
+
     # Returns exported_symbols array
     # @return [Array] array of exported symbols
     def __exported_symbols
       @exported_symbols ||= []
     end
-  
+
     # Sets export_default block, used for setting the returned module object to
     # a class or constant
     # @param block [Proc] default export block
