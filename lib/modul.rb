@@ -16,6 +16,7 @@ module Kernel
   def namespace(name = nil, &block)
     module_info = {
       module: self,
+      top_level_module: Modul.top_level_module(self),
       name: name,
       location: caller.first =~ /^([^\:]+\:\d+)/ && $1
     }
@@ -70,7 +71,7 @@ class Modul
     export_default = nil
     m = initialize_module {|v| export_default = v}
     m.__module_info = info
-    load_module_code(m, info[:location], &block)
+    load_module_code(m, info, &block)
 
     export_default || module_facade(m)
   end
@@ -91,11 +92,27 @@ class Modul
   # @param fn [String] source file path
   # @param block [Proc] module block (for namespaces)
   # @return [void]
-  def self.load_module_code(m, fn, &block)
+  def self.load_module_code(m, info, &block)
     if block
+      container = m.__module_info[:top_level_module]
+      container_constants = container.constants
       m.module_eval(&block)
+      diff_constants = container.constants - container_constants
+      move_top_level_constants(container, m, diff_constants)
     else
+      fn = info[:location]
       m.module_eval(IO.read(fn), fn)
+    end
+  end
+
+  # Moves constants from one module to another
+  # @param source [Module] source module
+  # @param target [Module] target module
+  # @param constants [Array] array of constant names
+  def self.move_top_level_constants(source, target, constants)
+    constants.each do |s|
+      target.const_set(s, source.const_get(s))
+      source.send(:remove_const, s)
     end
   end
 
@@ -121,11 +138,24 @@ class Modul
   # @return [void]
   def self.set_namespace_symbol(namespace, container, name)
     return unless container && name
+    container = Object if container.class == Object
     if name =~ /^[A-Z]/
       container.const_set(name, namespace)
     else
       container.define_method(name) {namespace}
     end
+  end
+
+  # Returns the top level module for the given context
+  # The top level module is where constants (and classes) are declared. We keep
+  # track of the top level module in order to be able to move constants to
+  # their proper place when using namespaces.
+  # @param context [Module, Object] context calling `namespace'
+  # @return [Module] top level module for constant declaration
+  def self.top_level_module(context)
+    context.respond_to?(:__module_info) &&
+      context.__module_info[:top_level_module] ||
+      (context.is_a?(Module) ? context : context.metaclass)
   end
 
   # Module façade methods
