@@ -2,6 +2,17 @@ require 'fileutils'
 
 # Kernel extensions - modul's API
 module Kernel
+  # Handles calls to export when a module is loaded using `require`
+  # @return [void]
+  def export(*args)
+    # nop
+  end
+
+  # Handles calls to export when a module is loaded using `require`
+  def export_default(v)
+    # nop
+  end
+
   # Returns an encapsulated imported module.
   # @param fn [String] module file name
   # @return [Class] module facade
