@@ -152,41 +152,22 @@ User = import('./user')
 User.new(...)
 ```
 
-### Namespaces
+The default exported value can also be defined directly thus:
 
-Modules can be further organised by using the concept of namespaces. Namespaces
-behave just like modules, but multiple namespaces can exist in a single file:
-
-*auth.rb*
+*config.rb*
 ```ruby
-export :Sessions, :Users
-
-namespace :Sessions do
-  export :verify_session
-
-  def verify_session(session_id)
-    ...
-end
-
-namespace :Users do
-  export :verify_user
-
-  def verify_user(name, password)
-    ...
-end
+export_default(
+  host: 'localhost',
+  port: 1234,
+  ...
+)
 ```
+
 *app.rb*
 ```ruby
-require 'modul'
-Auth = import('./auth')
-...
-Auth::Sessions.verify_session(sid)
-Auth::Users.verify_user(name, password)
+config = import('./config')
+db.connect(config[:host], config[:port])
 ```
-
-> **Note about namespaces**: defining a namespace will prevent access to any 
-methods or classes contained in that namespace, even from the same file, 
-unless they are *explicitly* exported.
 
 ### Accessing the global namespace
 
@@ -211,7 +192,7 @@ what = ::MEANING_OF_LIFE
   Settings = import('./settings')
   ```
 
-* Place your exports at the top of your module or namespace:
+* Place your exports at the top of your module:
 
   ```ruby
   export :foo, :bar, :baz
@@ -229,24 +210,10 @@ what = ::MEANING_OF_LIFE
   ...
   ```
 
-* If coding in functional style (i.e. no instance variables), use namespaces to
-  separate between functionalities:
-
-  ```ruby
-  namespace :Subscriptions do
-    ...
-  end
-
-  namespace :Events do
-     ...
-  end
-
-  ...
-  ```
-
 ## Known limitations and problems
 
-- Modul is not production-ready.
-- Modul might cause a mess if used to import gems.
-- Modul doesn't play well with `Marshal`.
+- Modul is (probably) not production-ready.
+- Modul might cause a mess if used to require gems.
+- Modul probably doesn't play well with `Marshal`.
 - Modul probably doesn't play well with code-analysis tools.
+- Modul doesn't play well with rdoc/yard.
