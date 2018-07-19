@@ -1,4 +1,10 @@
-=== 2018-07-09 version 0.3.3
+## 2018-07-20 version 0.4
+
+* Refactor code
+* Add tests
+* Remove namespace feature (owing to the way Ruby handles constants in blocks)
+
+## 2018-07-09 version 0.3.3
 
 * Switch to explicit exports
 * More documentation
