@@ -169,6 +169,29 @@ config = import('./config')
 db.connect(config[:host], config[:port])
 ```
 
+### Importing methods into classes and modules
+
+Modul provides the `extend_from` and `include_from` methods to include imported methods in classes and modules:
+
+```ruby
+module Sequences
+  extend_from('./seq.rb')
+end
+
+Sequences.fib(5)
+
+# extend integers
+class Integer
+  include_from('./seq.rb')
+
+  def seq(kind)
+    send(kind, self)
+  end
+end
+
+5.seq(:fib)
+```
+
 ### Accessing the global namespace
 
 If you need to access the global namespace inside a module just prefix the 

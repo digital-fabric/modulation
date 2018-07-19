@@ -1,4 +1,8 @@
-## 2018-07-20 version 0.4
+## 2018-07-18 version 0.5
+
+* Add extend_from, include_from to include imported methods in classes and modules
+
+## 2018-07-19 version 0.4
 
 * Refactor code
 * Add tests
