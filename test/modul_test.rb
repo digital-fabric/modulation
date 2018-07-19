@@ -84,3 +84,45 @@ class ExportDefaultTest < MiniTest::Test
     Modul.reset!
   end
 end
+
+class ExtendFromTest < MiniTest::Test
+  def setup
+    @m = Module.new
+    @m.extend_from('modules/ext')
+  end
+
+  def teardown
+    Modul.reset!
+  end
+
+  def test_that_extend_from_extends_a_module
+    assert_respond_to(@m, :a)
+    assert_respond_to(@m, :b)
+    assert_raises(NameError) {@m.c}
+
+    assert_equal :a, @m.a
+    assert_equal :b, @m.b
+  end
+end
+
+class IncludeFromTest < MiniTest::Test
+  def setup
+    @c = Class.new
+    @c.include_from('modules/ext')
+
+    @o = @c.new
+  end
+
+  def teardown
+    Modul.reset!
+  end
+
+  def test_that_include_from_adds_instance_methods_to_class
+    assert_respond_to(@o, :a)
+    assert_respond_to(@o, :b)
+    assert_raises(NameError) {@o.c}
+
+    assert_equal :a, @o.a
+    assert_equal :b, @o.b
+  end
+end

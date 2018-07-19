@@ -4,10 +4,11 @@ require 'fileutils'
 # Kernel extensions - modul's API
 module Kernel
   # Returns an encapsulated imported module.
-  # @param fn [String] module file namew
+  # @param fn [String] module file name
+  # @param caller_location [String] caller location
   # @return [Class] module facade
-  def import(fn)
-    Modul.import_module(fn, caller)
+  def import(fn, caller_location = caller.first)
+    Modul.import_module(fn, caller_location)
   end
 end
 
@@ -18,20 +19,44 @@ class Object
   def metaclass; class << self; self; end; end
 end
 
+class Module
+  # Extends the receiver with exported methods from the given file name
+  # @param fn [String] module filename
+  # @return [void] 
+  def extend_from(fn)
+    mod = import(fn, caller.first)
+    mod.methods(false).each do |sym|
+      metaclass.define_method(sym, mod.method(sym).to_proc)
+    end
+  end
+
+  # Includes exported methods from the given file name in the receiver
+  # The module's methods will be available as instance methods
+  # @param fn [String] module filename
+  # @return [void]
+  def include_from(fn)
+    mod = import(fn, caller.first)
+    mod.methods(false).each do |sym|
+      define_method(sym, mod.method(sym).to_proc)
+    end
+  end
+end
+
 class Modul
   @@loaded_modules = {}
 
   # Imports a module from a file
   # If the module is already loaded, returns the loaded module.
   # @param fn [String] source file name (with or without extension)
+  # @param caller_location [String]
   # @return [Module] loaded module object
-  def self.import_module(fn, caller_stack = caller)
-    fn = module_absolute_path(fn, caller_stack)
+  def self.import_module(fn, caller_location = caller.first)
+    fn = module_absolute_path(fn, caller_location)
     @@loaded_modules[fn] ||= create_module_from_file(fn)
   end
 
-  def self.module_absolute_path(fn, caller_stack)
-    caller_file = (caller_stack.first =~ /^([^\:]+)\:/) ?
+  def self.module_absolute_path(fn, caller_location)
+    caller_file = (caller_location =~ /^([^\:]+)\:/) ?
       $1 : (raise "Could not expand path")
     fn = File.expand_path(fn, File.dirname(caller_file))
     if File.file?("#{fn}.rb")
