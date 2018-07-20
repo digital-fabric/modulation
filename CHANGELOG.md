@@ -1,4 +1,8 @@
-## 2018-07-18 version 0.5
+## 2018-07-20 version 0.5.1
+
+* Fix extend_from, include_from to work with ruby 2.4.
+
+## 2018-07-19 version 0.5
 
 * Add extend_from, include_from to include imported methods in classes and modules
 

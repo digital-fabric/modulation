@@ -26,7 +26,7 @@ class Module
   def extend_from(fn)
     mod = import(fn, caller.first)
     mod.methods(false).each do |sym|
-      metaclass.define_method(sym, mod.method(sym).to_proc)
+      metaclass.send(:define_method, sym, mod.method(sym).to_proc)
     end
   end
 
@@ -37,7 +37,7 @@ class Module
   def include_from(fn)
     mod = import(fn, caller.first)
     mod.methods(false).each do |sym|
-      define_method(sym, mod.method(sym).to_proc)
+      send(:define_method, sym, mod.method(sym).to_proc)
     end
   end
 end
