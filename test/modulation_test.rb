@@ -1,7 +1,7 @@
 require 'minitest/autorun'
-require_relative '../lib/modul.rb'
+require_relative '../lib/modulation.rb'
 
-class Modul
+class Modulation
   def self.reset!
     @@loaded_modules = {}
   end
@@ -13,7 +13,7 @@ end
 
 class FileHandlingTest < Minitest::Test
   def teardown
-    Modul.reset!
+    Modulation.reset!
   end
 
   def test_that_import_raises_on_file_not_found
@@ -45,7 +45,7 @@ class FileHandlingTest < Minitest::Test
     fn_b2 =   File.expand_path('modules/b/b2.rb', File.dirname(__FILE__))
     fn_inc =  File.expand_path('modules/inc.rb', File.dirname(__FILE__))
     
-    assert_equal([fn_b2, fn_b1, fn_inc], Modul.loaded_modules.keys.sort)
+    assert_equal([fn_b2, fn_b1, fn_inc], Modulation.loaded_modules.keys.sort)
   end
 end
 
@@ -55,7 +55,7 @@ class ExportTest < Minitest::Test
   end
 
   def teardown
-    Modul.reset!
+    Modulation.reset!
   end
 
   def test_that_non_exported_consts_are_not_accessible
@@ -81,7 +81,7 @@ end
 
 class ExportDefaultTest < MiniTest::Test
   def teardown
-    Modul.reset!
+    Modulation.reset!
   end
 end
 
@@ -92,7 +92,7 @@ class ExtendFromTest < MiniTest::Test
   end
 
   def teardown
-    Modul.reset!
+    Modulation.reset!
   end
 
   def test_that_extend_from_extends_a_module
@@ -114,7 +114,7 @@ class IncludeFromTest < MiniTest::Test
   end
 
   def teardown
-    Modul.reset!
+    Modulation.reset!
   end
 
   def test_that_include_from_adds_instance_methods_to_class

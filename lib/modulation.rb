@@ -8,7 +8,7 @@ module Kernel
   # @param caller_location [String] caller location
   # @return [Class] module facade
   def import(fn, caller_location = caller.first)
-    Modul.import_module(fn, caller_location)
+    Modulation.import_module(fn, caller_location)
   end
 end
 
@@ -42,7 +42,7 @@ class Module
   end
 end
 
-class Modul
+class Modulation
   @@loaded_modules = {}
 
   # Imports a module from a file

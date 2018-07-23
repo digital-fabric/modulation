@@ -1,14 +1,17 @@
-# Modul - better dependencies for Ruby
+# Modulation - explicit dependencies for Ruby
 
-Modul provides an alternative way to organize Ruby code. Instead of littering 
-the global namespace with classes and modules, Mrodul lets you explicitly 
-import and export declarations in order to better control dependencies in your 
-codebase.
+Modulation provides an alternative way to organize Ruby code. Instead of 
+littering the global namespace with classes and modules, Mrodulation lets you 
+explicitly import and export declarations in order to better control 
+dependencies in your codebase.
 
-With Modul, you always know where a module comes from, and you have full 
+With Modulation, you always know where a module comes from, and you have full 
 control over which parts of a module's code you wish to expose to the outside 
-world. With Modul, you can more easily write in a functional style with a 
+world. With Modulation, you can more easily write in a functional style with a 
 minimum of boilerplate code.
+
+> **Important notice**: Modulation is currently at an experimental stage. Use
+> it at your own risk!
 
 ## Rationale
 
@@ -33,7 +36,7 @@ Personally, I have found that managing dependencies with `require` over in
 large codebases is... not as elegant or painfree as I would expect from a 
 first-class development environment.
 
-So I came up with Modul, a small gem that takes a different approach to 
+So I came up with Modulation, a small gem that takes a different approach to 
 organizing Ruby code: any so-called global declarations are hidden unless 
 explicitly exported, and the global namespace remains clutter-free. All 
 dependencies between source files are explicit, and are easily grokked.
@@ -50,7 +53,7 @@ end
 ```
 *app.rb*
 ```ruby
-require 'modul'
+require 'modulation'
 Math = import('./math')
 puts Math.fib(10)
 ```
@@ -97,7 +100,7 @@ end
 ```
 *app.rb*
 ```ruby
-require 'modul'
+require 'modulation'
 Seq = import('./seq')
 puts Seq.fib(10)
 ```
@@ -107,7 +110,7 @@ puts Seq.fib(10)
 Declarations from another module can be imported using `import`:
 
 ```ruby
-require 'modul'
+require 'modulation'
 Models = import('./models')
 ...
 
@@ -120,7 +123,7 @@ Alternatively, a module interested in a single declaration from another module
 can use the following technique:
 
 ```ruby
-require 'modul'
+require 'modulation'
 User = import('./models')::User
 ...
 
@@ -129,7 +132,6 @@ user = User.new(...)
 
 > **Note about paths**: module paths are always relative to the file
 > calling the `import` method.
-
 
 ### Default exports
 
@@ -147,7 +149,7 @@ end
 
 *app.rb*
 ```ruby
-require 'modul'
+require 'modulation'
 User = import('./user')
 User.new(...)
 ```
@@ -171,7 +173,8 @@ db.connect(config[:host], config[:port])
 
 ### Importing methods into classes and modules
 
-Modul provides the `extend_from` and `include_from` methods to include imported methods in classes and modules:
+Modulation provides the `extend_from` and `include_from` methods to include
+imported methods in classes and modules:
 
 ```ruby
 module Sequences
@@ -235,8 +238,8 @@ what = ::MEANING_OF_LIFE
 
 ## Known limitations and problems
 
-- Modul is (probably) not production-ready.
-- Modul might cause a mess if used to require gems.
-- Modul probably doesn't play well with `Marshal`.
-- Modul probably doesn't play well with code-analysis tools.
-- Modul doesn't play well with rdoc/yard.
+- Modulation is (probably) not production-ready.
+- Modulation might cause a mess if used to require gems.
+- Modulation probably doesn't play well with `Marshal`.
+- Modulation probably doesn't play well with code-analysis tools.
+- Modulation doesn't play well with rdoc/yard.
