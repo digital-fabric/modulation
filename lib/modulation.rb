@@ -102,8 +102,8 @@ class Modulation
   # @param mod [Module] module
   # @return [any] exported value
   def self.transform_export_default_value(value, mod)
-    if value.is_a?(Symbol) && mod.const_defined?(value)
-      mod.const_get(value)
+    if value.is_a?(Symbol) && mod.metaclass.const_defined?(value)
+      mod.metaclass.const_get(value)
     else
       value
     end
