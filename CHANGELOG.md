@@ -1,6 +1,6 @@
 ## 2018-07-23 version 0.6
 
-* Add support for using gems as imported modules
+* Add support for using gems as imported modules (experimental feature)
 * Add Modulation.full_trace! method for getting full backtrace on errors
 * Fix Modulation.transform_export_default_value
 * Change name to *Modulation*

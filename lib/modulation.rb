@@ -61,15 +61,27 @@ class Modulation
   end
 
   def self.module_absolute_path(fn, caller_location)
+    orig_fn = fn
     caller_file = (caller_location =~ /^([^\:]+)\:/) ?
       $1 : (raise "Could not expand path")
     fn = File.expand_path(fn, File.dirname(caller_file))
     if File.file?("#{fn}.rb")
-      fn = fn + '.rb'
+      fn + '.rb'
     else
-      raise "Module not found: #{fn}" unless File.file?(fn)
+      if File.file?(fn)
+        return fn
+      else
+        lookup_gem(orig_fn) || (raise "Module not found: #{fn}")
+      end
     end
-    fn
+  end
+
+  def self.lookup_gem(name)
+    spec = Gem::Specification.find_by_name(name)
+    fn = File.join(spec.full_require_paths, "#{name}.rb")
+    File.file?(fn) ? fn : nil
+  rescue Gem::MissingSpecError
+    nil 
   end
 
   # Creates a new module from a source file

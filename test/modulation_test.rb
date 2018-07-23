@@ -13,6 +13,10 @@ class Modulation
 end
 
 class FileHandlingTest < Minitest::Test
+  def setup
+    Modulation.reset!
+  end
+  
   def teardown
     Modulation.reset!
   end

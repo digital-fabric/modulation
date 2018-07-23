@@ -236,8 +236,12 @@ Gems written using modulation can also be loaded using `import`. If modulation
 does not find the module specified by the given relative path, it will attempt
 to load a gem by the same name.
 
-> **Note**: when loading gems using import, Modulation will raise an exception
-> if no symbols were exported by the gem.
+> **Note**: using `import` to load a gem is very much *alpha*, and might
+> introduce problems not encountered when loading with `require` such as 
+> shadowing of global namespaces, or any other bizarre and unexpected
+> behaviors. Actually, there's not much point in using it to load a gem which
+> does not use Modulation. When loading gems using import, Modulation will
+> raise an exception if no symbols were exported by the gem.
 
 ## Coding style recommendations
 
