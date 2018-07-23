@@ -210,6 +210,35 @@ end
 what = ::MEANING_OF_LIFE
 ```
 
+## Writing gems using Modulation
+
+Modulation can be used to write gems, providing fine-grained control over your
+gem's public APIs and letting you hide any implementation details. In order to
+allow loading a gem using either `require` or `import`, code your gem's main
+file normally, but add  `require 'modulation/gem'` at the top, and export your
+gem's main namespace as a default export, e.g.:
+
+```ruby
+require 'modulation/gem'
+
+export_default :MyGem
+
+module MyGem
+  ...
+  MyClass = import('my_gem/my_class')
+  ...
+end
+```
+
+## Importing gems using Modulation
+
+Gems written using modulation can also be loaded using `import`. If modulation
+does not find the module specified by the given relative path, it will attempt
+to load a gem by the same name.
+
+> **Note**: when loading gems using import, Modulation will raise an exception
+> if no symbols were exported by the gem.
+
 ## Coding style recommendations
 
 * Import modules into constants, not into variables:
@@ -239,7 +268,6 @@ what = ::MEANING_OF_LIFE
 ## Known limitations and problems
 
 - Modulation is (probably) not production-ready.
-- Modulation might cause a mess if used to require gems.
 - Modulation probably doesn't play well with `Marshal`.
 - Modulation probably doesn't play well with code-analysis tools.
 - Modulation doesn't play well with rdoc/yard.

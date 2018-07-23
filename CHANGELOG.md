@@ -1,6 +1,13 @@
+## 2018-07-23 version 0.6
+
+* Add support for using gems as imported modules
+* Add Modulation.full_trace! method for getting full backtrace on errors
+* Fix Modulation.transform_export_default_value
+* Change name to *Modulation*
+
 ## 2018-07-20 version 0.5.1
 
-* Fix extend_from, include_from to work with ruby 2.4.
+* Fix extend_from, include_from to work with ruby 2.4
 
 ## 2018-07-19 version 0.5
 

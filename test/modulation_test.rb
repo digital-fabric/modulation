@@ -1,5 +1,6 @@
 require 'minitest/autorun'
 require_relative '../lib/modulation.rb'
+Modulation.full_backtrace!
 
 class Modulation
   def self.reset!
@@ -124,5 +125,37 @@ class IncludeFromTest < MiniTest::Test
 
     assert_equal :a, @o.a
     assert_equal :b, @o.b
+  end
+end
+
+class DefaultModuleWithReexportedConstants < MiniTest::Test
+  def test_that_default_module_includes_reexported_constants
+    @m = import('modules/default_module')
+    assert_equal(42, @m::CONST)
+    assert_equal("hello!", @m::ImportedClass.new.greet)
+  end
+end
+
+class GemTest < MiniTest::Test
+  def setup
+    Object.remove_const(:MyGem) rescue nil
+  end
+
+  def test_that_a_required_gem_defines_its_namespace
+    require_relative './modules/my_gem'
+
+    assert(MyGem.is_a?(Module))
+
+    assert_equal(42, MyGem::CONST)
+    assert_kind_of(Class, MyGem::MyClass)
+    assert_equal("hello!", MyGem::MyClass.new.greet)
+  end
+
+  def rest_that_an_imported_gem_exports_its_namespace
+    @m = import('modules/my_gem')
+
+    assert_equal(42, @m::CONST)
+    assert_kind_of(Class, @m::MyClass)
+    assert_equal("hello!", @m::MyClass.new.greet)
   end
 end
