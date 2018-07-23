@@ -44,6 +44,11 @@ end
 
 class Modulation
   @@loaded_modules = {}
+  @@full_backtrace = false
+
+  def self.full_backtrace!
+    @@full_backtrace = true
+  end
 
   # Imports a module from a file
   # If the module is already loaded, returns the loaded module.
@@ -73,9 +78,13 @@ class Modulation
   def self.create_module_from_file(fn)
     make_module(location: fn)
   rescue => e
-    # remove *modul* methods from backtrace and reraise
-    backtrace = e.backtrace.reject {|l| l.include?(__FILE__)}
-    raise(e, e.message, backtrace)
+    if @@full_backtrace
+      raise
+    else
+      # remove *modul* methods from backtrace and reraise
+      backtrace = e.backtrace.reject {|l| l.include?(__FILE__)}
+      raise(e, e.message, backtrace)
+    end
   end
 
   # Loads a module from file or block, wrapping it in a module facade
