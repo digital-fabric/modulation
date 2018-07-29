@@ -78,6 +78,9 @@ class Modulation
 
   def self.lookup_gem(name)
     spec = Gem::Specification.find_by_name(name)
+    unless(spec.dependencies.map(&:name)).include?('modulation')
+      raise NameError, "Cannot import gem not based on modulation"
+    end
     fn = File.join(spec.full_require_paths, "#{name}.rb")
     File.file?(fn) ? fn : nil
   rescue Gem::MissingSpecError
@@ -138,6 +141,7 @@ class Modulation
       m.extend(ModuleMethods)
       m.metaclass.include(ModuleMetaclassMethods)
       m.__export_default_block = export_default_block
+      m.metaclass.const_set(:MODULE, m)
     end
   end
 

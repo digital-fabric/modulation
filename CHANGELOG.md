@@ -1,25 +1,29 @@
-## 2018-07-23 version 0.6
+## [0.7] 2018-07-29
+
+* Add `MODULE` constant for accessing module from nested namespaces within itself
+
+## [0.6] 2018-07-23
 
 * Add support for using gems as imported modules (experimental feature)
 * Add Modulation.full_trace! method for getting full backtrace on errors
 * Fix Modulation.transform_export_default_value
 * Change name to *Modulation*
 
-## 2018-07-20 version 0.5.1
+## [0.5.1] 2018-07-20
 
 * Fix extend_from, include_from to work with ruby 2.4
 
-## 2018-07-19 version 0.5
+## [0.5] 2018-07-19
 
 * Add extend_from, include_from to include imported methods in classes and modules
 
-## 2018-07-19 version 0.4
+## [0.4] 2018-07-19
 
 * Refactor code
 * Add tests
 * Remove namespace feature (owing to the way Ruby handles constants in blocks)
 
-## 2018-07-09 version 0.3.3
+## [0.3.3] 2018-07-09
 
 * Switch to explicit exports
 * More documentation

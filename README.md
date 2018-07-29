@@ -195,6 +195,30 @@ end
 5.seq(:fib)
 ```
 
+### Accessing a module from nested namespaces within itself
+
+The special constant `MODULE` allows you to access the containing module from
+nested namespaces. This lets you call methods defined in the module's root
+namespace, or otherwise introspect the module.
+
+```ruby
+export :await, :MyServer
+
+# Await a promise-like callable
+def await
+  calling_fiber = Fiber.current
+  p = ->(v = nil) {calling_fiber.resume v}
+  yield p
+  Fiber.yield
+end
+
+class MyServer < SuperSecretTCPServer
+  def async_read
+    MODULE.await {|p| on_read {|data| p.(data)}}
+  end
+end
+```
+
 ### Accessing the global namespace
 
 If you need to access the global namespace inside a module just prefix the 

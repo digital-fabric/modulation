@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'modulation'
-  s.version     = '0.6'
+  s.version     = '0.7'
   s.licenses    = ['MIT']
   s.summary     = 'Modulation: explicit dependencies for Ruby'
   s.description = <<~EOF

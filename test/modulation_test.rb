@@ -145,6 +145,11 @@ class GemTest < MiniTest::Test
     Object.remove_const(:MyGem) rescue nil
   end
 
+  def teardown
+    Object.remove_const(:MyGem) rescue nil
+    Modulation.reset!
+  end
+
   def test_that_a_required_gem_defines_its_namespace
     require_relative './modules/my_gem'
 
@@ -155,11 +160,26 @@ class GemTest < MiniTest::Test
     assert_equal("hello!", MyGem::MyClass.new.greet)
   end
 
-  def rest_that_an_imported_gem_exports_its_namespace
+  def test_that_an_imported_gem_exports_its_namespace
     @m = import('modules/my_gem')
 
     assert_equal(42, @m::CONST)
     assert_kind_of(Class, @m::MyClass)
     assert_equal("hello!", @m::MyClass.new.greet)
+  end
+end
+
+class ModuleRefTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_contained_modules_have_access_to_containing_module
+    m = import('modules/contained')
+    
+    assert_equal(m.meaning_of_life, 42)
+    assert_equal(m::ContainedModule.test, 42)
+
+    assert_raises(NameError) {m::ContainedModule.test_private}
   end
 end
