@@ -1,3 +1,5 @@
+* Add support for circular dependencies.
+
 ## [0.7] 2018-07-29
 
 * Add `MODULE` constant for accessing module from nested namespaces within itself

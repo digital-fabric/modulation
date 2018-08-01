@@ -57,7 +57,7 @@ class Modulation
   # @return [Module] loaded module object
   def self.import_module(fn, caller_location = caller.first)
     fn = module_absolute_path(fn, caller_location)
-    @@loaded_modules[fn] ||= create_module_from_file(fn)
+    @@loaded_modules[fn] || create_module_from_file(fn)
   end
 
   def self.module_absolute_path(fn, caller_location)
@@ -109,11 +109,13 @@ class Modulation
   def self.make_module(info, &block)
     export_default = nil
     m = initialize_module {|v| export_default = v}
+    @@loaded_modules[info[:location]] = m
     m.__module_info = info
     load_module_code(m, info, &block)
 
     if export_default
-      transform_export_default_value(export_default, m)
+      @@loaded_modules[info[:location]] = transform_export_default_value(export_default, m)
+      
     else
       m.tap {m.__set_exported_symbols(m, m.__exported_symbols)}
     end

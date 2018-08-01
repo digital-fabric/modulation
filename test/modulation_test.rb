@@ -183,3 +183,17 @@ class ModuleRefTest < MiniTest::Test
     assert_raises(NameError) {m::ContainedModule.test_private}
   end
 end
+
+class CircularRefTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_circular_references_work
+    m1 = import('modules/circular1')
+    m2 = import('modules/circular2')
+
+    assert_equal(m1.meaning_of_life, 42)
+    assert_equal(m2.reexported, 42)
+  end
+end
