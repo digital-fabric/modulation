@@ -1,5 +1,5 @@
-require 'fileutils'
 # frozen_string_literal: true
+require 'fileutils'
 
 # Kernel extensions - modul's API
 module Kernel
@@ -117,7 +117,7 @@ class Modulation
       @@loaded_modules[info[:location]] = transform_export_default_value(export_default, m)
       
     else
-      m.tap {m.__set_exported_symbols(m, m.__exported_symbols)}
+      m.tap {m.__set_exported_symbols(m.__exported_symbols)}
     end
   end
 
@@ -182,10 +182,10 @@ class Modulation
     # @param m [Module] imported module
     # @param symbols [Array] array of exported symbols
     # @return [void]
-    def __set_exported_symbols(m, symbols)
+    def __set_exported_symbols(symbols)
       @__exported_symbols = symbols
-      metaclass.instance_methods(false).each do |m|
-        metaclass.send(:private, m) unless symbols.include?(m)
+      metaclass.instance_methods(false).each do |sym|
+        metaclass.send(:private, sym) unless symbols.include?(sym)
       end
     end
 

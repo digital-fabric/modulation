@@ -35,8 +35,8 @@ class FileHandlingTest < Minitest::Test
 
   def test_that_import_loads_the_same_file_only_once
     $inc = 0
-    i1 = import('./modules/inc')
-    i2 = import('./modules/inc')
+    import('./modules/inc')
+    import('./modules/inc')
 
     assert_equal(1, $inc)
   end
@@ -177,8 +177,8 @@ class ModuleRefTest < MiniTest::Test
   def test_that_contained_modules_have_access_to_containing_module
     m = import('modules/contained')
     
-    assert_equal(m.meaning_of_life, 42)
-    assert_equal(m::ContainedModule.test, 42)
+    assert_equal(42, m.meaning_of_life)
+    assert_equal(42, m::ContainedModule.test)
 
     assert_raises(NameError) {m::ContainedModule.test_private}
   end
@@ -193,7 +193,22 @@ class CircularRefTest < MiniTest::Test
     m1 = import('modules/circular1')
     m2 = import('modules/circular2')
 
-    assert_equal(m1.meaning_of_life, 42)
-    assert_equal(m2.reexported, 42)
+    assert_equal(42, m1.meaning_of_life)
+    assert_equal(42, m2.reexported)
+  end
+end
+
+class ExtendFromTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_extend_from_doesnt_mix_private_methods
+    m = Module.new
+    m.extend_from('modules/extend_from1')
+    m.extend_from('modules/extend_from2')
+
+    assert_equal(1, m.method1)
+    assert_equal(2, m.method2)
   end
 end
