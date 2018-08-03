@@ -131,7 +131,7 @@ user = User.new(...)
 ```
 
 > **Note about paths**: module paths are always relative to the file
-> calling the `import` method.
+> calling the `import` method, just like `require_relative`.
 
 ### Default exports
 
@@ -171,6 +171,43 @@ config = import('./config')
 db.connect(config[:host], config[:port])
 ```
 
+### Further organising module functionality into nested namespaces
+
+Code inside modules can be further organised by separating it into nested 
+namespaces. The `export` method can be used to turn a normal nested module
+into a self-contained singleton-like object and prevent access to internal
+implementation details:
+
+*net.rb*
+```ruby
+export :Async, :TCPServer
+
+module Async
+  export :await
+
+  def await
+    Fiber.new do
+      yield Fiber.current
+      Fiber.yield
+    end
+  end
+end
+
+class TCPServer
+  ...
+  def read
+    Async.await do |fiber|
+      on(:read) {|data| fiber.resume data}
+    end
+  end
+end
+```
+
+> Note: when `export` is called inside a `module` declaration, Modulation calls
+> `extend self` implicitly, just like it does for the top-level loaded module.
+> That way there's no need to declare methods using the `def self.xxx` syntax,
+> and the module can still be used to extend arbitrary classes or objects.
+
 ### Importing methods into classes and modules
 
 Modulation provides the `extend_from` and `include_from` methods to include
@@ -194,6 +231,8 @@ end
 
 5.seq(:fib)
 ```
+
+### Organizing 
 
 ### Accessing a module from nested namespaces within itself
 

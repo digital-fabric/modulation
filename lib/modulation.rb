@@ -20,12 +20,27 @@ class Object
 end
 
 class Module
+  # Exports symbols from a namespace module declared inside an importable
+  # module. Exporting the actual symbols is deferred until the entire code
+  # has been loaded
+  # @param symbols [Array] array of symbols
+  # @return [void]
+  def export(*symbols)
+    unless Modulation.top_level_module
+      # Should probably find a better error message
+      raise NameError, "Can't export module outside of an importable module"
+    end
+
+    extend self
+    Modulation.top_level_module.__defer_namespace_export(self, symbols)
+  end
+
   # Extends the receiver with exported methods from the given file name
   # @param fn [String] module filename
   # @return [void] 
   def extend_from(fn)
     mod = import(fn, caller.first)
-    mod.methods(false).each do |sym|
+    mod.instance_methods(false).each do |sym|
       metaclass.send(:define_method, sym, mod.method(sym).to_proc)
     end
   end
@@ -36,7 +51,7 @@ class Module
   # @return [void]
   def include_from(fn)
     mod = import(fn, caller.first)
-    mod.methods(false).each do |sym|
+    mod.instance_methods(false).each do |sym|
       send(:define_method, sym, mod.method(sym).to_proc)
     end
   end
@@ -44,23 +59,38 @@ end
 
 class Modulation
   @@loaded_modules = {}
+  @@top_level_module = nil
   @@full_backtrace = false
 
+  # Show full backtrace for errors occuring while loading a module. Normally
+  # Modulation will remove stack frames occurring inside the modulation.rb code
+  # in order to make backtraces more readable when debugging.
   def self.full_backtrace!
     @@full_backtrace = true
   end
 
   # Imports a module from a file
   # If the module is already loaded, returns the loaded module.
-  # @param fn [String] source file name (with or without extension)
-  # @param caller_location [String]
+  # @param fn [String] unqualified file name
+  # @param caller_location [String] caller location
   # @return [Module] loaded module object
   def self.import_module(fn, caller_location = caller.first)
     fn = module_absolute_path(fn, caller_location)
     @@loaded_modules[fn] || create_module_from_file(fn)
   end
 
-  def self.module_absolute_path(fn, caller_location)
+  # Returns the currently loaded top level module
+  # @return [Module] currently loaded module
+  def self.top_level_module
+    @@top_level_module
+  end
+
+  # Resolves the absolute path to the provided reference. If the file is not
+  # found, will try to resolve to a gem
+  # @param fn [String] unqualified file name
+  # @param caller_location [String] caller location
+  # @return [String] absolute file name
+  def self.module_absolute_path(fn, caller_location = caller.first)
     orig_fn = fn
     caller_file = (caller_location =~ /^([^\:]+)\:/) ?
       $1 : (raise "Could not expand path")
@@ -76,6 +106,9 @@ class Modulation
     end
   end
 
+  # Resolves the provided file name into a gem. If no gem is found, returns nil
+  # @param name [String] gem name
+  # @return [String] absolute path to gem main source file
   def self.lookup_gem(name)
     spec = Gem::Specification.find_by_name(name)
     unless(spec.dependencies.map(&:name)).include?('modulation')
@@ -112,12 +145,13 @@ class Modulation
     @@loaded_modules[info[:location]] = m
     m.__module_info = info
     load_module_code(m, info, &block)
+    m.__perform_deferred_namespace_exports
 
     if export_default
       @@loaded_modules[info[:location]] = transform_export_default_value(export_default, m)
       
     else
-      m.tap {m.__set_exported_symbols(m.__exported_symbols)}
+      m.tap {set_exported_symbols(m, m.__exported_symbols)}
     end
   end
 
@@ -140,10 +174,11 @@ class Modulation
   # @return [Module] new module
   def self.initialize_module(&export_default_block)
     Module.new.tap do |m|
+      m.extend(m)
       m.extend(ModuleMethods)
-      m.metaclass.include(ModuleMetaclassMethods)
+      # m.metaclass.include(ModuleMetaclassMethods)
       m.__export_default_block = export_default_block
-      m.metaclass.const_set(:MODULE, m)
+      m.const_set(:MODULE, m)
     end
   end
 
@@ -151,43 +186,39 @@ class Modulation
   # @param m [Module] module
   # @param fn [String] source file path
   # @return [void]
-  def self.load_module_code(m, info)
-    fn = info[:location]
-    m.instance_eval(IO.read(fn), fn)
+  def self.load_module_code(m, info, &block)
+    old_top_level_module = @@top_level_module
+    @@top_level_module = m
+    if block
+      m.module_eval(&block)
+    else
+      fn = info[:location]
+      m.module_eval(IO.read(fn), fn)
+    end
+  ensure
+    @@top_level_module = old_top_level_module
+  end
+
+  # Sets exported_symbols ivar and marks all non-exported methods as private
+  # @param m [Module] module with exported symbols
+  # @param symbols [Array] array of exported symbols
+  # @return [void]
+  def self.set_exported_symbols(m, symbols)
+    # m.__exported_symbols = symbols
+    m.instance_methods.each do |sym|
+      next if symbols.include?(sym)
+      m.send(:private, sym)
+    end
+    m.constants.each do |sym|
+      next if sym == :MODULE || symbols.include?(sym)
+      m.send(:private_constant, sym)
+    end
   end
 
   # Module façade methods
   module ModuleMethods
-    # Responds to missing constants by checking metaclass
-    # If the given constant is defined on the metaclass, the same constant is
-    # defined on self and its value is returned. This is essential to
-    # supporting constants in modules.
-    # @param name [Symbol] constant name
-    # @return [any] constant value
-    def const_missing(name)
-      if metaclass.const_defined?(name)
-        unless !@__exported_symbols || @__exported_symbols.include?(name)
-          raise NameError, "private constant `#{name}' accessed in #{inspect}", caller
-        end
-        metaclass.const_get(name).tap {|value| const_set(name, value)}
-      else
-        raise NameError, "uninitialized constant #{inspect}::#{name}", caller
-      end
-    end
-
     # read and write module information
     attr_accessor :__module_info
-
-    # Sets exported_symbols ivar and marks all non-exported methods as private
-    # @param m [Module] imported module
-    # @param symbols [Array] array of exported symbols
-    # @return [void]
-    def __set_exported_symbols(symbols)
-      @__exported_symbols = symbols
-      metaclass.instance_methods(false).each do |sym|
-        metaclass.send(:private, sym) unless symbols.include?(sym)
-      end
-    end
 
     # Returns a text representation of the module for inspection
     # @return [String] module string representation
@@ -199,10 +230,7 @@ class Modulation
         "#{module_name}"
       end
     end
-  end
 
-  # Module façade metaclass methods
-  module ModuleMetaclassMethods
     # Adds given symbols to the exported_symbols array
     # @param symbols [Array] array of symbols
     # @return [void]
@@ -219,7 +247,7 @@ class Modulation
       @__export_default_block.call(v) if @__export_default_block
     end
 
-    # read and write module info
+    # read and write module info===
     attr_accessor :__module_info
 
     # Returns exported_symbols array
@@ -234,6 +262,27 @@ class Modulation
     # @return [void]
     def __export_default_block=(block)
       @__export_default_block = block
+    end
+
+    # Defers exporting of symbols for a namespace (nested module), to be 
+    # performed after the entire module has been loaded
+    # @param namespace [Module] namespace module
+    # @param symbols [Array] array of symbols
+    # @return [void]
+    def __defer_namespace_export(namespace, symbols)
+      @__namespace_exports ||= Hash.new {|h, k| h[k] = []}
+      @__namespace_exports[namespace].concat(symbols)
+    end
+
+    # Performs exporting of symbols for all namespaces defined in the module,
+    # marking unexported methods and constants as private
+    # @return [void]
+    def __perform_deferred_namespace_exports
+      return unless @__namespace_exports
+
+      @__namespace_exports.each do |m, symbols|
+        Modulation.set_exported_symbols(m, symbols)
+      end
     end
   end
 end
