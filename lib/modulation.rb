@@ -12,13 +12,6 @@ module Kernel
   end
 end
 
-# Object extensions
-class Object
-  # Returns the objects metaclass (shamelessly stolen from the metaid gem).
-  # @return [Class] object's metaclass
-  def metaclass; class << self; self; end; end
-end
-
 class Module
   # Exports symbols from a namespace module declared inside an importable
   # module. Exporting the actual symbols is deferred until the entire code
@@ -27,8 +20,7 @@ class Module
   # @return [void]
   def export(*symbols)
     unless Modulation.top_level_module
-      # Should probably find a better error message
-      raise NameError, "Can't export module outside of an importable module"
+      raise NameError, "Can't export symbols outside of an imported module"
     end
 
     extend self
@@ -41,7 +33,7 @@ class Module
   def extend_from(fn)
     mod = import(fn, caller.first)
     mod.instance_methods(false).each do |sym|
-      metaclass.send(:define_method, sym, mod.method(sym).to_proc)
+      self.class.send(:define_method, sym, mod.method(sym).to_proc)
     end
   end
 
@@ -126,13 +118,14 @@ class Modulation
   def self.create_module_from_file(fn)
     make_module(location: fn)
   rescue => e
-    if @@full_backtrace
-      raise
-    else
-      # remove *modul* methods from backtrace and reraise
-      backtrace = e.backtrace.reject {|l| l.include?(__FILE__)}
-      raise(e, e.message, backtrace)
-    end
+    @@full_backtrace ? raise : raise_with_clean_backtrace(e)
+  end
+
+  # (Re-)raises an error, filtering its backtrace to remove stack frames
+  # occuring in Modulation code
+  def self.raise_with_clean_backtrace(e)
+    backtrace = e.backtrace.reject {|l| l.include?(__FILE__)}
+    raise(e, e.message, backtrace)
   end
 
   # Loads a module from file or block, wrapping it in a module facade
@@ -162,8 +155,8 @@ class Modulation
   # @param mod [Module] module
   # @return [any] exported value
   def self.transform_export_default_value(value, mod)
-    if value.is_a?(Symbol) && mod.metaclass.const_defined?(value)
-      mod.metaclass.const_get(value)
+    if value.is_a?(Symbol) && mod.const_defined?(value)
+      mod.const_get(value)
     else
       value
     end
@@ -176,7 +169,6 @@ class Modulation
     Module.new.tap do |m|
       m.extend(m)
       m.extend(ModuleMethods)
-      # m.metaclass.include(ModuleMetaclassMethods)
       m.__export_default_block = export_default_block
       m.const_set(:MODULE, m)
     end
