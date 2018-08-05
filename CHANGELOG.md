@@ -1,3 +1,6 @@
+## [0.8] 2018-08-05
+
+* Add support for nested namespaces.
 * Add support for circular dependencies.
 
 ## [0.7] 2018-07-29
