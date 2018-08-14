@@ -2,6 +2,9 @@ require 'minitest/autorun'
 require_relative '../lib/modulation.rb'
 Modulation.full_backtrace!
 
+MODULES_DIR = File.join(File.dirname(__FILE__), 'modules')
+RELOADED_FN = File.join(MODULES_DIR, 'reloaded.rb')
+
 class Modulation
   def self.reset!
     @@loaded_modules = {}
@@ -86,7 +89,30 @@ end
 
 class ExportDefaultTest < MiniTest::Test
   def teardown
+    FileUtils.rm(RELOADED_FN)
     Modulation.reset!
+  end
+
+  def write_template(code)
+    Modulation.reset!
+    File.open(RELOADED_FN, 'w+') {|f| f << code}
+  end
+
+  def test_default_export_types
+    write_template("export_default :abc")
+    assert_raises(TypeError) {import('modules/reloaded')}
+    
+    write_template("export_default 42")
+    assert_raises(TypeError) {import('modules/reloaded')}
+
+    write_template("export_default nil")
+    assert_raises(TypeError) {import('modules/reloaded')}
+
+    write_template("export_default false")
+    assert_raises(TypeError) {import('modules/reloaded')}
+
+    write_template("export_default 'abc'")
+    assert_equal('abc', import('modules/reloaded'))
   end
 end
 
@@ -132,10 +158,10 @@ class IncludeFromTest < MiniTest::Test
   end
 end
 
-class DefaultModuleWithReexportedConstants < MiniTest::Test
+class DefaultModuleWithReexportedConstantsTest < MiniTest::Test
   def test_that_default_module_includes_reexported_constants
     @m = import('modules/default_module')
-    assert_equal(42, @m::CONST)
+    assert_equal("forty two", @m::CONST)
     assert_equal("hello!", @m::ImportedClass.new.greet)
   end
 end
@@ -155,7 +181,7 @@ class GemTest < MiniTest::Test
 
     assert(MyGem.is_a?(Module))
 
-    assert_equal(42, MyGem::CONST)
+    assert_equal("forty two", MyGem::CONST)
     assert_kind_of(Class, MyGem::MyClass)
     assert_equal("hello!", MyGem::MyClass.new.greet)
   end
@@ -163,7 +189,7 @@ class GemTest < MiniTest::Test
   def test_that_an_imported_gem_exports_its_namespace
     @m = import('modules/my_gem')
 
-    assert_equal(42, @m::CONST)
+    assert_equal("forty two", @m::CONST)
     assert_kind_of(Class, @m::MyClass)
     assert_equal("hello!", @m::MyClass.new.greet)
   end
@@ -253,5 +279,91 @@ class NamespaceTest < MiniTest::Test
     assert_raises(NameError) {m::SQL.access_secret_method}
     assert_raises(NameError) {m::SQL.access_secret_const}
     assert_raises(NameError) {m::SQL.secret}
+  end
+end
+
+class InstanceVariablesTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_instance_variables_are_accessible
+    m = import('modules/instance_vars')
+    assert_nil(m.get)
+    m.set(42)
+    assert_equal(42, m.get)
+
+    assert_nil(m.name)
+    m.name = 'abc'
+    assert_equal('abc', m.name)
+  end
+end
+
+require 'fileutils'
+
+class ReloadTest < MiniTest::Test
+  def teardown
+    FileUtils.rm(RELOADED_FN)
+    Modulation.reset!
+  end
+
+  def write_template(fn)
+    File.open(RELOADED_FN, 'w+') {|f| f << IO.read(fn)}
+  end
+
+  def test_that_a_module_can_be_reloaded
+    write_template(File.join(MODULES_DIR, 'template_reloaded_1.rb'))
+    m = import('modules/reloaded_user')
+    
+    assert_equal(m.call_me, 'Saul')
+    assert_equal(m.hide_and_seek, 42)
+
+    write_template(File.join(MODULES_DIR, 'template_reloaded_2.rb'))
+    m.reload_dependency
+
+    assert_equal(m.call_me, 'David')
+    assert_raises(NameError) {m.hide_and_seek}
+  end
+
+  def test_that_a_module_can_be_reloaded_without_breaking_deps
+    write_template(File.join(MODULES_DIR, 'template_reloaded_1.rb'))
+    m = import('modules/reloaded_user')
+    
+    assert_equal(m.call_me, 'Saul')
+    assert_equal(m.hide_and_seek, 42)
+
+    write_template(File.join(MODULES_DIR, 'template_reloaded_2.rb'))
+    Modulation.reload(RELOADED_FN)
+
+    assert_equal(m.call_me, 'David')
+    assert_raises(NameError) {m.hide_and_seek}
+  end
+
+  def test_reloading_by_filename
+    write_template(File.join(MODULES_DIR, 'template_reloaded_1.rb'))
+    m = import('modules/reloaded_user')
+    
+    assert_equal(m.call_me, 'Saul')
+    assert_equal(m.hide_and_seek, 42)
+
+    write_template(File.join(MODULES_DIR, 'template_reloaded_2.rb'))
+    Modulation.reload(RELOADED_FN)
+
+    assert_equal(m.call_me, 'David')
+    assert_raises(NameError) {m.hide_and_seek}
+  end
+
+  def test_that_a_default_export_can_be_reloaded
+    write_template(File.join(MODULES_DIR, 'template_reloaded_default_1.rb'))
+    m = import('modules/reloaded')
+    
+    assert_kind_of(String, m)
+    assert_equal("Hello", m)
+
+    write_template(File.join(MODULES_DIR, 'template_reloaded_default_2.rb'))
+    m = m.__reload!
+
+    assert_kind_of(Hash, m)
+    assert_equal({"Hello" => "world"}, m)
   end
 end

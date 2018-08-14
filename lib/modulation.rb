@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'fileutils'
 
-# Kernel extensions - modul's API
+# Kernel extensions
 module Kernel
   # Returns an encapsulated imported module.
   # @param fn [String] module file name
@@ -12,6 +12,7 @@ module Kernel
   end
 end
 
+# Module extensions
 class Module
   # Exports symbols from a namespace module declared inside an importable
   # module. Exporting the actual symbols is deferred until the entire code
@@ -19,12 +20,12 @@ class Module
   # @param symbols [Array] array of symbols
   # @return [void]
   def export(*symbols)
-    unless Modulation.top_level_module
+    unless Modulation.__top_level_module__
       raise NameError, "Can't export symbols outside of an imported module"
     end
 
     extend self
-    Modulation.top_level_module.__defer_namespace_export(self, symbols)
+    Modulation.__top_level_module__.__defer_namespace_export(self, symbols)
   end
 
   # Extends the receiver with exported methods from the given file name
@@ -50,9 +51,19 @@ class Module
 end
 
 class Modulation
+  # Hash mapping fully-qualified paths to loaded modules
   @@loaded_modules = {}
+
+  # Reference to currently loaded top-level module, used for correctly 
+  # exporting symbols from namespaces
   @@top_level_module = nil
+
+  # Flag denoting whether to provide full backtrace on errors during
+  # loading of a module (normally Modulation removes stack frames 
+  # occuring in Modulation code)
   @@full_backtrace = false
+
+  public
 
   # Show full backtrace for errors occuring while loading a module. Normally
   # Modulation will remove stack frames occurring inside the modulation.rb code
@@ -73,9 +84,11 @@ class Modulation
 
   # Returns the currently loaded top level module
   # @return [Module] currently loaded module
-  def self.top_level_module
+  def self.__top_level_module__
     @@top_level_module
   end
+
+  private
 
   # Resolves the absolute path to the provided reference. If the file is not
   # found, will try to resolve to a gem
@@ -133,19 +146,49 @@ class Modulation
   # @param block [Proc] module block
   # @return [Class] module facade
   def self.make_module(info, &block)
-    export_default = nil
-    m = initialize_module {|v| export_default = v}
+    default_value = :__no_default_value__
+    default_value_caller = nil
+    m = initialize_module do |v, caller|
+      default_value = v
+      default_value_caller = caller
+    end
     @@loaded_modules[info[:location]] = m
     m.__module_info = info
     load_module_code(m, info, &block)
-    m.__perform_deferred_namespace_exports
-
-    if export_default
-      @@loaded_modules[info[:location]] = transform_export_default_value(export_default, m)
-      
+    if default_value != :__no_default_value__
+      set_module_default_value(default_value, info, m, default_value_caller)
     else
-      m.tap {set_exported_symbols(m, m.__exported_symbols)}
+      m.__perform_deferred_namespace_exports
+      set_exported_symbols(m, m.__exported_symbols)
+      m
     end
+  end
+
+  DEFAULT_VALUE_ERROR_MSG = "Default export cannot be boolean, numeric, or symbol"
+  private_constant(:DEFAULT_VALUE_ERROR_MSG)
+
+  # Sets the default value for a module using export_default
+  # @param value [any] default value
+  # @param info [Hash] module info
+  # @param m [Module] module
+  # @return [any] default value
+  def self.set_module_default_value(value, info, m, caller)
+    value = transform_export_default_value(value, m)
+    case value
+    when nil, true, false, Numeric, Symbol
+      raise(TypeError, DEFAULT_VALUE_ERROR_MSG, caller)
+    end
+    set_reload_info(value, m.__module_info)
+    @@loaded_modules[info[:location]] = value
+  end
+
+  # Adds methods for module_info and reloading to a value exported as default
+  # @param value [any] export_default value
+  # @param info [Hash] module info
+  # @return [void]
+  def self.set_reload_info(value, info)
+    value.define_singleton_method(:__module_info) {info}
+    value.define_singleton_method(:__reload!) {Modulation.make_module(info)}
   end
 
   # Returns exported value for a default export
@@ -155,7 +198,7 @@ class Modulation
   # @param mod [Module] module
   # @return [any] exported value
   def self.transform_export_default_value(value, mod)
-    if value.is_a?(Symbol) && mod.const_defined?(value)
+    if value.is_a?(Symbol) && (mod.const_defined?(value) rescue nil)
       mod.const_get(value)
     else
       value
@@ -207,21 +250,42 @@ class Modulation
     end
   end
 
-  # Module façade methods
+  # Reloads the given module from its source file
+  # @param m [Module, String] module to reload
+  # @return [Module] module
+  def self.reload(m)
+    if m.is_a?(String)
+      fn, m = m, @@loaded_modules[File.expand_path(m)]
+      raise "No module loaded from #{fn}" unless m
+    end
+    
+    cleanup_module(m)
+
+    orig_verbose, $VERBOSE = $VERBOSE, nil
+    load_module_code(m, m.__module_info)
+    $VERBOSE = orig_verbose
+    
+    m.__perform_deferred_namespace_exports
+    m.tap {set_exported_symbols(m, m.__exported_symbols)}
+  end
+
+  # Removes methods and constants from module
+  # @param m [Module] module
+  # @return [void]
+  def self.cleanup_module(m)
+    m.constants(false).each {|c| m.send(:remove_const, c)}
+    m.methods(false).each {|sym| m.send(:undef_method, sym)}
+
+    private_methods = m.private_methods(false) - Module.private_instance_methods(false)
+    private_methods.each {|sym| m.send(:undef_method, sym)}
+
+    m.__exported_symbols.clear
+  end
+
+  # Extension methods for loaded modules
   module ModuleMethods
     # read and write module information
     attr_accessor :__module_info
-
-    # Returns a text representation of the module for inspection
-    # @return [String] module string representation
-    def inspect
-      module_name = name || 'Module'
-      if __module_info[:location]
-        "#{module_name}:#{__module_info[:location]}"
-      else
-        "#{module_name}"
-      end
-    end
 
     # Adds given symbols to the exported_symbols array
     # @param symbols [Array] array of symbols
@@ -236,16 +300,18 @@ class Modulation
     # @param v [Symbol, any] symbol or value
     # @return [void]
     def export_default(v)
-      @__export_default_block.call(v) if @__export_default_block
+      @__export_default_block.call(v, caller) if @__export_default_block
     end
 
-    # read and write module info===
-    attr_accessor :__module_info
-
-    # Returns exported_symbols array
-    # @return [Array] array of exported symbols
-    def __exported_symbols
-      @exported_symbols ||= []
+    # Returns a text representation of the module for inspection
+    # @return [String] module string representation
+    def inspect
+      module_name = name || 'Module'
+      if __module_info[:location]
+        "#{module_name}:#{__module_info[:location]}"
+      else
+        "#{module_name}"
+      end
     end
 
     # Sets export_default block, used for setting the returned module object to
@@ -254,6 +320,12 @@ class Modulation
     # @return [void]
     def __export_default_block=(block)
       @__export_default_block = block
+    end
+
+    # Reload module
+    # @return [Module] module
+    def __reload!
+      Modulation.reload(self)
     end
 
     # Defers exporting of symbols for a namespace (nested module), to be 
@@ -276,6 +348,11 @@ class Modulation
         Modulation.set_exported_symbols(m, symbols)
       end
     end
+
+    # Returns exported_symbols array
+    # @return [Array] array of exported symbols
+    def __exported_symbols
+      @exported_symbols ||= []
+    end
   end
 end
-

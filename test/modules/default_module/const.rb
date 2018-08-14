@@ -1,1 +1,1 @@
-export_default 42
+export_default "forty two"

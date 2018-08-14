@@ -1,0 +1,3 @@
+export :NAME
+
+NAME = 'David'

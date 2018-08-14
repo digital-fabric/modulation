@@ -1,3 +1,7 @@
+## [0.9] 2018-08-13
+
+* Add support for module reloading.
+
 ## [0.8] 2018-08-05
 
 * Add support for nested namespaces.

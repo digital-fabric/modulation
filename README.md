@@ -1,17 +1,24 @@
-# Modulation - explicit dependencies for Ruby
+# Modulation - better dependency management for Ruby
 
-Modulation provides an alternative way to organize Ruby code. Instead of 
-littering the global namespace with classes and modules, Mrodulation lets you 
+Modulation provides an better way to organize Ruby code. Modulation lets you 
 explicitly import and export declarations in order to better control 
-dependencies in your codebase.
+dependencies in your codebase. Modulation helps you refrain from littering
+the global namespace with a myriad modules, or declaring complex nested
+class hierarchies.
 
-With Modulation, you always know where a module comes from, and you have full 
-control over which parts of a module's code you wish to expose to the outside 
-world. With Modulation, you can more easily write in a functional style with a 
-minimum of boilerplate code.
+Using Modulation, you will always be able to tell know where a piece of code 
+comes from, and you'll have full control over which parts of a module's code 
+you wish to expose to the outside world. Modulation also helps you write Ruby 
+code in a functional style, with a minimum of boilerplate code.
 
-> **Important notice**: Modulation is currently at an experimental stage. Use
-> it at your own risk!
+## Features
+
+- Complete isolation of each module for better control of dependencies.
+- Explicit exporting of methods, classes, modules and other constants.
+- Default exports for modules exporting a single class or value.
+- Nested namespaces with explicit exports.
+- Modules can be reloaded at runtime without breaking dependencies.
+- Can be used to write gems.
 
 ## Rationale
 
@@ -156,7 +163,7 @@ User.new(...)
 
 The default exported value can also be defined directly thus:
 
-*config.rb*
+*config.rb* 
 ```ruby
 export_default(
   host: 'localhost',
@@ -232,8 +239,6 @@ end
 5.seq(:fib)
 ```
 
-### Organizing 
-
 ### Accessing a module from nested namespaces within itself
 
 The special constant `MODULE` allows you to access the containing module from
@@ -273,6 +278,39 @@ end
 what = ::MEANING_OF_LIFE
 ```
 
+### Reloading modules
+
+Modules can be easily reloaded in order to implement hot code reloading:
+
+```ruby
+SQL = import('./sql')
+...
+SQL.__reload!
+```
+
+Another way to reload modules is using `Modulation.reload`, which accepts a
+module or a filename:
+
+```ruby
+require 'filewatcher'
+
+FileWatcher.new(['lib']).watch do |fn, event|
+  if(event == :changed)
+    Modulation.reload(fn)
+  end
+end
+```
+
+Reloading of default exports is also possible. Modulation will extend the 
+exported value with a `#__reload!` method. The value will need to be
+reassigned:
+
+```ruby
+settings = import('settings')
+...
+settings = settings.__reload!
+```
+
 ## Writing gems using Modulation
 
 Modulation can be used to write gems, providing fine-grained control over your
@@ -299,7 +337,7 @@ Gems written using modulation can also be loaded using `import`. If modulation
 does not find the module specified by the given relative path, it will attempt
 to load a gem by the same name.
 
-> **Note**: using `import` to load a gem is very much *alpha*, and might
+> **Note**: using `import` to load a gem is very much *experimental*, and might
 > introduce problems not encountered when loading with `require` such as 
 > shadowing of global namespaces, or any other bizarre and unexpected
 > behaviors. Actually, there's not much point in using it to load a gem which
@@ -328,13 +366,13 @@ to load a gem by the same name.
   Foo = import('./foo')
   Bar = import('./bar')
   Baz = import('./baz')
-
   ...
   ```
 
 ## Known limitations and problems
 
 - Modulation is (probably) not production-ready.
+- Modulation is not thread-safe.
 - Modulation probably doesn't play well with `Marshal`.
 - Modulation probably doesn't play well with code-analysis tools.
-- Modulation doesn't play well with rdoc/yard.
+- Modulation probably doesn't play well with rdoc/yard.
