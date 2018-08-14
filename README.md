@@ -65,7 +65,7 @@ Math = import('./math')
 puts Math.fib(10)
 ```
 
-## Organizing Ruby code base with Modul
+## Organizing Ruby code base with Modulation
 
 Any Ruby source file can be a module. Modules can export declarations (usually 
 an API for a specific functionality) to be shared with other modules. Modules 
