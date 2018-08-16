@@ -1,5 +1,10 @@
 # Modulation - better dependency management for Ruby
 
+[INSTALL](#installing-modulation) |
+[GUIDE](#developing-with-modulation) |
+[EXAMPLES](https://github.com/ciconia/modulation/tree/master/examples) |
+[DOCS](https://www.rubydoc.info/gems/modulation/)
+
 Modulation provides an better way to organize Ruby code. Modulation lets you 
 explicitly import and export declarations in order to better control 
 dependencies in your codebase. Modulation helps you refrain from littering
@@ -61,15 +66,25 @@ end
 *app.rb*
 ```ruby
 require 'modulation'
-Math = import('./math')
-puts Math.fib(10)
+MyMath = import('./math')
+puts MyMath.fib(10)
 ```
 
-## Organizing Ruby code base with Modulation
+## Installing Modulation
 
-Any Ruby source file can be a module. Modules can export declarations (usually 
-an API for a specific functionality) to be shared with other modules. Modules 
-can also import declarations from other modules.
+You can install the Modulation as a gem, or add it in your `Gemfile`:
+
+```bash
+$ gem install modulation
+```
+
+## Organizing your code with Modulation
+
+Modulation enhances the idea of a Ruby module as a ["collection of methods and constants"](https://ruby-doc.org/core-2.5.1/Module.html).
+Using modulation, any Ruby source file can be a module. Modules usually export
+method and constant declarations (usually an API for a specific, well-defined 
+functionality) to be shared with other modules. Modules can also import 
+declarations from other modules.
 
 Each module is loaded and evaluated in the context of a newly-created `Module`,
 then transformed into a class and handed off to the importing module.
