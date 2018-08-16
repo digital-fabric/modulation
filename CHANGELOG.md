@@ -1,3 +1,7 @@
+## [0.9.1] 2018-08-15
+
+* Small fixes to README.
+
 ## [0.9] 2018-08-13
 
 * Add support for module reloading.

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'modulation'
-  s.version     = '0.9'
+  s.version     = '0.9.1'
   s.licenses    = ['MIT']
   s.summary     = 'Modulation: better dependency management for Ruby'
   s.description = <<~EOF
@@ -9,11 +9,6 @@ Gem::Specification.new do |s|
     dependencies in your codebase. Modulation helps you refrain from littering
     the global namespace with a myriad modules, or declaring complex nested
     class hierarchies.
-    
-    Using Modulation, you will always be able to tell know where a piece of code 
-    comes from, and you'll have full control over which parts of a module's code 
-    you wish to expose to the outside world. Modulation also helps you write Ruby 
-    code in a functional style, with a minimum of boilerplate code.
   EOF
   s.author      = 'Sharon Rosner'
   s.email       = 'ciconia@gmail.com'
