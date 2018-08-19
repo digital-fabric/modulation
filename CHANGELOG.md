@@ -1,3 +1,7 @@
+## [0.10] 2018-08-19
+
+* Refactor and cleanup code.
+
 ## [0.9.1] 2018-08-15
 
 * Small fixes to README.
