@@ -1,7 +1,7 @@
 # Modulation - better dependency management for Ruby
 
 [INSTALL](#installing-modulation) |
-[GUIDE](#developing-with-modulation) |
+[GUIDE](#organizing-your-code-with-modulation) |
 [EXAMPLES](https://github.com/ciconia/modulation/tree/master/examples) |
 [DOCS](https://www.rubydoc.info/gems/modulation/)
 
