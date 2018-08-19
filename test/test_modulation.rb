@@ -5,16 +5,6 @@ Modulation.full_backtrace!
 MODULES_DIR = File.join(File.dirname(__FILE__), 'modules')
 RELOADED_FN = File.join(MODULES_DIR, 'reloaded.rb')
 
-class Modulation
-  def self.reset!
-    @@loaded_modules = {}
-  end
-
-  def self.loaded_modules
-    @@loaded_modules
-  end
-end
-
 class FileHandlingTest < Minitest::Test
   def setup
     Modulation.reset!
@@ -103,9 +93,6 @@ class ExportDefaultTest < MiniTest::Test
     assert_raises(TypeError) {import('modules/reloaded')}
     
     write_template("export_default 42")
-    assert_raises(TypeError) {import('modules/reloaded')}
-
-    write_template("export_default nil")
     assert_raises(TypeError) {import('modules/reloaded')}
 
     write_template("export_default false")

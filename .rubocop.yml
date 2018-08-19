@@ -1,0 +1,16 @@
+# inherit_from: .rubocop_todo.yml
+
+AllCops:
+  TargetRubyVersion: 2.5
+  RubyInterpreters:
+    - ruby
+  Exclude:
+    - '**/*.gemspec'
+    - 'test/**/*.rb'
+    - 'examples/**/*.rb'
+
+Style/ModuleFunction:
+  Enabled: false
+
+Naming/MemoizedInstanceVariableName:
+  Enabled: false
