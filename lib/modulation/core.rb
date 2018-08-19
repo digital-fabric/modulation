@@ -69,6 +69,21 @@ module Modulation
 
     mod.tap { Builder.set_exported_symbols(mod, mod.__exported_symbols, true) }
   end
+
+  # Maps the given path to the given mock module, restoring the previously 
+  # loaded module (if any) after calling the given block
+  # @param path [String] module path
+  # @param mod [Module] module
+  # @param caller_location [String] caller location
+  # @return [void]
+  def mock(path, mod, caller_location = caller(1..1).first)
+    path = Paths.absolute_path(path, caller_location)
+    old_module = @loaded_modules[path]
+    @loaded_modules[path] = mod
+    yield if block_given?
+  ensure
+    @loaded_modules[path] = old_module if block_given?
+  end
 end
 
 Modulation.reset!

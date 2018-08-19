@@ -90,16 +90,16 @@ class ExportDefaultTest < MiniTest::Test
 
   def test_default_export_types
     write_template("export_default :abc")
-    assert_raises(TypeError) {import('modules/reloaded')}
+    assert_raises(TypeError) {import('./modules/reloaded')}
     
     write_template("export_default 42")
-    assert_raises(TypeError) {import('modules/reloaded')}
+    assert_raises(TypeError) {import('./modules/reloaded')}
 
     write_template("export_default false")
-    assert_raises(TypeError) {import('modules/reloaded')}
+    assert_raises(TypeError) {import('./modules/reloaded')}
 
     write_template("export_default 'abc'")
-    assert_equal('abc', import('modules/reloaded'))
+    assert_equal('abc', import('./modules/reloaded'))
   end
 end
 
@@ -147,7 +147,7 @@ end
 
 class DefaultModuleWithReexportedConstantsTest < MiniTest::Test
   def test_that_default_module_includes_reexported_constants
-    @m = import('modules/default_module')
+    @m = import('./modules/default_module')
     assert_equal("forty two", @m::CONST)
     assert_equal("hello!", @m::ImportedClass.new.greet)
   end
@@ -174,7 +174,7 @@ class GemTest < MiniTest::Test
   end
 
   def test_that_an_imported_gem_exports_its_namespace
-    @m = import('modules/my_gem')
+    @m = import('./modules/my_gem')
 
     assert_equal("forty two", @m::CONST)
     assert_kind_of(Class, @m::MyClass)
@@ -188,7 +188,7 @@ class ModuleRefTest < MiniTest::Test
   end
 
   def test_that_contained_modules_have_access_to_containing_module
-    m = import('modules/contained')
+    m = import('./modules/contained')
     
     assert_equal(42, m.meaning_of_life)
     assert_equal(42, m::ContainedModule.test)
@@ -203,8 +203,8 @@ class CircularRefTest < MiniTest::Test
   end
 
   def test_that_circular_references_work
-    m1 = import('modules/circular1')
-    m2 = import('modules/circular2')
+    m1 = import('./modules/circular1')
+    m2 = import('./modules/circular2')
 
     assert_equal(42, m1.meaning_of_life)
     assert_equal(42, m2.reexported)
@@ -218,8 +218,8 @@ class ExtendFromTest < MiniTest::Test
 
   def test_that_extend_from_doesnt_mix_private_methods
     m = Module.new
-    m.extend_from('modules/extend_from1')
-    m.extend_from('modules/extend_from2')
+    m.extend_from('./modules/extend_from1')
+    m.extend_from('./modules/extend_from2')
 
     assert_equal(1, m.method1)
     assert_equal(2, m.method2)
@@ -232,7 +232,7 @@ class NamespaceTest < MiniTest::Test
   end
 
   def test_that_namespace_acts_like_a_module
-    m = import('modules/namespace')
+    m = import('./modules/namespace')
     
     assert_kind_of(Module, m::PublicNamespace)
     assert_equal("Hello", m::PublicNamespace.greeting)
@@ -248,19 +248,19 @@ class NamespaceTest < MiniTest::Test
   end
 
   def test_that_namespace_consts_are_qualified_correctly
-    m = import('modules/namespace_const')
+    m = import('./modules/namespace_const')
     assert_equal("select 1", m::SQL.sql)
     assert_equal("select 1", m::SQL::SQL)
     assert_raises(NameError) {m::SQL::SECRET}
   end
 
   def test_that_namespace_can_access_methods_on_top_level_module
-    m = import('modules/namespace_module_access')
+    m = import('./modules/namespace_module_access')
     assert_equal("select 42", m::SQL.format)
   end
 
   def test_that_namespaces_can_access_each_other
-    m = import('modules/namespace_cross_access')
+    m = import('./modules/namespace_cross_access')
     assert_equal("select 42", m::SQL.format)
     assert_raises(NameError) {m::Settings}
     assert_raises(NameError) {m::SQL.access_secret_method}
@@ -275,7 +275,7 @@ class InstanceVariablesTest < MiniTest::Test
   end
 
   def test_that_instance_variables_are_accessible
-    m = import('modules/instance_vars')
+    m = import('./modules/instance_vars')
     assert_nil(m.get)
     m.set(42)
     assert_equal(42, m.get)
@@ -300,7 +300,7 @@ class ReloadTest < MiniTest::Test
 
   def test_that_a_module_can_be_reloaded
     write_template(File.join(MODULES_DIR, 'template_reloaded_1.rb'))
-    m = import('modules/reloaded_user')
+    m = import('./modules/reloaded_user')
     
     assert_equal(m.call_me, 'Saul')
     assert_equal(m.hide_and_seek, 42)
@@ -314,7 +314,7 @@ class ReloadTest < MiniTest::Test
 
   def test_that_a_module_can_be_reloaded_without_breaking_deps
     write_template(File.join(MODULES_DIR, 'template_reloaded_1.rb'))
-    m = import('modules/reloaded_user')
+    m = import('./modules/reloaded_user')
     
     assert_equal(m.call_me, 'Saul')
     assert_equal(m.hide_and_seek, 42)
@@ -328,7 +328,7 @@ class ReloadTest < MiniTest::Test
 
   def test_reloading_by_filename
     write_template(File.join(MODULES_DIR, 'template_reloaded_1.rb'))
-    m = import('modules/reloaded_user')
+    m = import('./modules/reloaded_user')
     
     assert_equal(m.call_me, 'Saul')
     assert_equal(m.hide_and_seek, 42)
@@ -342,7 +342,7 @@ class ReloadTest < MiniTest::Test
 
   def test_that_a_default_export_can_be_reloaded
     write_template(File.join(MODULES_DIR, 'template_reloaded_default_1.rb'))
-    m = import('modules/reloaded')
+    m = import('./modules/reloaded')
     
     assert_kind_of(String, m)
     assert_equal("Hello", m)
@@ -352,5 +352,35 @@ class ReloadTest < MiniTest::Test
 
     assert_kind_of(Hash, m)
     assert_equal({"Hello" => "world"}, m)
+  end
+end
+
+class MockTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  module Mockery
+    extend self
+    
+    def message
+      'mocked'
+    end
+
+    SQL = 'select id from mocked'
+  end
+
+  def test_unmocked_module_user
+    m = import('./modules/mock_user')
+    assert_equal('not mocked', m.message)
+    assert_equal('select id from not_mocked', m.sql_const)
+  end
+
+  def test_that_mock_with_block_provides_a_mock_module
+    Modulation.mock('./modules/mocked', Mockery) do
+      m = import('./modules/mock_user')
+      assert_equal('mocked', m.message)
+      assert_equal('select id from mocked', m.sql_const)
+    end
   end
 end

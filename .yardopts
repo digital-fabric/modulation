@@ -1,0 +1,4 @@
+--no-private
+--markup="markdown" lib/**/*.rb
+--main README.md
+-

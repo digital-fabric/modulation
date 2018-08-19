@@ -1,1 +1,1 @@
-import('b/b2')
+import('./b/b2')

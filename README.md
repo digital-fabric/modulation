@@ -18,9 +18,11 @@ code in a functional style, with a minimum of boilerplate code.
 
 ## Features
 
-- Provides complete isolation of each module for better control of dependencies.
-- Can reload modules at runtime without breaking your code in wierd ways.
-- Supports circular dependencies.
+- Provides complete isolation of each module: constant declarations in one file
+  don't leak into another.
+- Can [reload](#reloading-modules) modules at runtime without breaking your 
+  code in wierd ways.
+- Supports circular dependencies, no need 
 - Enforces explicit exporting and importing of methods, classes, modules and 
   constants.
 - Allows default exports for modules exporting a single class or value.
@@ -193,6 +195,7 @@ export_default(
 
 *app.rb*
 ```ruby
+require 'modulation'
 config = import('./config')
 db.connect(config[:host], config[:port])
 ```
@@ -247,6 +250,7 @@ end
 Sequences.fib(5)
 
 # extend integers
+require 'modulation'
 class Integer
   include_from('./seq.rb')
 
@@ -302,6 +306,7 @@ what = ::MEANING_OF_LIFE
 Modules can be easily reloaded in order to implement hot code reloading:
 
 ```ruby
+require 'modulation'
 SQL = import('./sql')
 ...
 SQL.__reload!
@@ -325,6 +330,7 @@ exported value with a `#__reload!` method. The value will need to be
 reassigned:
 
 ```ruby
+require 'modulation'
 settings = import('settings')
 ...
 settings = settings.__reload!

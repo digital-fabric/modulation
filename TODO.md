@@ -85,28 +85,3 @@
   end
   ```
 
-* Module mocking for tests
-
-  ```ruby
-  Modulation.mock('df', MockModule) do
-    run_my_tests
-  end
-  ```
-
-  Or:
-
-  ```ruby
-  def setup
-    Modulation.mock('df')
-  end
-
-  def teardown
-    Modulation.unmock('df')
-  end
-
-  def test
-    ...
-  end
-  ```
-
-  
