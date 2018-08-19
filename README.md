@@ -18,11 +18,13 @@ code in a functional style, with a minimum of boilerplate code.
 
 ## Features
 
-- Complete isolation of each module for better control of dependencies.
-- Explicit exporting of methods, classes, modules and other constants.
-- Default exports for modules exporting a single class or value.
-- Nested namespaces with explicit exports.
-- Modules can be reloaded at runtime without breaking dependencies.
+- Provides complete isolation of each module for better control of dependencies.
+- Can reload modules at runtime without breaking your code in wierd ways.
+- Supports circular dependencies.
+- Enforces explicit exporting and importing of methods, classes, modules and 
+  constants.
+- Allows default exports for modules exporting a single class or value.
+- Supports nested namespaces with explicit exports.
 - Can be used to write gems.
 
 ## Rationale
@@ -80,14 +82,16 @@ $ gem install modulation
 
 ## Organizing your code with Modulation
 
-Modulation enhances the idea of a Ruby module as a ["collection of methods and constants"](https://ruby-doc.org/core-2.5.1/Module.html).
+Modulation builds on the idea of a Ruby module as a
+["collection of methods and constants"](https://ruby-doc.org/core-2.5.1/Module.html).
 Using modulation, any Ruby source file can be a module. Modules usually export
 method and constant declarations (usually an API for a specific, well-defined 
 functionality) to be shared with other modules. Modules can also import 
 declarations from other modules.
 
-Each module is loaded and evaluated in the context of a newly-created `Module`,
-then transformed into a class and handed off to the importing module.
+Each module is evaluated in the context of a newly-created `Module` instance, 
+with some additional methods that make it possible to identify the module's 
+source location and reload it.
 
 ### Exporting declarations
 
