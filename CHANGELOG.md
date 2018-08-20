@@ -1,3 +1,7 @@
+## [0.11] 2018-08-20
+
+* Add Modulation.mock for use in testing.
+
 ## [0.10] 2018-08-19
 
 * Refactor and cleanup code.

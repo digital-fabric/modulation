@@ -20,14 +20,16 @@ code in a functional style, with a minimum of boilerplate code.
 
 - Provides complete isolation of each module: constant declarations in one file
   don't leak into another.
-- Can [reload](#reloading-modules) modules at runtime without breaking your 
-  code in wierd ways.
-- Supports circular dependencies, no need 
+- Supports circular dependencies.
 - Enforces explicit exporting and importing of methods, classes, modules and 
   constants.
-- Allows default exports for modules exporting a single class or value.
-- Supports nested namespaces with explicit exports.
-- Can be used to write gems.
+- Allows [default exports](#default-exports) for modules exporting a single
+  class or value.
+- Can [reload](#reloading-modules) modules at runtime without breaking your 
+  code in wierd ways.
+- Supports [nested namespaces](#using-nested-namespaces) with explicit exports.
+- Allows [mocking of dependencies](#mocking-dependencies) for testing purposes.
+- Can be used to [write gems](#writing-gems-using-modulation).
 
 ## Rationale
 
@@ -200,7 +202,7 @@ config = import('./config')
 db.connect(config[:host], config[:port])
 ```
 
-### Further organising module functionality into nested namespaces
+### Using nested namespaces
 
 Code inside modules can be further organised by separating it into nested 
 namespaces. The `export` method can be used to turn a normal nested module
@@ -299,6 +301,37 @@ end
 ::ENV = { ... }
 
 what = ::MEANING_OF_LIFE
+```
+
+### Mocking dependencies
+
+Modules loaded by Modulation can be easily mocked when running tests or specs,
+using `Modulation.mock`:
+
+```ruby
+require 'minitest/autorun'
+require 'modulation'
+
+module MockStorage
+  extend self
+  
+  def get_user(user_id)
+    {
+      user_id: user_id,
+      name: 'John Doe',
+      email: 'johndoe@gmail.com'
+    }
+  end
+end
+
+class UserControllerTest < Minitest::Test
+  def test_user_storage
+    Modulation.mock('../lib/storage', MockStorage) do
+      controller = UserController.
+      assert_equal
+    end
+  end
+end
 ```
 
 ### Reloading modules

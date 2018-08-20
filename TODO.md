@@ -31,6 +31,14 @@
   Modulation[:whatever] #=> NameError: unknown service `whatever' referenced
   ```
 
+  Mock dependency:
+
+  ```ruby
+  Modulation.mock(:timeline, MockTimeline) do
+  
+  end
+  ```
+
 * Re-exporting methods and constants
 
   ```ruby

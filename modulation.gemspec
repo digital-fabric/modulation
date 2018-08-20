@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'modulation'
-  s.version     = '0.10'
+  s.version     = '0.11'
   s.licenses    = ['MIT']
   s.summary     = 'Modulation: better dependency management for Ruby'
   s.description = <<~EOF
@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   EOF
   s.author      = 'Sharon Rosner'
   s.email       = 'ciconia@gmail.com'
-  s.files       = ['lib/modulation.rb', 'lib/modulation/gem.rb']
+  s.files       = `git ls-files README.md lib`.split
   s.homepage    = 'http://github.com/ciconia/modulation'
   s.metadata    = {
     "source_code_uri" => "https://github.com/ciconia/modulation"
