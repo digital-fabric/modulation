@@ -11,6 +11,8 @@ AllCops:
 
 Style/ModuleFunction:
   Enabled: false
+Style/RegexpLiteral:
+  Enabled: false
 
 Naming/MemoizedInstanceVariableName:
   Enabled: false

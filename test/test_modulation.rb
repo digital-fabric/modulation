@@ -180,6 +180,14 @@ class GemTest < MiniTest::Test
     assert_kind_of(Class, @m::MyClass)
     assert_equal("hello!", @m::MyClass.new.greet)
   end
+
+  def test_that_importing_a_regular_gem_raises_error
+    e = assert_raises(LoadError) { import('redis/hash_ring') }
+    assert_match(/use `require` instead/, e.message)
+
+    e = assert_raises(LoadError) { import('redis') }
+    assert_match(/use `require` instead/, e.message)
+  end
 end
 
 class ModuleRefTest < MiniTest::Test

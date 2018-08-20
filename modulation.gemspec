@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'modulation'
-  s.version     = '0.11'
+  s.version     = '0.12'
   s.licenses    = ['MIT']
   s.summary     = 'Modulation: better dependency management for Ruby'
   s.description = <<~EOF
@@ -12,11 +12,14 @@ Gem::Specification.new do |s|
   EOF
   s.author      = 'Sharon Rosner'
   s.email       = 'ciconia@gmail.com'
-  s.files       = `git ls-files README.md lib`.split
+  s.files       = `git ls-files README.md CHANGELOG.md lib`.split
   s.homepage    = 'http://github.com/ciconia/modulation'
   s.metadata    = {
     "source_code_uri" => "https://github.com/ciconia/modulation"
   }
   s.rdoc_options = ["--title", "Modulation", "--main", "README.md"]
-  s.extra_rdoc_files = ["README.md"]
+  s.extra_rdoc_files = ["README.md", "CHANGELOG.md"]
+
+  s.add_development_dependency 'minitest', '5.11.3'
+  s.add_development_dependency 'redis', '4.0.1'
 end

@@ -393,14 +393,17 @@ end
 
 Gems written using modulation can also be loaded using `import`. If modulation
 does not find the module specified by the given relative path, it will attempt
-to load a gem by the same name.
+to load a gem by the same name. It is also possible to load specific files
+inside modules by specifying a sub-path:
 
-> **Note**: using `import` to load a gem is very much *experimental*, and might
-> introduce problems not encountered when loading with `require` such as 
-> shadowing of global namespaces, or any other bizarre and unexpected
-> behaviors. Actually, there's not much point in using it to load a gem which
-> does not use Modulation. When loading gems using import, Modulation will
-> raise an exception if no symbols were exported by the gem.
+```ruby
+require 'modulation'
+MyFeature = import 'my_gem/my_feature'
+```
+
+> **Note**: Since there's not much of a point in `import`ing gems that do not use
+> Modulation to export symbols, Modulation will refuse to import any gem that
+> does not depend on Modulation.
 
 ## Coding style recommendations
 

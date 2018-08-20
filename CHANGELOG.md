@@ -1,3 +1,8 @@
+## [0.12] 2018-08-20
+
+* Fix sanitizing of error backtrace.
+* Fix importing of gems.
+
 ## [0.11] 2018-08-20
 
 * Add Modulation.mock for use in testing.

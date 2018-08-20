@@ -26,14 +26,27 @@ module Modulation
     @full_backtrace = true
   end
 
+  GEM_REQUIRE_ERROR_MESSAGE = <<~EOF
+    Can't import from a gem that doesn't depend on Modulation. Please use `require` instead of `import`.
+  EOF
+
   # Imports a module from a file
   # If the module is already loaded, returns the loaded module.
   # @param path [String] unqualified file name
   # @param caller_location [String] caller location
   # @return [Module] loaded module object
   def import(path, caller_location = caller(1..1).first)
-    path = Paths.absolute_path(path, caller_location)
-    @loaded_modules[path] || create_module_from_file(path)
+    abs_path = Paths.absolute_path(path, caller_location) ||
+               Paths.lookup_gem_path(path)
+
+    case abs_path
+    when String
+      @loaded_modules[abs_path] || create_module_from_file(abs_path)
+    when :require_gem
+      raise_error(LoadError.new(GEM_REQUIRE_ERROR_MESSAGE), caller)
+    else
+      raise_error(LoadError.new("Module not found: #{path}"), caller)
+    end
   end
 
   # Creates a new module from a source file
@@ -42,16 +55,21 @@ module Modulation
   def create_module_from_file(path)
     Builder.make(location: path)
   rescue StandardError => e
-    @full_backtrace ? raise : raise_with_clean_backtrace(e)
+    raise_error(e)
   end
 
-  # (Re-)raises an error, filtering its backtrace to remove stack frames
-  # occuring in Modulation code
+  # (Re-)raises an error, potentially filtering its backtrace to remove stack
+  # frames occuring in Modulation code
   # @param error [Error] raised error
+  # @param caller [Array] error backtrace
   # @return [void]
-  def raise_with_clean_backtrace(error)
-    backtrace = error.backtrace.reject { |l| l.include?(__FILE__) }
-    raise(error, error.message, backtrace)
+  def raise_error(error, caller = error.backtrace)
+    if @full_backtrace
+      error.set_backtrace(caller)
+    else
+      error.set_backtrace(caller.reject { |l| l =~ /^#{Modulation::DIR}/ })
+    end
+    raise error
   end
 
   # Reloads the given module from its source file
@@ -70,7 +88,7 @@ module Modulation
     mod.tap { Builder.set_exported_symbols(mod, mod.__exported_symbols, true) }
   end
 
-  # Maps the given path to the given mock module, restoring the previously 
+  # Maps the given path to the given mock module, restoring the previously
   # loaded module (if any) after calling the given block
   # @param path [String] module path
   # @param mod [Module] module
