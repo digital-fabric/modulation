@@ -9,8 +9,8 @@ AllCops:
     - 'test/**/*.rb'
     - 'examples/**/*.rb'
 
-Style/ModuleFunction:
-  Enabled: false
+# Style/ModuleFunction:
+  # Enabled: false
 Style/RegexpLiteral:
   Enabled: false
 

@@ -13,26 +13,12 @@ end
 
 # Module extensions
 class Module
-  # Exports symbols from a namespace module declared inside an importable
-  # module. Exporting the actual symbols is deferred until the entire code
-  # has been loaded
-  # @param symbols [Array] array of symbols
-  # @return [void]
-  def export(*symbols)
-    unless Modulation.top_level_module
-      raise NameError, "Can't export symbols outside of an imported module"
-    end
-
-    extend self
-    Modulation.top_level_module.__defer_namespace_export(self, symbols)
-  end
-
   # Extends the receiver with exported methods from the given file name
   # @param path [String] module filename
   # @return [void]
   def extend_from(path)
     mod = import(path, caller(1..1).first)
-    mod.instance_methods(false).each do |sym|
+    mod.singleton_class.instance_methods(false).each do |sym|
       self.class.send(:define_method, sym, mod.method(sym).to_proc)
     end
   end
@@ -43,7 +29,7 @@ class Module
   # @return [void]
   def include_from(path)
     mod = import(path, caller(1..1).first)
-    mod.instance_methods(false).each do |sym|
+    mod.singleton_class.instance_methods(false).each do |sym|
       send(:define_method, sym, mod.method(sym).to_proc)
     end
   end

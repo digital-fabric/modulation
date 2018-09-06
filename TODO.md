@@ -6,7 +6,9 @@
   import('support/mod') # absolute ref, expands to lib/support/mod
   ```
 
-* Dependency injections
+* 
+
+* Dependency injection - service registry
 
   ```ruby
   # bootstrap.rb
@@ -65,31 +67,47 @@
 
   ```ruby
   def effect(f)
-    {
+    hash_to_singleton(
       map:          ->(g)  { effect.(->(*x) {g.(f.(*x))}) },
       run_effects:  ->(*x) { f.(*x) },
       join:         ->(*x) { f.(*x) },
       chain:        ->(g)  { effect.(f).map(g).join() }
-    }.to_singleton
+    )
   end
 
   # implementation
-  class Hash
-    def to_singleton
-      Module.new.tap do |m|
-        m.extend(m)
-        each do |k, v|
-          case k
-          when /^[A-Z]/
-            m.const_set(k, v)
-          when /^@/
-            m.instance_variable_set(k, v)
-          else
-            m.define_method(k, v.respond_to?(:to_proc) ? v : proc {v})
-          end
+  def hash_to_singleton(h)
+    Module.new.tap do |m|
+      s = m.singleton_class
+      h.each do |k, v|
+        case k
+        when /^[A-Z]/
+          s.const_set(k, v)
+        when /^@/
+          s.instance_variable_set(k, v)
+        else
+          s.define_method(k, v.respond_to?(:to_proc) ? v : proc {v})
         end
       end
     end
   end
+
+  f_zero = -> {
+    puts 'Starting with nothing'
+    0
+  }
   ```
 
+* Auto-reload changed files:
+
+  API:
+
+  ```ruby
+  # auto-reload any loaded module if changed
+  Modulation.auto_reload
+
+  # auto-reload specific dirs
+  Modulation.auto_reload('lib/**/*.rb', 'vendor/**/*.rb')
+  ```
+
+* command line for running Ruby with modulation preloaded

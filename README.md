@@ -18,41 +18,41 @@ code in a functional style, with a minimum of boilerplate code.
 
 ## Features
 
-- Provides complete isolation of each module: constant declarations in one file
-  don't leak into another.
-- Supports circular dependencies.
+- Provides complete isolation of each module: constant definitions in one file
+  do not leak into another.
 - Enforces explicit exporting and importing of methods, classes, modules and 
   constants.
-- Allows [default exports](#default-exports) for modules exporting a single
+- Supports circular dependencies.
+- Supports [default exports](#default-exports) for modules exporting a single
   class or value.
 - Can [reload](#reloading-modules) modules at runtime without breaking your 
   code in wierd ways.
-- Supports [nested namespaces](#using-nested-namespaces) with explicit exports.
 - Allows [mocking of dependencies](#mocking-dependencies) for testing purposes.
 - Can be used to [write gems](#writing-gems-using-modulation).
 
 ## Rationale
 
-Splitting your Ruby code into multiple files loaded using `require` poses a 
-number of problems:
+You're probably asking yourself "what the hell?" , but splitting your Ruby code
+into multiple files loaded using `require` poses a number of problems:
 
-- Once a file is `require`d, any class, module or constant in it is available 
-  to any other file in your codebase. All "globals" (classes, modules, 
-  constants) are loaded, well, globally, in a single namespace. Namespace 
-  collisions are easy in Ruby.
-- Since a `require` can appear in any file in your code, it's easy to lose
-  track of where a certain file was required and where it is used.
-- To avoid class name ocnflicts, classes need to be nested under a single 
-  hierarchical tree, sometime reaching 4 levels or more, i.e. 
-  `ActiveSupport::Messages::Rotator::Encryptor`.
+- Once a file is `require`d, any class, module or constant in it is available
+  to any other file in your codebase. All "globals" (classes, modules,
+  constants) are loaded, well, globally, in a single namespace. Name conflicts
+  are easy in Ruby.
+- To avoid class name conflicts, classes need to be nested under a single 
+  hierarchical tree, sometime reaching 4 levels or more. Just look at Rails.
+- Since a `require`d class or module can be loaded in any file and then made
+  available to all files, it's easy to lose track of where it was loaded, and
+  where it is used.
 - There's no easy way to control the visibility of specific so-called globals. 
   Everything is wide-open.
 - Writing reusable functional code requires wrapping it in modules using 
-  `class << self`, `def self.foo ...` or `include Singleton`.
+  `class << self`, `def self.foo ...`, `extend self` or `include Singleton`.
 
-Personally, I have found that managing dependencies with `require` over in 
-large codebases is... not as elegant or painfree as I would expect from a 
-first-class development environment.
+Personally, I have found that managing dependencies with `require` in large
+codebases is... not as elegant or painfree as I would expect from a 
+first-class development environment. I also wanted to have a better solution
+for writing in a functional style.
 
 So I came up with Modulation, a small gem that takes a different approach to 
 organizing Ruby code: any so-called global declarations are hidden unless 
@@ -86,7 +86,7 @@ $ gem install modulation
 
 ## Organizing your code with Modulation
 
-Modulation builds on the idea of a Ruby module as a
+Modulation builds on the idea of a Ruby `Module` as a
 ["collection of methods and constants"](https://ruby-doc.org/core-2.5.1/Module.html).
 Using modulation, any Ruby source file can be a module. Modules usually export
 method and constant declarations (usually an API for a specific, well-defined 
@@ -202,43 +202,6 @@ config = import('./config')
 db.connect(config[:host], config[:port])
 ```
 
-### Using nested namespaces
-
-Code inside modules can be further organised by separating it into nested 
-namespaces. The `export` method can be used to turn a normal nested module
-into a self-contained singleton-like object and prevent access to internal
-implementation details:
-
-*net.rb*
-```ruby
-export :Async, :TCPServer
-
-module Async
-  export :await
-
-  def await
-    Fiber.new do
-      yield Fiber.current
-      Fiber.yield
-    end
-  end
-end
-
-class TCPServer
-  ...
-  def read
-    Async.await do |fiber|
-      on(:read) {|data| fiber.resume data}
-    end
-  end
-end
-```
-
-> Note: when `export` is called inside a `module` declaration, Modulation calls
-> `extend self` implicitly, just like it does for the top-level loaded module.
-> That way there's no need to declare methods using the `def self.xxx` syntax,
-> and the module can still be used to extend arbitrary classes or objects.
-
 ### Importing methods into classes and modules
 
 Modulation provides the `extend_from` and `include_from` methods to include
@@ -264,11 +227,11 @@ end
 5.seq(:fib)
 ```
 
-### Accessing a module from nested namespaces within itself
+### Accessing a module's root namespace from nested modules within itself
 
 The special constant `MODULE` allows you to access the containing module from
-nested namespaces. This lets you call methods defined in the module's root
-namespace, or otherwise introspect the module.
+nested modules or classes. This lets you call methods defined in the module's
+root namespace, or otherwise introspect the module.
 
 ```ruby
 export :await, :MyServer

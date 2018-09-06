@@ -234,49 +234,6 @@ class ExtendFromTest < MiniTest::Test
   end
 end
 
-class NamespaceTest < MiniTest::Test
-  def teardown
-    Modulation.reset!
-  end
-
-  def test_that_namespace_acts_like_a_module
-    m = import('./modules/namespace')
-    
-    assert_kind_of(Module, m::PublicNamespace)
-    assert_equal("Hello", m::PublicNamespace.greeting)
-    assert_raises(NameError) {m::PublicNamespace.secret}
-
-    assert_equal("Hello", m.access_public_namespace_public_method)
-    assert_raises(NameError) {m.access_public_namespace_private_method}
-
-    assert_raises(NameError) {m::PrivateNamespace}
-    assert_kind_of(Module, m.access_private_namespace)
-    assert_equal("select 1", m.access_private_namespace.sql)
-    assert_raises(NameError) {m.access_private_namespace.secret}
-  end
-
-  def test_that_namespace_consts_are_qualified_correctly
-    m = import('./modules/namespace_const')
-    assert_equal("select 1", m::SQL.sql)
-    assert_equal("select 1", m::SQL::SQL)
-    assert_raises(NameError) {m::SQL::SECRET}
-  end
-
-  def test_that_namespace_can_access_methods_on_top_level_module
-    m = import('./modules/namespace_module_access')
-    assert_equal("select 42", m::SQL.format)
-  end
-
-  def test_that_namespaces_can_access_each_other
-    m = import('./modules/namespace_cross_access')
-    assert_equal("select 42", m::SQL.format)
-    assert_raises(NameError) {m::Settings}
-    assert_raises(NameError) {m::SQL.access_secret_method}
-    assert_raises(NameError) {m::SQL.access_secret_const}
-    assert_raises(NameError) {m::SQL.secret}
-  end
-end
-
 class InstanceVariablesTest < MiniTest::Test
   def teardown
     Modulation.reset!
@@ -390,5 +347,16 @@ class MockTest < MiniTest::Test
       assert_equal('mocked', m.message)
       assert_equal('select id from mocked', m.sql_const)
     end
+  end
+end
+
+class ModuleTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_transitive_module_can_be_included_in_module
+    m = import('./modules/include_module')
+    assert_equal('bar', m.foo)
   end
 end

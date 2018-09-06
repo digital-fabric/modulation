@@ -73,5 +73,11 @@ module Modulation
     def __exported_symbols
       @__exported_symbols ||= []
     end
+
+    # Allow modules to use attr_accessor/reader/writer and include methods by
+    # forwarding calls to singleton_class
+    [:attr_accessor, :attr_reader, :attr_writer, :include].each do |sym|
+      define_method(sym) { |*args| singleton_class.send(sym, *args) }
+    end
   end
 end
