@@ -393,10 +393,10 @@ MyFeature = import 'my_gem/my_feature'
   ...
   ```
 
-## Known limitations and problems
+## Why you should not use Modulation
 
 - Modulation is (probably) not production-ready.
 - Modulation is not thread-safe.
-- Modulation probably doesn't play well with `Marshal`.
-- Modulation probably doesn't play well with code-analysis tools.
-- Modulation probably doesn't play well with rdoc/yard.
+- Modulation doesn't play well with rdoc/yard.
+- Modulation (probably) doesn't play well with `Marshal`.
+- Modulation (probably) doesn't play well with code-analysis tools.

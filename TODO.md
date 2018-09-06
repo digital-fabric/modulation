@@ -6,8 +6,6 @@
   import('support/mod') # absolute ref, expands to lib/support/mod
   ```
 
-* 
-
 * Dependency injection - service registry
 
   ```ruby
