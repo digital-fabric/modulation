@@ -50,6 +50,7 @@ module Modulation
       # @param symbols [Array] array of exported symbols
       # @return [void]
       def set_exported_symbols(mod, symbols)
+        mod.__module_info[:exported_symbols] = symbols
         singleton = mod.singleton_class
 
         singleton.instance_methods(false).each do |sym|

@@ -147,9 +147,7 @@ end
 class IncludeFromTest < MiniTest::Test
   def setup
     @c = Class.new
-    @c.include_from('modules/ext')
-
-    @o = @c.new
+    @c.include_from('modules/ext')    
   end
 
   def teardown
@@ -157,6 +155,7 @@ class IncludeFromTest < MiniTest::Test
   end
 
   def test_that_include_from_adds_instance_methods_to_class
+    @o = @c.new
     assert_respond_to(@o, :a)
     assert_respond_to(@o, :b)
     assert_raises(NameError) {@o.c}
@@ -169,6 +168,10 @@ class IncludeFromTest < MiniTest::Test
     o = @c::C.new
 
     assert_equal :bar, o.foo
+
+    assert_raises(NameError) { @c::D }
+
+    
   end
 end
 

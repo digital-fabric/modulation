@@ -124,13 +124,3 @@ Core
 Net
 
 ```
-
-## Package manager?
-
-What are the problems with rubygems?
-
-- It's slow!
-- Since every loaded gem is added to the $LOAD_PATH, when more gems are used, file loading becomes slower
-- Because of $LOAD_PATH, gems can easily trample over each other
-- No explicit dependencies
-- 

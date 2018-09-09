@@ -34,12 +34,14 @@ class Module
   # @return [void]
   def include_from(path)
     mod = import(path, caller(1..1).first)
+    exported_symbols = mod.__module_info[:exported_symbols]
+
     mod.singleton_class.instance_methods(false).each do |sym|
-      next if sym == :MODULE
       send(:define_method, sym, &mod.method(sym))
     end
 
     mod.singleton_class.constants(false).each do |sym|
+      next unless exported_symbols.include?(sym)
       const_set(sym, mod.singleton_class.const_get(sym))
     end
   end

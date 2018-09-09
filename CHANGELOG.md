@@ -1,3 +1,8 @@
+0.15 2018-09-09
+---------------
+
+* Fix include_from to include only exported constants
+
 0.14 2018-09-09
 ---------------
 
