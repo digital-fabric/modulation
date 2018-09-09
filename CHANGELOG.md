@@ -1,3 +1,8 @@
+0.14 2018-09-09
+---------------
+
+* Fix include_from, extend_from to add constants to target object
+
 0.13 2018-09-06
 ---------------
 

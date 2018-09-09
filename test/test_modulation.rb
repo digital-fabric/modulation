@@ -103,7 +103,7 @@ class ExportDefaultTest < MiniTest::Test
   end
 end
 
-class ExtendFromTest < MiniTest::Test
+class ExtendFrom1Test < MiniTest::Test
   def setup
     @m = Module.new
     @m.extend_from('modules/ext')
@@ -120,6 +120,27 @@ class ExtendFromTest < MiniTest::Test
 
     assert_equal :a, @m.a
     assert_equal :b, @m.b
+  end
+end
+
+class ExtendFrom2Test < MiniTest::Test
+  def setup
+    @m = Module.new
+    @m.extend_from('./modules/extend_from1')
+    @m.extend_from('./modules/extend_from2')
+  end
+  
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_extend_from_doesnt_mix_private_methods
+    assert_equal(1, @m.method1)
+    assert_equal(2, @m.method2)
+  end
+
+  def test_that_extend_from_adds_constants
+    assert_equal(:bar, @m::FOO)
   end
 end
 
@@ -142,6 +163,12 @@ class IncludeFromTest < MiniTest::Test
 
     assert_equal :a, @o.a
     assert_equal :b, @o.b
+  end
+
+  def test_that_include_from_adds_constants_to_class
+    o = @c::C.new
+
+    assert_equal :bar, o.foo
   end
 end
 
@@ -216,21 +243,6 @@ class CircularRefTest < MiniTest::Test
 
     assert_equal(42, m1.meaning_of_life)
     assert_equal(42, m2.reexported)
-  end
-end
-
-class ExtendFromTest < MiniTest::Test
-  def teardown
-    Modulation.reset!
-  end
-
-  def test_that_extend_from_doesnt_mix_private_methods
-    m = Module.new
-    m.extend_from('./modules/extend_from1')
-    m.extend_from('./modules/extend_from2')
-
-    assert_equal(1, m.method1)
-    assert_equal(2, m.method2)
   end
 end
 
