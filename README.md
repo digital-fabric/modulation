@@ -290,8 +290,8 @@ end
 class UserControllerTest < Minitest::Test
   def test_user_storage
     Modulation.mock('../lib/storage', MockStorage) do
-      controller = UserController.
-      assert_equal
+      controller = UserController.new
+      ...
     end
   end
 end
@@ -370,32 +370,29 @@ MyFeature = import 'my_gem/my_feature'
 
 ## Coding style recommendations
 
-* Import modules into constants, not into variables:
+* Import modules into constants, not variables:
 
   ```ruby
   Settings = import('./settings')
   ```
 
-* Place your exports at the top of your module:
+* Place your exports at the top of your module, followed by `require`s,
+  followed by `import`s:
 
   ```ruby
   export :foo, :bar, :baz
 
+  require 'json'
+
+  Core = import('./core')
+  
   ...
   ```
 
-* Place your imports at the top of your module:
-
-  ```ruby
-  Foo = import('./foo')
-  Bar = import('./bar')
-  Baz = import('./baz')
-  ...
-  ```
 
 ## Why you should not use Modulation
 
-- Modulation is (probably) not production-ready.
+- Modulation is not production-ready.
 - Modulation is not thread-safe.
 - Modulation doesn't play well with rdoc/yard.
 - Modulation (probably) doesn't play well with `Marshal`.
