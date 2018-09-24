@@ -76,8 +76,24 @@ module Modulation
 
     # Allow modules to use attr_accessor/reader/writer and include methods by
     # forwarding calls to singleton_class
-    [:attr_accessor, :attr_reader, :attr_writer, :include].each do |sym|
+    %i[attr_accessor attr_reader attr_writer include].each do |sym|
       define_method(sym) { |*args| singleton_class.send(sym, *args) }
+    end
+
+    # Exposes all private methods and private constants as public
+    # @return [Module] self
+    def __expose!
+      singleton = singleton_class
+
+      singleton.private_instance_methods.each do |sym|
+        singleton.send(:public, sym)
+      end
+      
+      __module_info[:private_constants].each do |sym|
+        const_set(sym, singleton.const_get(sym))
+      end
+
+      self
     end
   end
 end

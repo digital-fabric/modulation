@@ -60,6 +60,10 @@ class ExportTest < Minitest::Test
     assert_raises(NameError) {@a::PrivateClass}
   end
 
+  def test_that_non_exported_consts_are_saved_in_module_info
+    assert_equal(@a.__module_info[:private_constants], [:PrivateClass])
+  end
+
   def test_that_exported_consts_are_accessible
     assert_equal 42, @a::ExportedConstant
   end
@@ -74,6 +78,21 @@ class ExportTest < Minitest::Test
 
   def test_that_private_class_is_accessible_to_module
     assert_kind_of Class, @a.access_private_class
+  end
+end
+
+class ExposeTest < MiniTest::Test
+  def setup
+    @a = import('./modules/a').__expose!
+  end
+
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_expose_exposes_private_methods
+    assert_equal(@a.private_method, 'private')
+    assert_equal(@a::PrivateClass.class, Class)
   end
 end
 

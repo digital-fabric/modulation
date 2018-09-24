@@ -18,6 +18,5 @@ def exported_method
 end
 
 def private_method
-  "private"
+  'private'
 end
-

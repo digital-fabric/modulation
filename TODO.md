@@ -6,6 +6,20 @@ Modulation.root = 'lib' # automatically expand path to aboslute path
 import('support/mod') # absolute ref, expands to lib/support/mod
 ```
 
+But this might break once importable gems are used. Maybe a better solution
+would be to define the root inside a block:
+
+```ruby
+Modulation.with('lib') do
+  DNS = import('dns')
+  DB  = import('db')
+end
+```
+
+But actually, I'm not so sure this is such a useful thing. I think a more
+sensible solution to using non-relative paths is to treat non-relative paths as
+gem refs, and all relative paths as, well, relative.
+
 ## Dependency injection - service registry
 
 ```ruby
@@ -79,12 +93,10 @@ def hash_to_singleton(h)
     s = m.singleton_class
     h.each do |k, v|
       case k
-      when /^[A-Z]/
-        s.const_set(k, v)
-      when /^@/
-        s.instance_variable_set(k, v)
+      when /^[A-Z]/;  s.const_set(k, v)
+      when /^@/;      s.instance_variable_set(k, v)
       else
-        s.define_method(k, v.respond_to?(:to_proc) ? v : proc {v})
+        s.define_method(k, v.respond_to?(:to_proc) ? v : -> {v})
       end
     end
   end
@@ -98,6 +110,9 @@ f_zero = -> {
 
 ## Auto-reload changed files:
 
+Will necessitate a dependency on a watcher - and this might lead to
+complications if a reactor lib (nuclear, async, EM etc) is used.
+
 API:
 
 ```ruby
@@ -106,21 +121,4 @@ Modulation.auto_reload
 
 # auto-reload specific dirs
 Modulation.auto_reload('lib/**/*.rb', 'vendor/**/*.rb')
-```
-
-## command line for running Ruby with modulation preloaded, and loading files as modules
-
-## Importing specific symbols from module
-
-```ruby
-Core, Net = import('nuclear')[:Core, :Net]
-
-# or
-import('nuclear').bind(self, :Core, :Net)
-
-# but easiest is probably
-include_from('nuclear')
-Core
-Net
-
 ```

@@ -18,14 +18,8 @@ class Module
   # @return [void]
   def extend_from(path)
     mod = import(path, caller(1..1).first)
-    mod.singleton_class.instance_methods(false).each do |sym|
-      self.class.send(:define_method, sym, mod.method(sym).to_proc)
-    end
-
-    mod.singleton_class.constants(false).each do |sym|
-      next if sym == :MODULE
-      const_set(sym, mod.singleton_class.const_get(sym))
-    end
+    add_module_methods(mod, self.class)
+    add_module_constants(mod, self)
   end
 
   # Includes exported methods from the given file name in the receiver
@@ -34,15 +28,21 @@ class Module
   # @return [void]
   def include_from(path)
     mod = import(path, caller(1..1).first)
-    exported_symbols = mod.__module_info[:exported_symbols]
+    add_module_methods(mod, self)
+    add_module_constants(mod, self)
+  end
 
+  def add_module_methods(mod, target)
     mod.singleton_class.instance_methods(false).each do |sym|
-      send(:define_method, sym, &mod.method(sym))
+      target.send(:define_method, sym, &mod.method(sym))
     end
+  end
 
+  def add_module_constants(mod, target)
+    exported_symbols = mod.__module_info[:exported_symbols]
     mod.singleton_class.constants(false).each do |sym|
       next unless exported_symbols.include?(sym)
-      const_set(sym, mod.singleton_class.const_get(sym))
+      target.const_set(sym, mod.singleton_class.const_get(sym))
     end
   end
 end

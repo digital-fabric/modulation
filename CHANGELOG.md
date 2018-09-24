@@ -1,3 +1,8 @@
+0.16 2018-09-24
+---------------
+
+* Add __expose! method for exposing private symbols for testing purposes
+
 0.15 2018-09-09
 ---------------
 

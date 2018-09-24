@@ -52,15 +52,35 @@ module Modulation
       def set_exported_symbols(mod, symbols)
         mod.__module_info[:exported_symbols] = symbols
         singleton = mod.singleton_class
+        
+        privatize_non_exported_methods(singleton, symbols)
+        expose_exported_constants(mod, singleton, symbols)
+      end
 
+      # Sets all non-exported methods as private for given module
+      # @param singleton [Class] sinleton for module
+      # @param symbols [Array] array of exported symbols
+      # @return [void]
+      def privatize_non_exported_methods(singleton, symbols)
         singleton.instance_methods(false).each do |sym|
           next if symbols.include?(sym)
           singleton.send(:private, sym)
         end
+      end
 
-        singleton.constants.each do |sym|
-          next unless symbols.include?(sym)
-          mod.const_set(sym, singleton.const_get(sym))
+      # Copies exported constants from singleton to module
+      # @param mod [Module] module with exported symbols
+      # @param singleton [Class] sinleton for module
+      # @param symbols [Array] array of exported symbols
+      # @return [void]
+      def expose_exported_constants(mod, singleton, symbols)
+        private_constants = mod.__module_info[:private_constants] = []
+        singleton.constants(false).each do |sym|
+          if symbols.include?(sym)
+            mod.const_set(sym, singleton.const_get(sym))
+          else
+            private_constants << sym unless sym == :MODULE
+          end
         end
       end
 

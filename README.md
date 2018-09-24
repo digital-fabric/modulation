@@ -29,6 +29,7 @@ code in a functional style, with a minimum of boilerplate code.
   code in wierd ways.
 - Allows [mocking of dependencies](#mocking-dependencies) for testing purposes.
 - Can be used to [write gems](#writing-gems-using-modulation).
+- Facilitates [unit-testing](#unit-testing-modules) of private methods and constants.
 
 ## Rationale
 
@@ -264,6 +265,40 @@ end
 ::ENV = { ... }
 
 what = ::MEANING_OF_LIFE
+```
+
+### Unit testing modules
+
+Methods and constants that are not exported can be tested using the `__expose!`
+method. Thus you can keep implementation details hidden, while being able to 
+easily test them:
+
+*parser.rb*
+```ruby
+export :parse
+
+def parse(inp)
+  split(inp).map(&:to_sym)
+end
+
+# private method
+def split(inp)
+  inp.split(',').map(&:strip)
+end
+```
+
+*test_seq.rb*
+```ruby
+require 'modulation'
+require 'minitest/autorun'
+
+Parser = import('../lib/parser').__expose!
+
+class FibTest < Minitest::Test
+  def test_that_split_trims_split_parts
+    assert_equal(%w[abc def ghi], Parser.split(' abc ,def , ghi  '))
+  end
+end
 ```
 
 ### Mocking dependencies
