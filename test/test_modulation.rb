@@ -394,3 +394,14 @@ class ModuleTest < MiniTest::Test
     assert_equal('bar', m.foo)
   end
 end
+
+class InstanceVariableTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_instance_variables_can_be_set_outside_of_methods
+    m = import('./modules/instance_var')
+    assert_equal('bar', m.foo)
+  end
+end
