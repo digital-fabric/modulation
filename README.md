@@ -50,6 +50,11 @@ into multiple files loaded using `require` poses a number of problems:
 - Writing reusable functional code requires wrapping it in modules using 
   `class << self`, `def self.foo ...`, `extend self` or `include Singleton`.
 
+> There's a [recent discussion](https://bugs.ruby-lang.org/issues/14982) on the
+> Ruby bug tracker regarding possible solutions to the problem of top-level
+> name collision. Hopefully, the present gem could contribute to an eventual
+> "official" API.
+
 Personally, I have found that managing dependencies with `require` in large
 codebases is... not as elegant or painfree as I would expect from a 
 first-class development environment. I also wanted to have a better solution
