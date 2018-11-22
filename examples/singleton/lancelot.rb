@@ -1,6 +1,6 @@
 export  :name,
         :quest,
-        :favorite_color
+        :favorite_colour
 
 def name
   "Sir Lancelot of Camelot"
@@ -10,6 +10,6 @@ def quest
   "To seek the Holy Grail"
 end
 
-def favorite_color
+def favorite_colour
   "Blue"
 end

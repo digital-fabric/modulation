@@ -56,7 +56,10 @@ issues:
   there's `private`, `private_constant` etc, but by default everything is 
   `public`!
 - Writing reusable functional code requires wrapping it in modules using 
-  `class << self`, `def self.foo ...`, `extend self` or `include Singleton`.
+  `class << self`, `def self.foo ...`, `extend self` or `include Singleton`
+  (the pain of implementing singletons in Ruby has been
+  [discussed](https://practicingruby.com/articles/ruby-and-the-singleton-pattern-dont-get-along)
+  [before](https://ieftimov.com/singleton-pattern).)
 
 > There's a [recent discussion](https://bugs.ruby-lang.org/issues/14982) on the
 > Ruby bug tracker regarding possible solutions to the problem of top-level
