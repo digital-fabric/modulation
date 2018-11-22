@@ -1,20 +1,26 @@
-# Modulation - better dependency management for Ruby
+# Modulation - Explicit Dependency Management for Ruby
 
 [INSTALL](#installing-modulation) |
 [GUIDE](#organizing-your-code-with-modulation) |
-[EXAMPLES](https://github.com/ciconia/modulation/tree/master/examples) |
-[DOCS](https://www.rubydoc.info/gems/modulation/)
+[EXAMPLES](examples) |
+[RDOC](https://www.rubydoc.info/gems/modulation/)
 
-Modulation provides an better way to organize Ruby code. Modulation lets you 
-explicitly import and export declarations in order to better control 
+Modulation provides an alternative way of organizing your Ruby code. Modulation
+lets you explicitly import and export declarations in order to better control 
 dependencies in your codebase. Modulation helps you refrain from littering
-the global namespace with a myriad modules, or declaring complex nested
-class hierarchies.
+the global namespace with a myriad modules, or complex multi-level nested
+module hierarchies.
 
-Using Modulation, you will always be able to tell know where a piece of code 
-comes from, and you'll have full control over which parts of a module's code 
-you wish to expose to the outside world. Modulation also helps you write Ruby 
-code in a functional style, with a minimum of boilerplate code.
+Using Modulation, you will always be able to tell where a class or module comes
+from, and you'll have full control over which parts of a module's code you wish
+to expose to the outside world. Modulation can also help you write Ruby code in
+a functional style, minimizing boilerplate code.
+
+> Note: Modulation is not a replacement for RubyGems. Rather, Modulation is 
+> intended for managing dependencies between source files *inside* your Ruby
+> applications. Though it does support loading gems that were written using 
+> Modulation, it is not intended as a comprehensive solution for using 
+> third-party libraries.
 
 ## Features
 
@@ -33,8 +39,9 @@ code in a functional style, with a minimum of boilerplate code.
 
 ## Rationale
 
-You're probably asking yourself "what the hell?" , but splitting your Ruby code
-into multiple files loaded using `require` poses a number of problems:
+You're probably asking yourself "what the ****?" , but when your Ruby app grows
+and is split into multiple files loaded using `require`, you'll soon hit some
+issues:
 
 - Once a file is `require`d, any class, module or constant in it is available
   to any other file in your codebase. All "globals" (classes, modules,
@@ -45,8 +52,9 @@ into multiple files loaded using `require` poses a number of problems:
 - Since a `require`d class or module can be loaded in any file and then made
   available to all files, it's easy to lose track of where it was loaded, and
   where it is used.
-- There's no easy way to control the visibility of specific so-called globals. 
-  Everything is wide-open.
+- There's no easy way to hide implementation-specific classes or methods. Yes,
+  there's `private`, `private_constant` etc, but by default everything is 
+  `public`!
 - Writing reusable functional code requires wrapping it in modules using 
   `class << self`, `def self.foo ...`, `extend self` or `include Singleton`.
 
@@ -60,27 +68,11 @@ codebases is... not as elegant or painfree as I would expect from a
 first-class development environment. I also wanted to have a better solution
 for writing in a functional style.
 
-So I came up with Modulation, a small gem that takes a different approach to 
-organizing Ruby code: any so-called global declarations are hidden unless 
-explicitly exported, and the global namespace remains clutter-free. All 
-dependencies between source files are explicit, and are easily grokked.
-
-Here's a simple example:
-
-*math.rb*
-```ruby
-export :fib
-
-def fib(n)
-  (0..1).include?(n) ? n : (fib(n - 1) + fib(n - 2))
-end
-```
-*app.rb*
-```ruby
-require 'modulation'
-MyMath = import('./math')
-puts MyMath.fib(10)
-```
+So I came up with Modulation, a small gem (less than 300 LOC) that takes a 
+different approach to organizing Ruby code: any so-called global declarations 
+are hidden unless explicitly exported, and the global namespace remains 
+clutter-free. All dependencies between source files are explicit, visible, and 
+easy to understand.
 
 ## Installing Modulation
 
@@ -94,14 +86,15 @@ $ gem install modulation
 
 Modulation builds on the idea of a Ruby `Module` as a
 ["collection of methods and constants"](https://ruby-doc.org/core-2.5.1/Module.html).
-Using modulation, any Ruby source file can be a module. Modules usually export
-method and constant declarations (usually an API for a specific, well-defined 
-functionality) to be shared with other modules. Modules can also import 
-declarations from other modules.
+Using modulation, each Ruby source file becomes a module. Modules usually
+export method and constant declarations (usually an API for a specific, 
+well-defined functionality) to be shared with other modules. Modules can also
+import declarations from other modules. Anything not exported remains hidden
+inside the module and normally cannot be accessed from the outside.
 
-Each module is evaluated in the context of a newly-created `Module` instance, 
-with some additional methods that make it possible to identify the module's 
-source location and reload it.
+Each source file is evaluated in the context of a newly-created `Module` 
+instance, with some additional methods for introspection and miscellaneous
+operations such as [hot reloading](#reloading-modules).
 
 ### Exporting declarations
 
@@ -237,10 +230,10 @@ end
 
 The special constant `MODULE` allows you to access the containing module from
 nested modules or classes. This lets you call methods defined in the module's
-root namespace, or otherwise introspect the module.
+root namespace, or otherwise introspect the module:
 
 ```ruby
-export :await, :MyServer
+export :AsyncServer
 
 # Await a promise-like callable
 def await
@@ -250,7 +243,7 @@ def await
   Fiber.yield
 end
 
-class MyServer < SuperSecretTCPServer
+class AsyncServer < SomeTCPServer
   def async_read
     MODULE.await {|p| on_read {|data| p.(data)}}
   end
@@ -269,7 +262,7 @@ end
 
 ::ENV = { ... }
 
-what = ::MEANING_OF_LIFE
+what_is = ::THE_MEANING_OF_LIFE
 ```
 
 ### Unit testing modules
@@ -339,7 +332,7 @@ end
 
 ### Reloading modules
 
-Modules can be easily reloaded in order to implement hot code reloading:
+Modules can be reloaded at run-time for easy hot code reloading:
 
 ```ruby
 require 'modulation'
@@ -361,8 +354,13 @@ FileWatcher.new(['lib']).watch do |fn, event|
 end
 ```
 
-Reloading of default exports is also possible. Modulation will extend the 
-exported value with a `#__reload!` method. The value will need to be
+> When a module is reloaded, its entire content - constants and methods - will
+> be replaced. That means that any code using that module could continue to use
+> it without even being aware it was reloaded, providing its API has not
+> changed.
+
+Reloading of modules with default exports is also possible. Modulation will  
+extend the exported value with a `#__reload!` method. The value will need to be
 reassigned:
 
 ```ruby
@@ -428,7 +426,6 @@ MyFeature = import 'my_gem/my_feature'
   
   ...
   ```
-
 
 ## Why you should not use Modulation
 
