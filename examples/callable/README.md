@@ -1,4 +1,4 @@
-* Callable module
+# Callable module
 
 A callable object in Ruby is one that implements the `#call` method and can be
 invoked using the `.(...)` syntax, e.g.:

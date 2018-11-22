@@ -1,4 +1,4 @@
-* Forwarder module
+# Forwarder / Delegation pattern using Modulation
 
 The forward or 
 [delegate pattern](http://radar.oreilly.com/2014/02/delegation-patterns-in-ruby.html)
