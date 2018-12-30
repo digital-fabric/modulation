@@ -1,0 +1,1 @@
+export_default 'bar'

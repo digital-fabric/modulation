@@ -405,3 +405,50 @@ class InstanceVariableTest < MiniTest::Test
     assert_equal('bar', m.foo)
   end
 end
+
+class AutoImportTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_auto_import_loads_module
+    m = import('./modules/auto_import')
+
+    fn1 = File.expand_path('modules/auto_import.rb', File.dirname(__FILE__))
+    assert_equal([fn1], Modulation.loaded_modules.keys)
+
+    assert_equal('bar', m.foo)
+    
+    fn2 = File.expand_path('modules/auto_import_bar.rb', File.dirname(__FILE__))
+    assert_equal([fn1, fn2], Modulation.loaded_modules.keys)
+  end
+
+  def test_auto_import_in_nested_module
+    m = import('./modules/auto_import_nested')
+
+    fn1 = File.expand_path('modules/auto_import_nested.rb', File.dirname(__FILE__))
+    assert_equal([fn1], Modulation.loaded_modules.keys)
+
+    assert_equal('bar', m::BAR)
+    
+    fn2 = File.expand_path('modules/auto_import_bar.rb', File.dirname(__FILE__))
+    assert_equal([fn1, fn2], Modulation.loaded_modules.keys)
+  end
+
+  def test_auto_import_with_hash_argument
+    m = import('./modules/auto_import_hash')
+
+    fn1 = File.expand_path('modules/auto_import_hash.rb', File.dirname(__FILE__))
+    assert_equal([fn1], Modulation.loaded_modules.keys)
+
+    assert_equal('bar', m::M::BAR)
+    
+    fn2 = File.expand_path('modules/auto_import_bar.rb', File.dirname(__FILE__))
+    assert_equal([fn1, fn2], Modulation.loaded_modules.keys)
+
+    assert_equal('baz', m::M::BAZ)
+    
+    fn3 = File.expand_path('modules/auto_import_baz.rb', File.dirname(__FILE__))
+    assert_equal([fn1, fn2, fn3], Modulation.loaded_modules.keys)
+  end
+end

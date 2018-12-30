@@ -13,6 +13,22 @@ end
 
 # Module extensions
 class Module
+  # Registers a constant to be lazy-loaded upon lookup
+  # @param sym [Symbol, Hash] constant name or hash mapping names to paths
+  # @param path [String] path if sym is Symbol
+  # @return [void]
+  def auto_import(sym, path = nil, caller_location = caller(1..1).first)
+    unless @__auto_import_registry
+      a = @__auto_import_registry = {}
+      define_auto_import_const_missing_method(@__auto_import_registry)
+    end
+    if path
+      @__auto_import_registry[sym] = [path, caller_location]
+    else
+      sym.each { |k, v| @__auto_import_registry[k] = [v, caller_location] }
+    end
+  end
+
   # Extends the receiver with exported methods from the given file name
   # @param path [String] module filename
   # @return [void]
@@ -30,6 +46,15 @@ class Module
     mod = import(path, caller(1..1).first)
     add_module_methods(mod, self)
     add_module_constants(mod, self)
+  end
+
+  private
+
+  def define_auto_import_const_missing_method(auto_import_hash)
+    singleton_class.define_method(:const_missing) do |sym|
+      (path, caller_location) = auto_import_hash[sym]
+      path ? const_set(sym, import(path, caller_location)) : super
+    end
   end
 
   def add_module_methods(mod, target)

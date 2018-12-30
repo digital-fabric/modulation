@@ -1,5 +1,8 @@
 # Modulation - Explicit Dependency Management for Ruby
 
+> Modulation | mɒdjʊˈleɪʃ(ə)n | *Music* -  a change from one key to another in a
+> piece of music.
+
 [INSTALL](#installing-modulation) |
 [GUIDE](#organizing-your-code-with-modulation) |
 [EXAMPLES](examples) |
@@ -31,11 +34,14 @@ a functional style, minimizing boilerplate code.
 - Supports circular dependencies.
 - Supports [default exports](#default-exports) for modules exporting a single
   class or value.
-- Can [reload](#reloading-modules) modules at runtime without breaking your 
+- Modules can be [reloaded](#reloading-modules) at runtime without breaking your 
   code in wierd ways.
+- Modules can be [lazy loaded](#lazy-loading) to improve start up time and
+  memory consumption.
 - Allows [mocking of dependencies](#mocking-dependencies) for testing purposes.
 - Can be used to [write gems](#writing-gems-using-modulation).
-- Facilitates [unit-testing](#unit-testing-modules) of private methods and constants.
+- Facilitates [unit-testing](#unit-testing-modules) of private methods and
+  constants.
 
 ## Rationale
 
@@ -371,6 +377,44 @@ require 'modulation'
 settings = import('settings')
 ...
 settings = settings.__reload!
+```
+
+## Lazy Loading
+
+Modulation allows the use of lazy-loaded modules - loading of modules only once
+they're needed by the application, in similar fashion to `Module#auto_load`. To
+lazy load modules use the `#auto_import` method, which takes a constant name and
+a path:
+
+```ruby
+export :foo
+
+auto_import :BAR, './bar'
+
+def foo
+  # the bar module will only be loaded once this method is called
+  MODULE::BAR
+end
+```
+
+> Lazy-loaded constants must always be qualified. When referring to a
+> lazy-loaded constant from the module's top namespace, use the `MODULE`
+> namespace, as shown above.
+
+The `auto_import` method can also take a hash mapping constant names to paths.
+This is especially useful when multiple concerns are grouped under a single
+namespace:
+
+```ruby
+export_default :SuperNet
+
+module SuperNet
+  auto_import(
+    HTTP1:      './http1',
+    HTTP2:      './http2',
+    WebSockets: './websockets'
+  )
+end
 ```
 
 ## Writing gems using Modulation

@@ -1,3 +1,17 @@
+## Add autoload functionality
+
+```ruby
+# eager loading
+module Rubato
+  HTTP = import('./http')
+end
+
+# lazy loading
+module Rubato
+  auto_import(:HTTP, './http')
+end
+```
+
 ## Define root path for non-relative paths
 
 ```ruby
@@ -122,3 +136,25 @@ Modulation.auto_reload
 # auto-reload specific dirs
 Modulation.auto_reload('lib/**/*.rb', 'vendor/**/*.rb')
 ```
+
+## Auto-compiling and caching of modules
+
+Objective:
+
+- Faster loading of modules
+- Compilation of ruby apps into a single file without source code, with [inline `gemfile`](https://bundler.io/v1.17/guides/bundler_in_a_single_file_ruby_script.html)
+- Perhaps also a simplificatio of how modules are loaded - be able to use `eval`
+  instead of `instance_eval`.
+  
+Compiling to a single file:
+
+- `compile` takes a single path
+- when an `import` is encountered, the module is inlined, then saved into a
+  `__MODULES__` hash cache. Whenever the module is imported again, it's loaded 
+  from the cache.
+- The different modules are therefore inlined into a single body of source code,
+  which is then compiled into an `iseq`.
+- The Iseq is converted to binary representation and zipped.
+- The zipped binary code is written to the `DATA` section of a ruby file, along
+  with a short preamble loading the `DATA` section, unzipping it, loading the
+  `iseq` from the binary data, and finally `eval`ing the `iseq`.
