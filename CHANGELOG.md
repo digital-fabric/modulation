@@ -1,3 +1,6 @@
+0.18 2018-12-30
+---------------
+
 * Add auto_import feature for lazy loading of modules
 
 0.17 2018-11-22

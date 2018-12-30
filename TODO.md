@@ -1,17 +1,3 @@
-## Add autoload functionality
-
-```ruby
-# eager loading
-module Rubato
-  HTTP = import('./http')
-end
-
-# lazy loading
-module Rubato
-  auto_import(:HTTP, './http')
-end
-```
-
 ## Define root path for non-relative paths
 
 ```ruby
