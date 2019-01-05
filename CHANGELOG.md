@@ -1,3 +1,8 @@
+0.19 2019-01-05
+---------------
+
+* Move repo to https://github.com/digital-fabric/modulation
+
 0.18 2018-12-30
 ---------------
 
