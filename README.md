@@ -25,24 +25,6 @@ a functional style, minimizing boilerplate code.
 > Modulation, it is not intended as a comprehensive solution for using 
 > third-party libraries.
 
-## Features
-
-- Provides complete isolation of each module: constant definitions in one file
-  do not leak into another.
-- Enforces explicit exporting and importing of methods, classes, modules and 
-  constants.
-- Supports circular dependencies.
-- Supports [default exports](#default-exports) for modules exporting a single
-  class or value.
-- Modules can be [reloaded](#reloading-modules) at runtime without breaking your 
-  code in wierd ways.
-- Modules can be [lazy loaded](#lazy-loading) to improve start up time and
-  memory consumption.
-- Allows [mocking of dependencies](#mocking-dependencies) for testing purposes.
-- Can be used to [write gems](#writing-gems-using-modulation).
-- Facilitates [unit-testing](#unit-testing-modules) of private methods and
-  constants.
-
 ## Rationale
 
 You're probably asking yourself "what the ****?" , but when your Ruby app grows
@@ -82,6 +64,24 @@ different approach to organizing Ruby code: any so-called global declarations
 are hidden unless explicitly exported, and the global namespace remains 
 clutter-free. All dependencies between source files are explicit, visible, and 
 easy to understand.
+
+## Features
+
+- Provides complete isolation of each module: constant definitions in one file
+  do not leak into another.
+- Enforces explicit exporting and importing of methods, classes, modules and 
+  constants.
+- Supports circular dependencies.
+- Supports [default exports](#default-exports) for modules exporting a single
+  class or value.
+- Modules can be [lazy loaded](#lazy-loading) to improve start up time and
+  memory consumption.
+- Modules can be [reloaded](#reloading-modules) at runtime without breaking your 
+  code in wierd ways.
+- Allows [mocking of dependencies](#mocking-dependencies) for testing purposes.
+- Can be used to [write gems](#writing-gems-using-modulation).
+- Facilitates [unit-testing](#unit-testing-modules) of private methods and
+  constants.
 
 ## Installing Modulation
 
@@ -339,6 +339,44 @@ class UserControllerTest < Minitest::Test
 end
 ```
 
+### Lazy Loading
+
+Modulation allows the use of lazy-loaded modules - loading of modules only once
+they're needed by the application, in similar fashion to `Module#auto_load`. To
+lazy load modules use the `#auto_import` method, which takes a constant name and
+a path:
+
+```ruby
+export :foo
+
+auto_import :BAR, './bar'
+
+def foo
+  # the bar module will only be loaded once this method is called
+  MODULE::BAR
+end
+```
+
+> Lazy-loaded constants must always be qualified. When referring to a
+> lazy-loaded constant from the module's top namespace, use the `MODULE`
+> namespace, as shown above.
+
+The `auto_import` method can also take a hash mapping constant names to paths.
+This is especially useful when multiple concerns are grouped under a single
+namespace:
+
+```ruby
+export_default :SuperNet
+
+module SuperNet
+  auto_import(
+    HTTP1:      './http1',
+    HTTP2:      './http2',
+    WebSockets: './websockets'
+  )
+end
+```
+
 ### Reloading modules
 
 Modules can be reloaded at run-time for easy hot code reloading:
@@ -377,44 +415,6 @@ require 'modulation'
 settings = import('settings')
 ...
 settings = settings.__reload!
-```
-
-## Lazy Loading
-
-Modulation allows the use of lazy-loaded modules - loading of modules only once
-they're needed by the application, in similar fashion to `Module#auto_load`. To
-lazy load modules use the `#auto_import` method, which takes a constant name and
-a path:
-
-```ruby
-export :foo
-
-auto_import :BAR, './bar'
-
-def foo
-  # the bar module will only be loaded once this method is called
-  MODULE::BAR
-end
-```
-
-> Lazy-loaded constants must always be qualified. When referring to a
-> lazy-loaded constant from the module's top namespace, use the `MODULE`
-> namespace, as shown above.
-
-The `auto_import` method can also take a hash mapping constant names to paths.
-This is especially useful when multiple concerns are grouped under a single
-namespace:
-
-```ruby
-export_default :SuperNet
-
-module SuperNet
-  auto_import(
-    HTTP1:      './http1',
-    HTTP2:      './http2',
-    WebSockets: './websockets'
-  )
-end
 ```
 
 ## Writing gems using Modulation
