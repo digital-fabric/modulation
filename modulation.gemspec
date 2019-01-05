@@ -15,8 +15,8 @@ module hierarchies.
   s.author        = 'Sharon Rosner'
   s.email         = 'ciconia@gmail.com'
   s.files         = `git ls-files README.md CHANGELOG.md lib bin`.split
-  s.homepage      = 'http://github.com/ciconia/modulation'
-  s.metadata      = { "source_code_uri" => "https://github.com/ciconia/modulation" }
+  s.homepage      = 'http://github.com/digital-fabric/modulation'
+  s.metadata      = { "source_code_uri" => "https://github.com/digital-fabric/modulation" }
   s.rdoc_options  = ["--title", "Modulation", "--main", "README.md"]
   s.extra_rdoc_files = ["README.md", "CHANGELOG.md"]
   s.executables   = ['rbm']
