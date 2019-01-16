@@ -82,6 +82,7 @@ easy to understand.
 - Can be used to [write gems](#writing-gems-using-modulation).
 - Facilitates [unit-testing](#unit-testing-modules) of private methods and
   constants.
+- Can load all source files in directory at once.
 
 ## Installing Modulation
 
@@ -171,6 +172,39 @@ user = User.new(...)
 > **Note about paths**: module paths are always relative to the file
 > calling the `import` method, just like `require_relative`.
 
+### Importing all source files in a directory
+
+To load all source files in a directory you can use `import_all`:
+
+```ruby
+import_all('./ext') # will load ./ext/kernel, ./ext/socket etc 
+```
+
+### Importing methods into classes and modules
+
+Modulation provides the `extend_from` and `include_from` methods to include
+imported methods in classes and modules:
+
+```ruby
+module Sequences
+  extend_from('./seq.rb')
+end
+
+Sequences.fib(5)
+
+# extend integers
+require 'modulation'
+class Integer
+  include_from('./seq.rb')
+
+  def seq(kind)
+    send(kind, self)
+  end
+end
+
+5.seq(:fib)
+```
+
 ### Default exports
 
 A module may wish to expose just a single class or constant, in which case it 
@@ -208,31 +242,6 @@ export_default(
 require 'modulation'
 config = import('./config')
 db.connect(config[:host], config[:port])
-```
-
-### Importing methods into classes and modules
-
-Modulation provides the `extend_from` and `include_from` methods to include
-imported methods in classes and modules:
-
-```ruby
-module Sequences
-  extend_from('./seq.rb')
-end
-
-Sequences.fib(5)
-
-# extend integers
-require 'modulation'
-class Integer
-  include_from('./seq.rb')
-
-  def seq(kind)
-    send(kind, self)
-  end
-end
-
-5.seq(:fib)
 ```
 
 ### Accessing a module's root namespace from nested modules within itself

@@ -45,6 +45,17 @@ module Modulation
       end
     end
 
+    # Imports all source files in given directory
+    # @ param path [String] relative directory path
+    # @param caller_location [String] caller location
+    # @return [Array] array of module objects
+    def import_all(path, caller_location = caller(1..1).first)
+      abs_path = Paths.absolute_dir_path(path, caller_location)
+      Dir["#{abs_path}/**/*.rb"].map do |fn|
+        @loaded_modules[fn] || create_module_from_file(fn)
+      end
+    end
+
     # Creates a new module from a source file
     # @param path [String] source file name
     # @return [Module] module

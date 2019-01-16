@@ -2,12 +2,20 @@
 
 # Kernel extensions
 module Kernel
-  # Returns an encapsulated imported module.
+  # Imports a module
   # @param path [String] module file name
   # @param caller_location [String] caller location
-  # @return [Class] module facade
+  # @return [Module] module object
   def import(path, caller_location = caller(1..1).first)
     Modulation.import(path, caller_location)
+  end
+
+  # Imports all modules in given directory
+  # @param path [String] directory path
+  # @param caller_location [String] caller location
+  # @return [Array] array of module objects
+  def import_all(path, caller_location = caller(1..1).first)
+    Modulation.import_all(path, caller_location)
   end
 end
 

@@ -20,6 +20,18 @@ module Modulation
         check_path(path)
       end
 
+      # Computes and verifies the absolute directory path
+      # @param path String] unqualified path
+      # @param caller_location [String] caller location
+      # @return [String] absolute directory path
+      def absolute_dir_path(path, caller_location)
+        caller_file = caller_location[CALLER_FILE_REGEXP, 1]
+        return nil unless caller_file
+
+        path = File.expand_path(path, File.dirname(caller_file))
+        File.directory?(path) ? path : (raise "Invalid directory #{path}")
+      end
+
       # Checks that the given path references an existing file, adding the .rb
       # extension if needed
       # @param path [String] absolute file path (with/without .rb extension)

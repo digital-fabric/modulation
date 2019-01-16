@@ -195,6 +195,10 @@ class IncludeFromTest < MiniTest::Test
 end
 
 class DefaultModuleWithReexportedConstantsTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
   def test_that_default_module_includes_reexported_constants
     @m = import('./modules/default_module')
     assert_equal("forty two", @m::CONST)
@@ -450,5 +454,21 @@ class AutoImportTest < MiniTest::Test
     
     fn3 = File.expand_path('modules/auto_import_baz.rb', File.dirname(__FILE__))
     assert_equal([fn1, fn2, fn3], Modulation.loaded_modules.keys)
+  end
+end
+
+class ImportAllTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_import_all_loads_all_files_matching_pattern
+    m = import_all('./modules/subdir')
+    fn_a = File.expand_path('./modules/subdir/a.rb', __dir__)
+    fn_b = File.expand_path('./modules/subdir/b.rb', __dir__)
+    fn_c1 = File.expand_path('./modules/subdir/c1.rb', __dir__)
+    fn_c2 = File.expand_path('./modules/subdir/c2.rb', __dir__)
+    
+    assert_equal([fn_a, fn_b, fn_c1, fn_c2], Modulation.loaded_modules.keys.sort) 
   end
 end

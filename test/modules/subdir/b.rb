@@ -1,0 +1,3 @@
+export :B
+
+B = :B
