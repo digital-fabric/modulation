@@ -1,3 +1,8 @@
+0.21 2019-02-19
+---------------
+
+* Add support for list of symbols to import in `Kernel#include_from`
+
 0.20 2019-01-16
 ---------------
 

@@ -205,6 +205,16 @@ end
 5.seq(:fib)
 ```
 
+The `include_from` method accepts an optional list of symbols to import:
+
+```ruby
+class Integer
+  include_from './seq.rb', :fib
+end
+
+5.fib
+```
+
 ### Default exports
 
 A module may wish to expose just a single class or constant, in which case it 
