@@ -56,6 +56,59 @@ module Modulation
       end
     end
 
+    # Adds all or part of a module's methods to a target object
+    # If no symbols are given, all methods are added
+    # @param mod [Module] imported module
+    # @param target [Object] object to add methods to
+    # @param symbols [Array<Symbol>] list of methods to add
+    # @return [void]
+    def add_module_methods(mod, target, *symbols)
+      methods = mod.singleton_class.instance_methods(false)
+      unless symbols.empty?
+        not_exported = symbols.select { |s| s =~ /^[a-z]/ } - methods
+        unless not_exported.empty?
+          raise NameError, "symbol #{not_exported.first.inspect} not exported"
+        end
+        methods = methods & symbols
+      end
+      methods.each do |sym|
+        target.send(:define_method, sym, &mod.method(sym))
+      end
+    end
+  
+    # Adds all or part of a module's constants to a target object
+    # If no symbols are given, all constants are added
+    # @param mod [Module] imported module
+    # @param target [Object] object to add constants to
+    # @param symbols [Array<Symbol>] list of constants to add
+    # @return [void]
+    def add_module_constants(mod, target, *symbols)
+      exported = mod.__module_info[:exported_symbols]
+      unless symbols.empty?
+        not_exported = symbols.select { |s| s =~ /^[A-Z]/ } - exported
+        unless not_exported.empty?
+          raise NameError, "symbol #{not_exported.first.inspect} not exported"
+        end
+        exported = exported & symbols
+      end
+      mod.singleton_class.constants(false).each do |sym|
+        next unless exported.include?(sym)
+        target.const_set(sym, mod.singleton_class.const_get(sym))
+      end
+    end
+
+    # Defines a const_missing method used for auto-importing on a given object
+    # @param receiver [Object] object to receive the const_missing method call
+    # @param auto_import_hash [Hash] a hash mapping constant names to a source
+    #   file and a caller location
+    # @return [void]
+    def define_auto_import_const_missing_method(receiver, auto_import_hash)
+      receiver.singleton_class.define_method(:const_missing) do |sym|
+        (path, caller_location) = auto_import_hash[sym]
+        path ? const_set(sym, import(path, caller_location)) : super
+      end
+    end
+  
     # Creates a new module from a source file
     # @param path [String] source file name
     # @return [Module] module

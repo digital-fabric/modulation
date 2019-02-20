@@ -166,7 +166,7 @@ end
 class IncludeFromTest < MiniTest::Test
   def setup
     @c = Class.new
-    @c.include_from('modules/ext')    
+    @c.include_from('modules/ext')
   end
 
   def teardown
@@ -189,8 +189,25 @@ class IncludeFromTest < MiniTest::Test
     assert_equal :bar, o.foo
 
     assert_raises(NameError) { @c::D }
+  end
 
-    
+  def test_that_include_from_accepts_list_of_symbols
+    c = Class.new
+    c.include_from('modules/ext', :a)
+    o = c.new
+    assert_respond_to(o, :a)
+    assert(!o.respond_to?(:b))
+    assert_raises(NameError) { c::C }
+
+    c = Class.new
+    c.include_from('modules/ext', :b, :C)
+    o = c.new
+    assert(!o.respond_to?(:a))
+    assert_respond_to(o, :b)
+    assert_equal(:bar, c::C.new.foo)
+
+    c = Class.new
+    assert_raises(NameError) { c.include_from('modules/ext', :D) }
   end
 end
 
