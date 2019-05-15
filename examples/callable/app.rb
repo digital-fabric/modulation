@@ -1,4 +1,4 @@
-require 'modulation'
+require File.expand_path('../../lib/modulation', __dir__)
 
 Factorial = import('factorial')
 

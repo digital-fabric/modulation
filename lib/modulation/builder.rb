@@ -53,7 +53,7 @@ module Modulation
         mod.__module_info[:exported_symbols] = symbols
         singleton = mod.singleton_class
         
-        privatize_non_exported_methods(singleton, symbols)
+        privatize_non_exported_methods(mod, singleton, symbols)
         expose_exported_constants(mod, singleton, symbols)
       end
 
@@ -61,7 +61,13 @@ module Modulation
       # @param singleton [Class] sinleton for module
       # @param symbols [Array] array of exported symbols
       # @return [void]
-      def privatize_non_exported_methods(singleton, symbols)
+      def privatize_non_exported_methods(mod, singleton, symbols)
+        defined_methods = singleton.instance_methods(true)
+        difference = symbols.select { |s| s=~ /^[a-z]/} - defined_methods
+        unless difference.empty?
+          raise_exported_symbol_not_found_error(difference.first, mod, :method)
+        end
+
         singleton.instance_methods(false).each do |sym|
           next if symbols.include?(sym)
           singleton.send(:private, sym)
@@ -74,14 +80,30 @@ module Modulation
       # @param symbols [Array] array of exported symbols
       # @return [void]
       def expose_exported_constants(mod, singleton, symbols)
+        defined_constants = singleton.constants(false)
+        difference = symbols.select { |s| s=~ /^[A-Z]/} - defined_constants
+        unless difference.empty?
+          raise_exported_symbol_not_found_error(difference.first, mod, :const)
+        end
+
         private_constants = mod.__module_info[:private_constants] = []
-        singleton.constants(false).each do |sym|
+        defined_constants.each do |sym|
           if symbols.include?(sym)
             mod.const_set(sym, singleton.const_get(sym))
           else
             private_constants << sym unless sym == :MODULE
           end
         end
+      end
+
+      NOT_FOUND_MSG = "%s %s not found in module"
+
+      def raise_exported_symbol_not_found_error(sym, mod, kind)
+        error = NameError.new(NOT_FOUND_MSG % [
+          kind == :method ? 'Method' : 'Constant',
+          sym
+        ])
+        Modulation.raise_error(error, mod.__export_backtrace)
       end
 
       # Returns exported value for a default export
@@ -91,8 +113,20 @@ module Modulation
       # @param mod [Module] module
       # @return [any] exported value
       def transform_export_default_value(value, mod)
-        value.is_a?(Symbol) ? mod.singleton_class.const_get(value) : value
-      rescue NameError
+        if value.is_a?(Symbol)
+          case value
+          when /^[A-Z]/
+            unless mod.singleton_class.constants(true).include?(Symbol)
+              raise_exported_symbol_not_found_error(value, mod, :const)
+            end                    
+          else
+            if mod.singleton_class.instance_methods(true).include?(value)
+              return proc { |*args, &block| mod.send(value, *args, &block) }
+            else
+              raise_exported_symbol_not_found_error(value, mod, :method)
+            end
+          end
+        end
         value
       end
 

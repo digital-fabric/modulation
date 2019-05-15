@@ -79,6 +79,16 @@ class ExportTest < Minitest::Test
   def test_that_private_class_is_accessible_to_module
     assert_kind_of Class, @a.access_private_class
   end
+
+  def test_that_not_found_export_symbol_raises
+    assert_raises(NameError) {
+      import('./modules/missing_exported_const')
+    }
+
+    assert_raises(NameError) {
+      import('./modules/missing_exported_method')
+    }
+  end
 end
 
 class ExposeTest < MiniTest::Test
@@ -98,7 +108,7 @@ end
 
 class ExportDefaultTest < MiniTest::Test
   def teardown
-    FileUtils.rm(RELOADED_FN)
+    FileUtils.rm(RELOADED_FN) rescue nil
     Modulation.reset!
   end
 
@@ -109,7 +119,7 @@ class ExportDefaultTest < MiniTest::Test
 
   def test_default_export_types
     write_template("export_default :abc")
-    assert_raises(TypeError) {import('./modules/reloaded')}
+    assert_raises(NameError) {import('./modules/reloaded')}
     
     write_template("export_default 42")
     assert_raises(TypeError) {import('./modules/reloaded')}
@@ -119,6 +129,16 @@ class ExportDefaultTest < MiniTest::Test
 
     write_template("export_default 'abc'")
     assert_equal('abc', import('./modules/reloaded'))
+  end
+
+  def test_that_not_found_export__default_symbol_raises
+    assert_raises(NameError) {
+      import('./modules/missing_export_default_const')
+    }
+
+    assert_raises(NameError) {
+      import('./modules/missing_export_default_method')
+    }
   end
 end
 

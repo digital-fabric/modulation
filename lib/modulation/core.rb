@@ -123,11 +123,12 @@ module Modulation
     # @param error [Error] raised error
     # @param caller [Array] error backtrace
     # @return [void]
-    def raise_error(error, caller = error.backtrace)
-      if @full_backtrace
-        error.set_backtrace(caller)
-      else
-        error.set_backtrace(caller.reject { |l| l =~ /^#{Modulation::DIR}/ })
+    def raise_error(error, backtrace = nil)
+      if backtrace
+        unless @full_backtrace
+          backtrace = backtrace.reject { |l| l =~ /^#{Modulation::DIR}/ }
+        end
+        error.set_backtrace(backtrace)
       end
       raise error
     end

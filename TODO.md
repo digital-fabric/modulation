@@ -1,3 +1,6 @@
+- raise on missing `export` or `export_default`
+- if `export_default` refers to a method, turn it into a proc
+
 ## Define root path for non-relative paths
 
 ```ruby
