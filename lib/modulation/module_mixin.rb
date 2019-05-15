@@ -11,7 +11,8 @@ module Modulation
     # @return [void]
     def export(*symbols)
       symbols = symbols.first if symbols.first.is_a?(Array)
-      __exported_symbols.concat(symbols)
+      self.__exported_symbols.concat(symbols)
+      self.__export_backtrace = caller
     end
 
     # Sets a module's value, so when imported it will represent the given value,
@@ -19,6 +20,7 @@ module Modulation
     # @param value [Symbol, any] symbol or value
     # @return [void]
     def export_default(value)
+      self.__export_backtrace = caller
       @__export_default_block&.call(value: value, caller: caller)
     end
 
@@ -72,6 +74,14 @@ module Modulation
     # @return [Array] array of exported symbols
     def __exported_symbols
       @__exported_symbols ||= []
+    end
+
+    def __export_backtrace
+      @__export_backtrace
+    end
+
+    def __export_backtrace=(o)
+      @__export_backtrace = o
     end
 
     # Allow modules to use attr_accessor/reader/writer and include methods by
