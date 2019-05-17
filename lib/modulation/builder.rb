@@ -108,7 +108,8 @@ module Modulation
 
       # Returns exported value for a default export
       # If the given value is a symbol, returns the value of the corresponding
-      # constant.
+      # constant. If the symbol refers to a method, returns a proc enveloping
+      # the method. Raises if symbol refers to non-existent constant or method.
       # @param value [any] export_default value
       # @param mod [Module] module
       # @return [any] exported value
@@ -116,15 +117,15 @@ module Modulation
         if value.is_a?(Symbol)
           case value
           when /^[A-Z]/
-            unless mod.singleton_class.constants(true).include?(Symbol)
-              raise_exported_symbol_not_found_error(value, mod, :const)
-            end                    
+            if mod.singleton_class.constants(true).include?(value)
+              return mod.singleton_class.const_get(value)
+            end
+            raise_exported_symbol_not_found_error(value, mod, :const)
           else
             if mod.singleton_class.instance_methods(true).include?(value)
               return proc { |*args, &block| mod.send(value, *args, &block) }
-            else
-              raise_exported_symbol_not_found_error(value, mod, :method)
             end
+            raise_exported_symbol_not_found_error(value, mod, :method)
           end
         end
         value
