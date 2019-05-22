@@ -60,3 +60,8 @@ class Module
     Modulation.add_module_constants(mod, self, *symbols)
   end
 end
+
+if Object.constants.include?(:Rake)
+  Rake::DSL.alias_method :rake_import, :import
+  Rake::DSL.remove_method :import
+end
