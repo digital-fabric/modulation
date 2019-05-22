@@ -1,3 +1,9 @@
+0.24 2019-05-22
+---------------
+
+* Fix usage of Modulation in rake tasks
+* Fix behavior when referencing missing consts in modules using `auto_import`
+
 0.23 2019-05-17
 ---------------
 
