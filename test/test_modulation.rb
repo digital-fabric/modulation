@@ -492,6 +492,17 @@ class AutoImportTest < MiniTest::Test
     fn3 = File.expand_path('modules/auto_import_baz.rb', File.dirname(__FILE__))
     assert_equal([fn1, fn2, fn3], Modulation.loaded_modules.keys)
   end
+
+  module Foo
+    auto_import(
+      BAR: './bar',
+    )
+  end
+
+
+  def test_auto_import_const_missing_fall_through
+    assert_raises(NameError) { Foo::BAZ }
+  end
 end
 
 class ImportAllTest < MiniTest::Test

@@ -105,7 +105,7 @@ module Modulation
     def define_auto_import_const_missing_method(receiver, auto_import_hash)
       receiver.singleton_class.define_method(:const_missing) do |sym|
         (path, caller_location) = auto_import_hash[sym]
-        path ? const_set(sym, import(path, caller_location)) : super
+        path ? const_set(sym, import(path, caller_location)) : super(sym)
       end
     end
   
