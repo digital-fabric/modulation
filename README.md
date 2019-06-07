@@ -28,21 +28,21 @@ a functional style, minimizing boilerplate code.
 ## Rationale
 
 You're probably asking yourself "what the ****?" , but when your Ruby app grows
-and is split into multiple files loaded using `require`, you'll soon hit some
+and is split into multiple files loaded using `#require`, you'll soon hit some
 issues:
 
-- Once a file is `require`d, any class, module or constant in it is available
+- Once a file is `#require`d, any class, module or constant in it is available
   to any other file in your codebase. All "globals" (classes, modules,
   constants) are loaded, well, globally, in a single namespace. Name conflicts
   are easy in Ruby.
 - To avoid class name conflicts, classes need to be nested under a single 
   hierarchical tree, sometime reaching 4 levels or more. Just look at Rails.
-- Since a `require`d class or module can be loaded in any file and then made
+- Since a `#require`d class or module can be loaded in any file and then made
   available to all files, it's easy to lose track of where it was loaded, and
   where it is used.
 - There's no easy way to hide implementation-specific classes or methods. Yes,
-  there's `private`, `private_constant` etc, but by default everything is 
-  `public`!
+  there's `#private`, `#private_constant` etc, but by default everything is 
+  `#public`!
 - Writing reusable functional code requires wrapping it in modules using 
   `class << self`, `def self.foo ...`, `extend self` or `include Singleton`
   (the pain of implementing singletons in Ruby has been
@@ -54,7 +54,7 @@ issues:
 > name collision. Hopefully, the present gem could contribute to an eventual
 > "official" API.
 
-Personally, I have found that managing dependencies with `require` in large
+Personally, I have found that managing dependencies with `#require` in large
 codebases is... not as elegant or painfree as I would expect from a 
 first-class development environment. I also wanted to have a better solution
 for writing in a functional style.
@@ -108,7 +108,7 @@ operations such as [hot reloading](#reloading-modules).
 
 ### Exporting declarations
 
-Any class, module or constant be exported using `export`:
+Any class, module or constant be exported using `#export`:
 
 ```ruby
 export :User, :Session
@@ -146,7 +146,7 @@ puts Seq.fib(10)
 
 ### Importing declarations
 
-Declarations from another module can be imported using `import`:
+Declarations from another module can be imported using `#import`:
 
 ```ruby
 require 'modulation'
@@ -170,19 +170,36 @@ user = User.new(...)
 ```
 
 > **Note about paths**: module paths are always relative to the file
-> calling the `import` method, just like `require_relative`.
+> calling the `#import` method, just like `#require_relative`.
 
 ### Importing all source files in a directory
 
-To load all source files in a directory you can use `import_all`:
+To load all source files in a directory you can use `#import_all`:
 
 ```ruby
-import_all('./ext') # will load ./ext/kernel, ./ext/socket etc 
+import_all('./ext') # will load ./ext/kernel.rb, ./ext/socket.rb etc 
+```
+
+Groups of modules providing a uniform interface can also be loaded using
+`#import_map`:
+
+```ruby
+API = import_map('./math_api') #=> hash mapping filenames to modules
+API.keys #=> ['add', 'mul', 'sub', 'div']
+API['add'] #=> add module
+```
+
+The `#import_map` takes an optional block to transform hash keys:
+
+```ruby
+API = import_map('./math_api') { |name, mod| name.to_sym }
+API.keys #=> [:add, :mul, :sub, :div]
+API[:add] #=> add module
 ```
 
 ### Importing methods into classes and modules
 
-Modulation provides the `extend_from` and `include_from` methods to include
+Modulation provides the `#extend_from` and `#include_from` methods to include
 imported methods in classes and modules:
 
 ```ruby
@@ -205,7 +222,7 @@ end
 5.seq(:fib)
 ```
 
-The `include_from` method accepts an optional list of symbols to import:
+The `#include_from` method accepts an optional list of symbols to import:
 
 ```ruby
 class Integer
@@ -218,7 +235,7 @@ end
 ### Default exports
 
 A module may wish to expose just a single class or constant, in which case it 
-can use `export_default`:
+can use `#export_default`:
 
 *user.rb*
 ```ruby
@@ -295,7 +312,7 @@ what_is = ::THE_MEANING_OF_LIFE
 
 ### Unit testing modules
 
-Methods and constants that are not exported can be tested using the `__expose!`
+Methods and constants that are not exported can be tested using the `#__expose!`
 method. Thus you can keep implementation details hidden, while being able to 
 easily test them:
 
@@ -380,7 +397,7 @@ end
 > lazy-loaded constant from the module's top namespace, use the `MODULE`
 > namespace, as shown above.
 
-The `auto_import` method can also take a hash mapping constant names to paths.
+The `#auto_import` method can also take a hash mapping constant names to paths.
 This is especially useful when multiple concerns are grouped under a single
 namespace:
 
@@ -440,7 +457,7 @@ settings = settings.__reload!
 
 Modulation can be used to write gems, providing fine-grained control over your
 gem's public APIs and letting you hide any implementation details. In order to
-allow loading a gem using either `require` or `import`, code your gem's main
+allow loading a gem using either `#require` or `#import`, code your gem's main
 file normally, but add  `require 'modulation/gem'` at the top, and export your
 gem's main namespace as a default export, e.g.:
 
@@ -458,7 +475,7 @@ end
 
 ## Importing gems using Modulation
 
-Gems written using modulation can also be loaded using `import`. If modulation
+Gems written using modulation can also be loaded using `#import`. If modulation
 does not find the module specified by the given relative path, it will attempt
 to load a gem by the same name. It is also possible to load specific files
 inside modules by specifying a sub-path:
@@ -468,9 +485,9 @@ require 'modulation'
 MyFeature = import 'my_gem/my_feature'
 ```
 
-> **Note**: Since there's not much of a point in `import`ing gems that do not use
-> Modulation to export symbols, Modulation will refuse to import any gem that
-> does not depend on Modulation.
+> **Note**: Since there's not much of a point in `#import`ing gems that do not
+> use Modulation to export symbols, Modulation will refuse to import any gem
+> that does not depend on Modulation.
 
 ## Coding style recommendations
 
@@ -480,8 +497,8 @@ MyFeature = import 'my_gem/my_feature'
   Settings = import('./settings')
   ```
 
-* Place your exports at the top of your module, followed by `require`s,
-  followed by `import`s:
+* Place your exports at the top of your module, followed by `#require`s,
+  followed by `#import`s:
 
   ```ruby
   export :foo, :bar, :baz

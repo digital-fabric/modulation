@@ -56,6 +56,21 @@ module Modulation
       end
     end
 
+    # Imports all source files in given directory, returning a hash mapping
+    # filenames to modules
+    # @ param path [String] relative directory path
+    # @param caller_location [String] caller location
+    # @return [Hash] hash mapping filenames to modules
+    def import_map(path, caller_location = caller(1..1).first)
+      abs_path = Paths.absolute_dir_path(path, caller_location)
+      Dir["#{abs_path}/**/*.rb"].each_with_object({}) do |fn, h|
+        mod = @loaded_modules[fn] || create_module_from_file(fn)
+        name = File.basename(fn) =~ /^(.+)\.rb$/ && $1
+        name = yield name, mod if block_given?
+        h[name] = mod
+      end
+    end
+
     # Adds all or part of a module's methods to a target object
     # If no symbols are given, all methods are added
     # @param mod [Module] imported module

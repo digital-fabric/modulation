@@ -17,6 +17,15 @@ module Kernel
   def import_all(path, caller_location = caller(1..1).first)
     Modulation.import_all(path, caller_location)
   end
+
+  # Imports all modules in given directory, returning a hash mapping filenames
+  # to modules
+  # @param path [String] directory path
+  # @param caller_location [String] caller location
+  # @return [Hash] hash mapping filenames to module objects
+  def import_map(path, caller_location = caller(1..1).first, &block)
+    Modulation.import_map(path, caller_location, &block)
+  end
 end
 
 # Module extensions

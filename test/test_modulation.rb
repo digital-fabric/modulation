@@ -512,11 +512,42 @@ class ImportAllTest < MiniTest::Test
 
   def test_that_import_all_loads_all_files_matching_pattern
     m = import_all('./modules/subdir')
+    assert_kind_of(Array, m)
     fn_a = File.expand_path('./modules/subdir/a.rb', __dir__)
     fn_b = File.expand_path('./modules/subdir/b.rb', __dir__)
     fn_c1 = File.expand_path('./modules/subdir/c1.rb', __dir__)
     fn_c2 = File.expand_path('./modules/subdir/c2.rb', __dir__)
     
     assert_equal([fn_a, fn_b, fn_c1, fn_c2], Modulation.loaded_modules.keys.sort) 
+    assert_equal(
+      Modulation.loaded_modules.keys.sort, 
+      m.map { |m| m.__module_info[:location] }.sort
+    )
+  end
+end
+
+class ImportMapTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_import_map_loads_all_files_matching_pattern
+    m = import_map('./modules/subdir')
+    assert_kind_of(Hash, m)
+    assert_equal(4, m.size)
+    assert_equal(m['a'], import('./modules/subdir/a'))
+    assert_equal(m['b'], import('./modules/subdir/b'))
+    assert_equal(m['c1'], import('./modules/subdir/c1'))
+    assert_equal(m['c2'], import('./modules/subdir/c2'))
+  end
+
+  def test_that_import_map_accepts_block_for_mapping_filenames
+    m = import_map('./modules/subdir') { |n, m| n.to_sym }
+    assert_kind_of(Hash, m)
+    assert_equal(4, m.size)
+    assert_equal(m[:a], import('./modules/subdir/a'))
+    assert_equal(m[:b], import('./modules/subdir/b'))
+    assert_equal(m[:c1], import('./modules/subdir/c1'))
+    assert_equal(m[:c2], import('./modules/subdir/c2'))
   end
 end

@@ -1,8 +1,10 @@
+* Add `#import_map` method
+
 0.24 2019-05-22
 ---------------
 
 * Fix usage of Modulation in rake tasks
-* Fix behavior when referencing missing consts in modules using `auto_import`
+* Fix behavior when referencing missing consts in modules using `#auto_import`
 
 0.23 2019-05-17
 ---------------
@@ -58,9 +60,9 @@
 0.13 2018-09-06
 ---------------
 
-* Evaluate module code on singleton_class instead of using `extend self`
-* Fix calling `include` inside imported module
-* Add `rbm` binary for running ruby scripts using `import`
+* Evaluate module code on singleton_class instead of using `#extend self`
+* Fix calling `#include` inside imported module
+* Add `rbm` binary for running ruby scripts using `#import`
 
 0.12 2018-08-20
 ---------------
@@ -103,19 +105,20 @@
 --------------
 
 * Add support for using gems as imported modules (experimental feature)
-* Add Modulation.full_trace! method for getting full backtrace on errors
-* Fix Modulation.transform_export_default_value
+* Add `Modulation.full_trace!` method for getting full backtrace on errors
+* Fix `Modulation.transform_export_default_value`
 * Change name to *Modulation*
 
 0.5.1 2018-07-20
 ----------------
 
-* Fix extend_from, include_from to work with ruby 2.4
+* Fix `#extend_from`, `#include_from` to work with ruby 2.4
 
 0.5 2018-07-19
 --------------
 
-* Add extend_from, include_from to include imported methods in classes and modules
+* Add `#extend_from`, `#include_from` to include imported methods in classes
+  and modules
 
 0.4 2018-07-19
 --------------
