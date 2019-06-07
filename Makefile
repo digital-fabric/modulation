@@ -1,5 +1,5 @@
 default:
-	echo "Dir.glob('./test/test_*.rb').each { |file| require file}" | ruby
+	ruby -e"Dir.glob('./test/test_*.rb').each { |file| require file}"
 
 test: lib/**/*.rb 
-	echo "Dir.glob('./test/test_*.rb').each { |file| require file}" | ruby
+	ruby -e"Dir.glob('./test/test_*.rb').each { |file| require file}"
