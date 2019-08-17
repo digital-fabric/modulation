@@ -10,9 +10,41 @@ module Modulation
     # @param symbols [Array] array of symbols
     # @return [void]
     def export(*symbols)
-      symbols = symbols.first if symbols.first.is_a?(Array)
+      case symbols.first
+      when Hash
+        symbols = __convert_export_hash(symbols.first)
+      when Array
+        symbols = symbols.first
+      end
+
       self.__exported_symbols.concat(symbols)
       self.__export_backtrace = caller
+    end
+
+    def __convert_export_hash(hash)
+      @__exported_hash = hash
+      hash.keys
+    end
+
+    RE_CONST = /^[A-Z]/.freeze
+
+    def __post_load
+      if @__exported_hash
+        singleton = singleton_class
+        @__exported_hash.map do |k, v|
+          symbol = v.is_a?(Symbol)
+          if symbol && v =~ RE_CONST && singleton.const_defined?(v)
+            v = singleton.const_get(v)
+          end
+          
+          k =~ RE_CONST ? singleton.const_set(k, v) :
+            symbol && singleton.method_defined?(v) ? singleton.alias_method(k, v) :
+            v.is_a?(Proc) ? singleton.define_method(k, &v) :
+            singleton.define_method(k) { v }
+
+          k
+        end
+      end
     end
 
     # Sets a module's value, so when imported it will represent the given value,

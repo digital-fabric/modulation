@@ -43,6 +43,7 @@ module Modulation
       def load_module_code(mod, info)
         path = info[:location]
         mod.instance_eval(IO.read(path), path)
+        mod.__post_load
       end
 
       # Marks all non-exported methods as private

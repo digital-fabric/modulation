@@ -144,6 +144,33 @@ Seq = import('./seq')
 puts Seq.fib(10)
 ```
 
+Another way to export methods and constants is by passing a hash to `#export`:
+
+*module.rb*
+```ruby
+export(
+  foo: :bar,
+  baz: -> { 'hello' },
+  MY_CONST: 42
+)
+
+def bar
+  :baz
+end
+```
+
+*app.rb*
+```ruby
+m = import('./module')
+m.foo #=> :baz
+m.baz #=> 'hello'
+m::MY_CONST #=> 42
+```
+
+Any capitalized key will be interpreted as a const, otherwise it will be defined
+as a method. If the value is a symbol, Modulation will look for the
+corresponding method or const definition and will treat the key as an alias.
+
 ### Importing declarations
 
 Declarations from another module can be imported using `#import`:
@@ -186,7 +213,7 @@ Groups of modules providing a uniform interface can also be loaded using
 ```ruby
 API = import_map('./math_api') #=> hash mapping filenames to modules
 API.keys #=> ['add', 'mul', 'sub', 'div']
-API['add'] #=> add module
+API['add'].(2, 2) #=> 4
 ```
 
 The `#import_map` takes an optional block to transform hash keys:
@@ -194,13 +221,13 @@ The `#import_map` takes an optional block to transform hash keys:
 ```ruby
 API = import_map('./math_api') { |name, mod| name.to_sym }
 API.keys #=> [:add, :mul, :sub, :div]
-API[:add] #=> add module
+API[:add].(2, 2) #=> 4
 ```
 
-### Importing methods into classes and modules
+### Importing methods into classes and objects
 
 Modulation provides the `#extend_from` and `#include_from` methods to include
-imported methods in classes and modules:
+imported methods in classes and objects:
 
 ```ruby
 module Sequences
@@ -411,6 +438,8 @@ module SuperNet
     WebSockets: './websockets'
   )
 end
+
+SuperNet::HTTP1 #=> loads the http1 module
 ```
 
 ### Reloading modules

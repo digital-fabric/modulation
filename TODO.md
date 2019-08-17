@@ -23,39 +23,6 @@ But actually, I'm not so sure this is such a useful thing. I think a more
 sensible solution to using non-relative paths is to treat non-relative paths as
 gem refs, and all relative paths as, well, relative.
 
-## Dependency injection - service registry
-
-```ruby
-# bootstrap.rb
-Modulation[:timeline] = import('timeline')
-...
-
-# nodes.rb
-Modulation[:timeline].insert(...)
-```
-
-Issue warning on probable collision:
-
-```ruby
-Modulation[:timeline] = import('timeline')
-...
-Modulation[:timeline] = import('timeline') #=> Warning: timeline service already set
-```
-
-Raise on missing service:
-
-```ruby
-Modulation[:whatever] #=> NameError: unknown service `whatever' referenced
-```
-
-Mock dependency:
-
-```ruby
-Modulation.mock(:timeline, MockTimeline) do
-
-end
-```
-
 ## Re-exporting methods and constants
 
 ```ruby

@@ -89,6 +89,14 @@ class ExportTest < Minitest::Test
       import('./modules/missing_exported_method')
     }
   end
+
+  def test_hash_export
+    m = import('./modules/hash_export')
+    assert_equal 42, m::Everything
+    assert_equal :baz, m.foo
+    assert_equal 'ZZZ', m.bar
+    assert_equal 'Hello world!', m.greeting('world')
+  end
 end
 
 class ExposeTest < MiniTest::Test
@@ -551,3 +559,12 @@ class ImportMapTest < MiniTest::Test
     assert_equal(m[:c2], import('./modules/subdir/c2'))
   end
 end
+
+# class TestAPITest < Minitest::Test
+#   def test_test_method
+#     m = import('./modules/test/fact')
+#     assert_kind_of(Array, m.__tests)
+#     assert_equal(1, m.__tests.size)
+#     assert_kind_of(Proc, m.__tests.first)
+#   end
+# end

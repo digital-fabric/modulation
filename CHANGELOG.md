@@ -1,3 +1,5 @@
+* Add support for hash in `#export`
+
 0.25 2019-06-07
 ---------------
 
