@@ -84,13 +84,14 @@ module Modulation
         unless not_exported.empty?
           raise NameError, "symbol #{not_exported.first.inspect} not exported"
         end
-        methods = methods & symbols
+        
+        methods &= symbols
       end
       methods.each do |sym|
         target.send(:define_method, sym, &mod.method(sym))
       end
     end
-  
+
     # Adds all or part of a module's constants to a target object
     # If no symbols are given, all constants are added
     # @param mod [Module] imported module
@@ -104,10 +105,12 @@ module Modulation
         unless not_exported.empty?
           raise NameError, "symbol #{not_exported.first.inspect} not exported"
         end
-        exported = exported & symbols
+
+        exported &= symbols
       end
       mod.singleton_class.constants(false).each do |sym|
         next unless exported.include?(sym)
+
         target.const_set(sym, mod.singleton_class.const_get(sym))
       end
     end
@@ -123,7 +126,7 @@ module Modulation
         path ? const_set(sym, import(path, caller_location)) : super(sym)
       end
     end
-  
+
     # Creates a new module from a source file
     # @param path [String] source file name
     # @return [Module] module

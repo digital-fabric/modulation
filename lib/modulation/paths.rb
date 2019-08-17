@@ -5,7 +5,7 @@ module Modulation
   module Paths
     class << self
       # Regexp for extracting filename from caller reference
-      CALLER_FILE_REGEXP = /^([^\:]+)\:/
+      CALLER_FILE_REGEXP = /^([^\:]+)\:/.freeze
 
       # Resolves the absolute path to the provided reference. If the file is not
       # found, will try to resolve to a gem
@@ -44,7 +44,7 @@ module Modulation
         end
       end
 
-      GEM_NAME_RE = /^([^\/]+)/
+      GEM_NAME_RE = /^([^\/]+)/.freeze
 
       # Resolves the provided path by looking for a corresponding gem. If no gem
       # is found, returns nil. If the corresponding gem does not use modulation,

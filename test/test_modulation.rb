@@ -9,7 +9,7 @@ class FileHandlingTest < Minitest::Test
   def setup
     Modulation.reset!
   end
-  
+
   def teardown
     Modulation.reset!
   end
@@ -42,7 +42,7 @@ class FileHandlingTest < Minitest::Test
     fn_b1 =   File.expand_path('modules/b1.rb', File.dirname(__FILE__))
     fn_b2 =   File.expand_path('modules/b/b2.rb', File.dirname(__FILE__))
     fn_inc =  File.expand_path('modules/inc.rb', File.dirname(__FILE__))
-    
+
     assert_equal([fn_b2, fn_b1, fn_inc], Modulation.loaded_modules.keys.sort)
   end
 end
@@ -128,7 +128,7 @@ class ExportDefaultTest < MiniTest::Test
   def test_default_export_types
     write_template("export_default :abc")
     assert_raises(NameError) {import('./modules/reloaded')}
-    
+
     write_template("export_default 42")
     assert_raises(TypeError) {import('./modules/reloaded')}
 
@@ -176,7 +176,7 @@ class ExtendFrom2Test < MiniTest::Test
     @m.extend_from('./modules/extend_from1')
     @m.extend_from('./modules/extend_from2')
   end
-  
+
   def teardown
     Modulation.reset!
   end
@@ -295,7 +295,7 @@ class ModuleRefTest < MiniTest::Test
 
   def test_that_contained_modules_have_access_to_containing_module
     m = import('./modules/contained')
-    
+
     assert_equal(42, m.meaning_of_life)
     assert_equal(42, m::ContainedModule.test)
 
@@ -349,7 +349,7 @@ class ReloadTest < MiniTest::Test
   def test_that_a_module_can_be_reloaded
     write_template(File.join(MODULES_DIR, 'template_reloaded_1.rb'))
     m = import('./modules/reloaded_user')
-    
+
     assert_equal(m.call_me, 'Saul')
     assert_equal(m.hide_and_seek, 42)
 
@@ -363,7 +363,7 @@ class ReloadTest < MiniTest::Test
   def test_that_a_module_can_be_reloaded_without_breaking_deps
     write_template(File.join(MODULES_DIR, 'template_reloaded_1.rb'))
     m = import('./modules/reloaded_user')
-    
+
     assert_equal(m.call_me, 'Saul')
     assert_equal(m.hide_and_seek, 42)
 
@@ -377,7 +377,7 @@ class ReloadTest < MiniTest::Test
   def test_reloading_by_filename
     write_template(File.join(MODULES_DIR, 'template_reloaded_1.rb'))
     m = import('./modules/reloaded_user')
-    
+
     assert_equal(m.call_me, 'Saul')
     assert_equal(m.hide_and_seek, 42)
 
@@ -391,7 +391,7 @@ class ReloadTest < MiniTest::Test
   def test_that_a_default_export_can_be_reloaded
     write_template(File.join(MODULES_DIR, 'template_reloaded_default_1.rb'))
     m = import('./modules/reloaded')
-    
+
     assert_kind_of(String, m)
     assert_equal("Hello", m)
 
@@ -410,7 +410,7 @@ class MockTest < MiniTest::Test
 
   module Mockery
     extend self
-    
+
     def message
       'mocked'
     end
@@ -467,7 +467,7 @@ class AutoImportTest < MiniTest::Test
     assert_equal([fn1], Modulation.loaded_modules.keys)
 
     assert_equal('bar', m.foo)
-    
+
     fn2 = File.expand_path('modules/auto_import_bar.rb', File.dirname(__FILE__))
     assert_equal([fn1, fn2], Modulation.loaded_modules.keys)
   end
@@ -479,7 +479,7 @@ class AutoImportTest < MiniTest::Test
     assert_equal([fn1], Modulation.loaded_modules.keys)
 
     assert_equal('bar', m::BAR)
-    
+
     fn2 = File.expand_path('modules/auto_import_bar.rb', File.dirname(__FILE__))
     assert_equal([fn1, fn2], Modulation.loaded_modules.keys)
   end
@@ -491,12 +491,12 @@ class AutoImportTest < MiniTest::Test
     assert_equal([fn1], Modulation.loaded_modules.keys)
 
     assert_equal('bar', m::M::BAR)
-    
+
     fn2 = File.expand_path('modules/auto_import_bar.rb', File.dirname(__FILE__))
     assert_equal([fn1, fn2], Modulation.loaded_modules.keys)
 
     assert_equal('baz', m::M::BAZ)
-    
+
     fn3 = File.expand_path('modules/auto_import_baz.rb', File.dirname(__FILE__))
     assert_equal([fn1, fn2, fn3], Modulation.loaded_modules.keys)
   end
@@ -525,7 +525,7 @@ class ImportAllTest < MiniTest::Test
     fn_b = File.expand_path('./modules/subdir/b.rb', __dir__)
     fn_c1 = File.expand_path('./modules/subdir/c1.rb', __dir__)
     fn_c2 = File.expand_path('./modules/subdir/c2.rb', __dir__)
-    
+
     assert_equal([fn_a, fn_b, fn_c1, fn_c2], Modulation.loaded_modules.keys.sort) 
     assert_equal(
       Modulation.loaded_modules.keys.sort, 

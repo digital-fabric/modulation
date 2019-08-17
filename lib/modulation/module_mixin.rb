@@ -17,8 +17,8 @@ module Modulation
         symbols = symbols.first
       end
 
-      self.__exported_symbols.concat(symbols)
-      self.__export_backtrace = caller
+      __exported_symbols.concat(symbols)
+      __export_backtrace = caller
     end
 
     def __convert_export_hash(hash)
@@ -29,21 +29,29 @@ module Modulation
     RE_CONST = /^[A-Z]/.freeze
 
     def __post_load
-      if @__exported_hash
-        singleton = singleton_class
-        @__exported_hash.map do |k, v|
-          symbol = v.is_a?(Symbol)
-          if symbol && v =~ RE_CONST && singleton.const_defined?(v)
-            v = singleton.const_get(v)
-          end
-          
-          k =~ RE_CONST ? singleton.const_set(k, v) :
-            symbol && singleton.method_defined?(v) ? singleton.alias_method(k, v) :
-            v.is_a?(Proc) ? singleton.define_method(k, &v) :
-            singleton.define_method(k) { v }
+      return unless @__exported_hash
 
-          k
-        end
+      singleton = singleton_class
+      @__exported_hash.map do |k, v|
+        __convert_export_hash_entry(singleton, k, v)
+        k
+      end
+    end
+
+    def __convert_export_hash_entry(singleton, key, value)
+      symbol = value.is_a?(Symbol)
+      if symbol && value =~ RE_CONST && singleton.const_defined?(value)
+        value = singleton.const_get(value)
+      end
+
+      if key =~ RE_CONST
+        singleton.const_set(key, value)
+      elsif symbol && singleton.method_defined?(value)
+        singleton.alias_method(key, value)
+      elsif value.is_a?(Proc)
+        singleton.define_method(key, &value)
+      else
+        singleton.define_method(key) { value }
       end
     end
 
@@ -112,8 +120,8 @@ module Modulation
       @__export_backtrace
     end
 
-    def __export_backtrace=(o)
-      @__export_backtrace = o
+    def __export_backtrace=(backtrace)
+      @__export_backtrace = backtrace
     end
 
     # Allow modules to use attr_accessor/reader/writer and include methods by
@@ -130,7 +138,7 @@ module Modulation
       singleton.private_instance_methods.each do |sym|
         singleton.send(:public, sym)
       end
-      
+
       __module_info[:private_constants].each do |sym|
         const_set(sym, singleton.const_get(sym))
       end

@@ -1,3 +1,19 @@
+## Creating modules on the fly
+
+```ruby
+# using eg
+m = Modulation.eg a: ->(x) { x + 1 }, b: ->(x) { x * 2}
+
+# from string
+m = Modulation.from_string <<~RUBY
+export :foo
+
+def foo
+  :bar
+end
+RUBY
+```
+
 - raise on missing `export` or `export_default`
 - if `export_default` refers to a method, turn it into a proc
 
@@ -101,7 +117,7 @@ Objective:
 - Compilation of ruby apps into a single file without source code, with [inline `gemfile`](https://bundler.io/v1.17/guides/bundler_in_a_single_file_ruby_script.html)
 - Perhaps also a simplificatio of how modules are loaded - be able to use `eval`
   instead of `instance_eval`.
-  
+
 Compiling to a single file:
 
 - `compile` takes a single path

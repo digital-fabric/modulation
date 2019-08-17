@@ -382,7 +382,7 @@ require 'modulation'
 
 module MockStorage
   extend self
-  
+
   def get_user(user_id)
     {
       user_id: user_id,
@@ -535,7 +535,7 @@ MyFeature = import 'my_gem/my_feature'
   require 'json'
 
   Core = import('./core')
-  
+
   ...
   ```
 

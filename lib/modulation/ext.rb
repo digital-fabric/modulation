@@ -36,7 +36,7 @@ class Module
   # @return [void]
   def auto_import(sym, path = nil, caller_location = caller(1..1).first)
     unless @__auto_import_registry
-      a = @__auto_import_registry = {}
+      @__auto_import_registry = {}
       Modulation.define_auto_import_const_missing_method(
         self,
         @__auto_import_registry

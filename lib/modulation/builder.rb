@@ -53,7 +53,7 @@ module Modulation
       def set_exported_symbols(mod, symbols)
         mod.__module_info[:exported_symbols] = symbols
         singleton = mod.singleton_class
-        
+
         privatize_non_exported_methods(mod, singleton, symbols)
         expose_exported_constants(mod, singleton, symbols)
       end
@@ -64,13 +64,14 @@ module Modulation
       # @return [void]
       def privatize_non_exported_methods(mod, singleton, symbols)
         defined_methods = singleton.instance_methods(true)
-        difference = symbols.select { |s| s=~ /^[a-z]/} - defined_methods
+        difference = symbols.select { |s| s =~ /^[a-z]/ } - defined_methods
         unless difference.empty?
           raise_exported_symbol_not_found_error(difference.first, mod, :method)
         end
 
         singleton.instance_methods(false).each do |sym|
           next if symbols.include?(sym)
+
           singleton.send(:private, sym)
         end
       end
@@ -82,7 +83,7 @@ module Modulation
       # @return [void]
       def expose_exported_constants(mod, singleton, symbols)
         defined_constants = singleton.constants(false)
-        difference = symbols.select { |s| s=~ /^[A-Z]/} - defined_constants
+        difference = symbols.select { |s| s =~ /^[A-Z]/ } - defined_constants
         unless difference.empty?
           raise_exported_symbol_not_found_error(difference.first, mod, :const)
         end
@@ -97,7 +98,7 @@ module Modulation
         end
       end
 
-      NOT_FOUND_MSG = "%s %s not found in module"
+      NOT_FOUND_MSG = '%s %s not found in module'
 
       def raise_exported_symbol_not_found_error(sym, mod, kind)
         error = NameError.new(NOT_FOUND_MSG % [
@@ -121,11 +122,13 @@ module Modulation
             if mod.singleton_class.constants(true).include?(value)
               return mod.singleton_class.const_get(value)
             end
+
             raise_exported_symbol_not_found_error(value, mod, :const)
           else
             if mod.singleton_class.instance_methods(true).include?(value)
               return proc { |*args, &block| mod.send(value, *args, &block) }
             end
+
             raise_exported_symbol_not_found_error(value, mod, :method)
           end
         end
