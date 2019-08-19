@@ -80,6 +80,7 @@ easy to understand.
   code in wierd ways.
 - Allows [mocking of dependencies](#mocking-dependencies) for testing purposes.
 - Can be used to [write gems](#writing-gems-using-modulation).
+- Module dependencies can be [introspected](#dependency-introspection).
 - Facilitates [unit-testing](#unit-testing-modules) of private methods and
   constants.
 - Can load all source files in directory at once.
@@ -480,6 +481,40 @@ require 'modulation'
 settings = import('settings')
 ...
 settings = settings.__reload!
+```
+
+## Dependency introspection
+
+Modulation allows runtime introspection of dependencies between modules. You can
+interrogate a module's dependencies (i.e. the modules it imports) by calling
+`#__depedencies`:
+
+*m1.rb*
+```ruby
+import ('./m2')
+```
+
+*app.rb*
+```ruby
+m1 = import('./m1')
+m1.__depedencies #=> [<Module m2>]
+```
+
+You can also iterate over a module's entire dependency tree by using
+`#__traverse_dependencies`:
+
+```ruby
+m1 = import('./m1')
+m1.__traverse_dependencies { |mod| ... }
+```
+
+To introspect reverse dependencies (modules *using* a particular module), use
+`#__dependent_modules`:
+
+```ruby
+m1 = import('./m1')
+m1.__depedencies #=> [<Module m2>]
+m1.__dependencies.first.__dependent_modules #=> [<Module m1>]
 ```
 
 ## Writing gems using Modulation

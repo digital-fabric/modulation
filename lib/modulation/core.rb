@@ -161,10 +161,8 @@ module Modulation
         raise "No module loaded from #{path}" unless mod
       end
 
-      Builder.cleanup_module(mod)
       Builder.reload_module_code(mod)
-
-      mod.tap { Builder.set_exported_symbols(mod, mod.__exported_symbols) }
+      mod
     end
 
     # Maps the given path to the given mock module, restoring the previously

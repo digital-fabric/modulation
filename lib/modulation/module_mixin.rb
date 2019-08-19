@@ -145,5 +145,39 @@ module Modulation
 
       self
     end
+
+    def __dependencies
+      @__dependencies ||= []
+    end
+
+    def __add_dependency(mod)
+      __dependencies << mod unless __dependencies.include?(mod)
+    end
+
+    def __traverse_dependencies(&block)
+      __dependencies.each do |mod|
+        block.call mod
+        if mod.respond_to?(:__traverse_dependencies)
+          mod.__traverse_dependencies(&block)
+        end
+      end
+    end
+
+    def __dependent_modules
+      @__dependent_modules ||= []
+    end
+
+    def __add_dependent_module(mod)
+      __dependent_modules << mod unless __dependent_modules.include?(mod)
+    end
+
+    def __reset_dependencies
+      __dependencies.each do |mod|
+        next unless mod.respond_to?(:__dependent_modules)
+        
+        mod.__dependent_modules.delete(self)
+      end
+      __dependencies.clear
+    end
   end
 end

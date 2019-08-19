@@ -560,6 +560,49 @@ class ImportMapTest < MiniTest::Test
   end
 end
 
+class DependenciesTest < MiniTest::Test
+  def setup
+    Modulation.reset!
+    $inc = 0
+  end
+
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_dependencies
+    b1 = import('./modules/b1')
+    b2 = import('./modules/b/b2')
+    inc = import('./modules/inc')
+
+    assert_equal([b2],  b1.__dependencies)
+    assert_equal([inc], b2.__dependencies)
+    assert_equal([],    inc.__dependencies)
+  end
+
+  def test_traverse_dependencies
+    b1 = import('./modules/b1')
+
+    result = []
+    b1.__traverse_dependencies do |m|
+      fn = m.__module_info[:location]
+      result << (fn =~ /([a-z0-9]+)\.rb$/ && $1)
+    end
+
+    assert_equal(%w{b2 inc}, result)
+  end
+
+  def test_dependent_modules
+    b1 = import('./modules/b1')
+    b2 = import('./modules/b/b2')
+    inc = import('./modules/inc')
+
+    assert_equal [], b1.__dependent_modules
+    assert_equal [b1], b2.__dependent_modules
+    assert_equal [b2], inc.__dependent_modules
+  end
+end
+
 # class TestAPITest < Minitest::Test
 #   def test_test_method
 #     m = import('./modules/test/fact')

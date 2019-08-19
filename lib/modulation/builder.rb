@@ -9,9 +9,17 @@ module Modulation
       # @param block [Proc] module block
       # @return [Class] module facade
       def make(info)
+        prev_module = Thread.current[:__current_module]
         default = nil
         mod = create(info) { |default_info| default = default_info }
         Modulation.loaded_modules[info[:location]] = mod
+        Thread.current[:__current_module] = mod
+        
+        if prev_module
+          prev_module.__add_dependency(mod)
+          mod.__add_dependent_module(prev_module)
+        end
+        
         load_module_code(mod, info)
         if default
           set_module_default_value(default[:value], info, mod, default[:caller])
@@ -19,6 +27,8 @@ module Modulation
           set_exported_symbols(mod, mod.__exported_symbols)
           mod
         end
+      ensure
+        Thread.current[:__current_module] = prev_module
       end
 
       # Initializes a new module ready to evaluate a file module
@@ -140,8 +150,14 @@ module Modulation
       def reload_module_code(mod)
         orig_verbose = $VERBOSE
         $VERBOSE = nil
+        prev_module = Thread.current[:__current_module]
+        Thread.current[:__current_module] = mod
+
+        cleanup_module(mod)
         load_module_code(mod, mod.__module_info)
+        set_exported_symbols(mod, mod.__exported_symbols)
       ensure
+        Thread.current[:__current_module] = prev_module
         $VERBOSE = orig_verbose
       end
 
@@ -157,6 +173,7 @@ module Modulation
         singleton.private_instance_methods(false).each(&undef_method)
 
         mod.__exported_symbols.clear
+        mod.__reset_dependencies
       end
 
       # Error message to be displayed when trying to set a singleton value as
