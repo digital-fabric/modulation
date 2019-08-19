@@ -65,7 +65,7 @@ module Modulation
       abs_path = Paths.absolute_dir_path(path, caller_location)
       Dir["#{abs_path}/**/*.rb"].each_with_object({}) do |fn, h|
         mod = @loaded_modules[fn] || create_module_from_file(fn)
-        name = File.basename(fn) =~ /^(.+)\.rb$/ && $1
+        name = File.basename(fn) =~ /^(.+)\.rb$/ && Regexp.last_match(1)
         name = yield name, mod if block_given?
         h[name] = mod
       end
@@ -101,18 +101,22 @@ module Modulation
     def add_module_constants(mod, target, *symbols)
       exported = mod.__module_info[:exported_symbols]
       unless symbols.empty?
-        not_exported = symbols.select { |s| s =~ /^[A-Z]/ } - exported
-        unless not_exported.empty?
-          raise NameError, "symbol #{not_exported.first.inspect} not exported"
-        end
-
-        exported &= symbols
+        exported = filter_exported_constants(exported, symbols)
       end
       mod.singleton_class.constants(false).each do |sym|
         next unless exported.include?(sym)
 
         target.const_set(sym, mod.singleton_class.const_get(sym))
       end
+    end
+
+    def filter_exported_constants(exported, requested)
+      not_exported = requested.select { |s| s =~ /^[A-Z]/ } - exported
+      unless not_exported.empty?
+        raise NameError, "symbol #{not_exported.first.inspect} not exported"
+      end
+
+      exported & requested
     end
 
     # Defines a const_missing method used for auto-importing on a given object

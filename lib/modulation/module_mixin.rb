@@ -5,6 +5,7 @@ module Modulation
   module ModuleMixin
     # read and write module information
     attr_accessor :__module_info
+    attr_reader :__export_default_info
 
     # Adds given symbols to the exported_symbols array
     # @param symbols [Array] array of symbols
@@ -61,7 +62,7 @@ module Modulation
     # @return [void]
     def export_default(value)
       self.__export_backtrace = caller
-      @__export_default_block&.call(value: value, caller: caller)
+      @__export_default_info = { value: value, caller: caller }
     end
 
     # Returns a text representation of the module for inspection
@@ -73,14 +74,6 @@ module Modulation
       else
         module_name
       end
-    end
-
-    # Sets export_default block, used for setting the returned module object to
-    # a class or constant
-    # @param block [Proc] default export block
-    # @return [void]
-    def __export_default_block=(block)
-      @__export_default_block = block
     end
 
     # Reload module

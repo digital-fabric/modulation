@@ -35,18 +35,20 @@ class Module
   # @param path [String] path if sym is Symbol
   # @return [void]
   def auto_import(sym, path = nil, caller_location = caller(1..1).first)
-    unless @__auto_import_registry
-      @__auto_import_registry = {}
-      Modulation.define_auto_import_const_missing_method(
-        self,
-        @__auto_import_registry
-      )
-    end
+    setup_auto_import_registry unless @__auto_import_registry
     if path
       @__auto_import_registry[sym] = [path, caller_location]
     else
       sym.each { |k, v| @__auto_import_registry[k] = [v, caller_location] }
     end
+  end
+
+  def setup_auto_import_registry
+    @__auto_import_registry = {}
+    Modulation.define_auto_import_const_missing_method(
+      self,
+      @__auto_import_registry
+    )
   end
 
   # Extends the receiver with exported methods from the given file name
