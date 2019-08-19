@@ -174,7 +174,7 @@ module Modulation
     def __reset_dependencies
       __dependencies.each do |mod|
         next unless mod.respond_to?(:__dependent_modules)
-        
+
         mod.__dependent_modules.delete(self)
       end
       __dependencies.clear

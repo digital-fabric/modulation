@@ -1,3 +1,4 @@
+* Add Module#alias_method_once for idempotent method aliasing
 * Add dependency introspection API
 * Add support for hash in `#export`
 

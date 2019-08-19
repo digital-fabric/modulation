@@ -84,7 +84,7 @@ module Modulation
         unless not_exported.empty?
           raise NameError, "symbol #{not_exported.first.inspect} not exported"
         end
-        
+
         methods &= symbols
       end
       methods.each do |sym|

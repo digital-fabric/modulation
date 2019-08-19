@@ -68,6 +68,17 @@ class Module
     Modulation.add_module_methods(mod, self, *symbols)
     Modulation.add_module_constants(mod, self, *symbols)
   end
+
+  # Aliases the given method only if the alias does not exist, implementing in
+  # effect idempotent method aliasing
+  # @param new_name [Symbol] alias name
+  # @param old_name [Symbol] original name
+  # @return [Module] self
+  def alias_method_once(new_name, old_name)
+    return self if method_defined?(new_name)
+
+    alias_method(new_name, old_name)
+  end
 end
 
 if Object.constants.include?(:Rake)

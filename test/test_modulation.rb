@@ -601,6 +601,8 @@ class DependenciesTest < MiniTest::Test
     assert_equal [b1], b2.__dependent_modules
     assert_equal [b2], inc.__dependent_modules
   end
+
+  # TODO: verify dependencies are updated on module reload
 end
 
 # class TestAPITest < Minitest::Test

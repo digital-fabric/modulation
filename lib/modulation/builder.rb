@@ -14,12 +14,12 @@ module Modulation
         mod = create(info) { |default_info| default = default_info }
         Modulation.loaded_modules[info[:location]] = mod
         Thread.current[:__current_module] = mod
-        
+
         if prev_module
           prev_module.__add_dependency(mod)
           mod.__add_dependent_module(prev_module)
         end
-        
+
         load_module_code(mod, info)
         if default
           set_module_default_value(default[:value], info, mod, default[:caller])
