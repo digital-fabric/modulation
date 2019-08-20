@@ -553,6 +553,48 @@ MyFeature = import 'my_gem/my_feature'
 > use Modulation to export symbols, Modulation will refuse to import any gem
 > that does not depend on Modulation.
 
+## Writing modules that patch external classes or modules
+
+It is generally recommended you refrain from causing side effects or patching
+external code in your modules. When you do have to patch external classes or
+modules (i.e. core, stdlib, or some third-party code) in your module, it's
+useful to remember that any module may be eventually reloaded by the application
+code. This means that any patching done during the loading of your module must
+be [idempotent](https://en.wikipedia.org/wiki/Idempotence), i.e. have the same
+effect when performed multiple times. Take for example the following module
+code:
+
+```ruby
+module ::Kernel
+  # aliasing #sleep more than once will break your code
+  alias_method :orig_sleep, :sleep
+
+  def sleep(duration)
+    STDERR.puts "Going to sleep..."
+    orig_sleep(duration)
+    STDERR.puts "Woke up!"
+  end
+end
+```
+
+Running the above code more than once would cause an infinite loop when calling
+`Kernel#sleep`. In order to prevent this situation, modulation provides the
+`Module#alias_method_once` method, which prevents aliasing the original method
+more than once:
+
+```ruby
+module ::Kernel
+  # alias_method_once is idempotent
+  alias_method_once :orig_sleep, :sleep
+
+  def sleep(duration)
+    STDERR.puts "Going to sleep..."
+    orig_sleep(duration)
+    STDERR.puts "Woke up!"
+  end
+end
+```
+
 ## Coding style recommendations
 
 * Import modules into constants, not variables:

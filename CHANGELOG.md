@@ -24,7 +24,7 @@
 0.22 2019-05-15
 ---------------
 
-* Export_default of a method now exportsa proc calling that method
+* Export_default of a method now exports a proc calling that method
 * Raise error on export of undefined symbols
 
 0.21 2019-02-19
