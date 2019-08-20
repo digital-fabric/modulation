@@ -55,7 +55,7 @@ module Modulation
       # @return [void]
       def load_module_code(mod, info)
         path = info[:location]
-        mod.instance_eval(IO.read(path), path)
+        mod.instance_eval(info[:source] || IO.read(path), path)
         mod.__post_load
       end
 
