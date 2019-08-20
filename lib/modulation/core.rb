@@ -80,12 +80,8 @@ module Modulation
     def add_module_methods(mod, target, *symbols)
       methods = mod.singleton_class.instance_methods(false)
       unless symbols.empty?
-        not_exported = symbols.select { |s| s =~ /^[a-z]/ } - methods
-        unless not_exported.empty?
-          raise NameError, "symbol #{not_exported.first.inspect} not exported"
-        end
-
-        methods &= symbols
+        symbols.select! { |s| s =~ /^[a-z]/ }
+        methods = filter_exported_symbols(methods, symbols)
       end
       methods.each do |sym|
         target.send(:define_method, sym, &mod.method(sym))
@@ -101,7 +97,8 @@ module Modulation
     def add_module_constants(mod, target, *symbols)
       exported = mod.__module_info[:exported_symbols]
       unless symbols.empty?
-        exported = filter_exported_constants(exported, symbols)
+        symbols.select! { |s| s =~ /^[A-Z]/ }
+        exported = filter_exported_symbols(exported, symbols)
       end
       mod.singleton_class.constants(false).each do |sym|
         next unless exported.include?(sym)
@@ -110,8 +107,8 @@ module Modulation
       end
     end
 
-    def filter_exported_constants(exported, requested)
-      not_exported = requested.select { |s| s =~ /^[A-Z]/ } - exported
+    def filter_exported_symbols(exported, requested)
+      not_exported = requested - exported
       unless not_exported.empty?
         raise NameError, "symbol #{not_exported.first.inspect} not exported"
       end

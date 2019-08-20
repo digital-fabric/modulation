@@ -2,16 +2,29 @@
 
 ```ruby
 # using eg
-m = Modulation.eg a: ->(x) { x + 1 }, b: ->(x) { x * 2}
+m = Modulation.new a: ->(x) { x + 1 }, b: ->(x) { x * 2}
 
 # from string
-m = Modulation.from_string <<~RUBY
+m = Modulation.new <<~RUBY
 export :foo
 
 def foo
   :bar
 end
 RUBY
+
+# from block
+m = Modulation.new do { |mod|
+  export :foo
+
+  def foo
+    :bar
+  end
+
+  class mod::BAZ
+    ...
+  end
+}
 ```
 
 - raise on missing `export` or `export_default`

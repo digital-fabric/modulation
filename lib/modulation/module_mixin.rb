@@ -45,14 +45,17 @@ module Modulation
         value = singleton.const_get(value)
       end
 
+      __add_exported_hash_entry(singleton, key, value, symbol)
+    end
+
+    def __add_exported_hash_entry(singleton, key, value, symbol)
       if key =~ RE_CONST
         singleton.const_set(key, value)
       elsif symbol && singleton.method_defined?(value)
         singleton.alias_method(key, value)
-      elsif value.is_a?(Proc)
-        singleton.define_method(key, &value)
       else
-        singleton.define_method(key) { value }
+        value_proc = value.is_a?(Proc) ? value : proc { value }
+        singleton.define_method(key, &value_proc)
       end
     end
 
