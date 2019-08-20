@@ -1,3 +1,6 @@
+0.26 2019-08-20
+---------------
+
 * Add Module#alias_method_once for idempotent method aliasing
 * Add dependency introspection API
 * Add support for hash in `#export`
