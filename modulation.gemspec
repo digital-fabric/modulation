@@ -19,8 +19,8 @@ module hierarchies.
   s.metadata      = { "source_code_uri" => "https://github.com/digital-fabric/modulation" }
   s.rdoc_options  = ["--title", "Modulation", "--main", "README.md"]
   s.extra_rdoc_files = ["README.md", "CHANGELOG.md"]
-  s.executables   = ['rbm']
+  s.executables   = ['mdl']
 
-  s.add_development_dependency 'minitest', '5.11.3'
-  s.add_development_dependency 'redis', '4.0.1'
+  s.add_development_dependency  'minitest', '5.11.3'
+  s.add_development_dependency  'redis', '4.0.1'
 end

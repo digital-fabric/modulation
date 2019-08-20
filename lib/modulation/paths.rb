@@ -4,6 +4,12 @@ module Modulation
   # Implements methods for expanding relative or incomplete module file names
   module Paths
     class << self
+      TAGGED_REGEXP = /^@(.+)$/
+
+      def tagged_path(path)
+        path[TAGGED_REGEXP, 1]
+      end
+
       # Regexp for extracting filename from caller reference
       CALLER_FILE_REGEXP = /^([^\:]+)\:/.freeze
 

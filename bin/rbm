@@ -1,6 +1,0 @@
-#!/usr/bin/env ruby
-# frozen_string_literal: true
-
-require 'modulation'
-
-ARGV.each { |fn| import(File.expand_path(fn)) }
