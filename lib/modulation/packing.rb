@@ -6,13 +6,11 @@ require 'zlib'
 module Modulation
   # Implements packing functionality
   module Packing
-    BOOTSTRAP = <<~SRC.encode('ASCII-8BIT').gsub(/^\s+$/, '').gsub(/\n\n+/, "\n").chomp
+    BOOTSTRAP = <<~SRC.encode('ASCII-8BIT').chomp
       # encoding: ASCII-8BIT
       require 'bundler/setup'
       require 'modulation/packing'
-      
       Modulation::Packing.setup_packed_app(DATA, %<dictionary>s)
-      
       import(%<entry_point>s).send(:main)
       __END__
       %<data>s
@@ -27,39 +25,40 @@ module Modulation
       data = (+'').encode('ASCII-8BIT')
       dictionary = paths.each_with_object({}) do |path, dict|
         warn "Processing #{path}"
-        zipped = Zlib::Deflate.deflate(IO.read(path))
+        last_offset = add_packed_module(path, last_offset, dict, data)
         entry_point_filename ||= path
-        length = zipped.bytesize
-        dict[path] = [last_offset, length]
-        data << zipped
-        last_offset += length
       end
 
       generate_bootstrap(dictionary, data, entry_point_filename)
     end
 
+    def self.add_packed_module(path, offset, dictionary, data)
+      zipped = Zlib::Deflate.deflate(IO.read(path))
+      length = zipped.bytesize
+      dictionary[path] = [offset, length]
+      data << zipped
+      offset + length
+    end
+
     def self.generate_bootstrap(dictionary, data, entry_point)
-      format(
-        BOOTSTRAP,
-        dictionary:   dictionary.inspect,
-        entry_point:  entry_point.inspect,
-        data:         data
-      )
+      format(BOOTSTRAP, dictionary: dictionary.inspect,
+                        entry_point: entry_point.inspect,
+                        data: data)
     end
 
     def self.setup_packed_app(data, dictionary)
+      patch_builder
       Modulation::Builder.const_set(:DATA, data)
       Modulation::Builder.const_set(:DATA_POS, data.pos)
       Modulation::Builder.const_set(:DICTIONARY, dictionary)
+    end
 
+    def self.patch_builder
       class << Modulation::Builder
         alias_method :orig_make, :make
         def make(info)
-          if (data_info = Modulation::Builder::DICTIONARY.delete(info[:location]))
-            from_data(info[:location], *data_info)
-          else
-            orig_make(info)
-          end
+          data_info = Modulation::Builder::DICTIONARY.delete(info[:location])
+          data_info ? from_data(info[:location], *data_info) : orig_make(info)
         end
 
         def from_data(location, offset, length)
