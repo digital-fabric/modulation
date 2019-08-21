@@ -4,17 +4,17 @@ require_relative '../modulation'
 require 'zlib'
 require 'digest/md5'
 
-# Implements main Modulation functionality
 module Modulation
+  # Implements packing functionality
   module Packing
-    BOOTSTRAP = <<~EOF.encode('ASCII-8BIT')
+    BOOTSTRAP = <<~SRC.encode('ASCII-8BIT')
       # encoding: ASCII-8BIT
       require 'modulation'
       require 'zlib'
 
       b = Modulation::Builder
       z = Zlib::Inflate
-      b::C = {%s}
+      b::C = {%<module_dictionary>s}
 
       class << b
         alias_method :orig_make, :make
@@ -24,55 +24,66 @@ module Modulation
         end
       end
 
-      import(%s).send(:main)
-    EOF
+      import(%<entry_point>s).send(:main)
+    SRC
 
-    UNZIP_CODE =<<~EOF
-      proc { b.orig_make(location: %s, source: %s) }
-    EOF
+    MAKE_CODE = <<~SRC
+      proc { b.orig_make(location: %<location>s, source: %<source>s) }
+    SRC
 
-    # MAKE_CODE = <<~EOF
+    UNZIP_CODE = 'z.inflate(%<data>s)'
+
+    # MAKE_CODE = <<~SRC
     #   Modulation::Builder.orig_make(location: %s, source: %s)
-    # EOF
+    # SRC
 
-    # UNCAN_CODE = <<~EOF
-    #   proc { RubyVM::InstructionSequence.load_from_binary(Zlib::Inflate.inflate(%s)).eval }
-    # EOF
+    # UNCAN_CODE = <<~SRC
+    #   proc { RubyVM::InstructionSequence.load_from_binary(
+    #     Zlib::Inflate.inflate(%s)).eval
+    #   }
+    # SRC
 
-    def self.pack(paths, options = {})
+    def self.pack(paths, _options = {})
       paths = [paths] unless paths.is_a?(Array)
 
-      entry_point_module_filename = nil
-      dictionary = paths.inject({}) do |h, fn|
-        STDERR.puts "Processing #{fn}"
-        module_source = IO.read(fn)
-        entry_point_module_filename ||= fn
-        
-        # code = (MAKE_CODE % [fn.inspect, module_source.inspect])
-        # seq = RubyVM::InstructionSequence.compile(code, options)
-        # canned = Zlib::Deflate.deflate(seq.to_binary)
-        # h[fn] = UNCAN_CODE % canned.inspect
-
-        zipped = Zlib::Deflate.deflate(module_source)
-
-        code = "z.inflate(%s)" % zipped.inspect
-        h[fn] = UNZIP_CODE % [fn.inspect, code]
-        h
+      entry_point_filename = nil
+      dictionary = paths.each_with_object({}) do |path, dict|
+        warn "Processing #{path}"
+        source = IO.read(path)
+        entry_point_filename ||= path
+        dict[path] = pack_module(path, source)
       end
 
-      (BOOTSTRAP % [
-        dictionary.map { |fn, code| ("%s => %s" % [fn.inspect, code]).chomp }.join(','),
-        "#{entry_point_module_filename}".inspect
-      ]).chomp.gsub(/\n+/, "\n")
+      generate_bootstrap(dictionary, entry_point_filename)
+    end
+
+    def self.pack_module(path, source)
+      # code = (MAKE_CODE % [fn.inspect, module_source.inspect])
+      # seq = RubyVM::InstructionSequence.compile(code, options)
+      # canned = Zlib::Deflate.deflate(seq.to_binary)
+      # dict[fn] = UNCAN_CODE % canned.inspect
+
+      zipped = Zlib::Deflate.deflate(source)
+      code = format(UNZIP_CODE, data: zipped.inspect)
+      format(MAKE_CODE, location: path.inspect, source: code)
     end
 
     def self.generate_bootstrap(module_dictionary, entry_point)
-      BOOTSTRAP % [
-        module_dictionary.map do |fn, code|
-          ("%s => %s" % [fn.inspect, code]).chomp
-        end.join(','),
-        entry_point.inspect
-      ]
+      format(
+        BOOTSTRAP,
+        module_dictionary: format_module_dictionary(module_dictionary),
+        entry_point: entry_point.inspect
+      ).chomp.gsub(/^\s+/, '').gsub(/\n+/, "\n")
+    end
+
+    def self.format_module_dictionary(module_dictionary)
+      module_dictionary.map do |fn, code|
+        format(
+          '%<filename>s => %<code>s',
+          filename: fn.inspect,
+          code: code
+        ).chomp
+      end.join(',')
     end
   end
 end

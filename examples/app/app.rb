@@ -4,7 +4,7 @@ Robin = import('./robin')
 def ask(m)
   puts
   puts "Asking #{m.name}..."
-  print "- What is your name? "
+  print "What is your name? "
   puts m.name
   print "What is your quest? "
   puts m.quest
