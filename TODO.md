@@ -1,3 +1,39 @@
+## Packer
+
+- embed an inline Gemfile: if a Gemfile exists in the given directory, embed it, with the addition of the modulation dependency.
+- as filename obfuscation: use MD5 hash on the filename. When doing an import, compare with the MD5 hash of the given path with the dictionary, then proceed normally.
+- tagged sources: to avoid having to always use relative paths, allow use to tag directories as module sources:
+
+  Modulation.tag views: './views'
+  ...
+  MyView = import '@views/my_view'
+
+  Tags may be used to determine what other files to include in the packed app. A tag may also refer to a specific file rather than a directory.
+
+- add support for assets:
+
+  # instead of IO.read
+  Modulation.read '@static/js/reality.js'
+
+  # some more API's
+  Modulation.expand_path '@static/js/reality.js'
+  Modulation.ls '@static'
+  Modulation.each '@static/**/*.js' { ... }
+
+
+
+## tagged sources
+
+```ruby
+Modulation.tag(
+  controllers:  './src/controllers',
+  views:        './src/views'
+)
+
+...
+MyController import('@controllers/my_controller')
+```
+
 ## Creating modules on the fly
 
 ```ruby

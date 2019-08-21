@@ -1,7 +1,7 @@
 # encoding: ASCII-8BIT
 require 'bundler/setup'
-require 'modulation/packing'
-Modulation::Packing.setup_packed_app(DATA, {"/Users/sharon/repo/modulation/examples/app/app.rb"=>[0, 245], "/Users/sharon/repo/modulation/examples/app/lancelot.rb"=>[245, 122], "/Users/sharon/repo/modulation/examples/app/robin.rb"=>[367, 120]})
+require 'modulation/packer'
+Modulation::Bootstrap.setup(DATA, {"/Users/sharon/repo/modulation/examples/app/app.rb"=>[0, 245], "/Users/sharon/repo/modulation/examples/app/lancelot.rb"=>[245, 122], "/Users/sharon/repo/modulation/examples/app/robin.rb"=>[367, 120]})
 import("/Users/sharon/repo/modulation/examples/app/app.rb").send(:main)
 __END__
 xœuQÉnÃ ½ózp|Á_U9VÊ)—­‰cdÆ­¢¨ıö&‘Ò…š·é1ĞvR;‚(3;OÛJ4º€UÍî¤ìéÖË0L[S3€y¡P.àû0){†§«üBğDze	øëˆ*ÀÅ-ÿüf]ÿhßèAœ‘8ª¡8a÷MîÜDøW:œ¡—Ú‡‹W¸FŞC‹ uC[‘•:È¿s±ßW³ó¼Û®l

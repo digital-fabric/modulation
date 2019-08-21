@@ -31,16 +31,8 @@ def self.deps
 end
 
 def self.pack
-  paths = []
-  ARGV.each do |arg|
-    fn, method = (arg =~ /^([^\:]+)\:(.+)$/) ? [$1, $2.to_sym] : [arg, :main]
-    mod = import(File.expand_path(fn))
-    paths << File.expand_path(fn)
-    mod.__traverse_dependencies { |m| paths << m.__module_info[:location] }
-  end
-  
-  require 'modulation/packing'
-  STDOUT << Modulation::Packing.pack(paths, hide_filenames: true)
+  require 'modulation/packer'
+  STDOUT << Modulation::Packer.pack(ARGV, hide_filenames: true)
 end
 
 cmd = ARGV.shift
