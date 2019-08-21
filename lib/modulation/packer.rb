@@ -36,7 +36,7 @@ module Modulation
       last_offset = 0
       data = (+'').encode('ASCII-8BIT')
       dictionary = deps.each_with_object({}) do |path, dict|
-        warn "Processing #{path}"
+        # warn "Processing #{path}"
         last_offset = add_packed_module(path, last_offset, dict, data)
       end
       [dictionary, data]

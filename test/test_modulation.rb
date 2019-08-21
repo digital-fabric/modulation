@@ -605,11 +605,27 @@ class DependenciesTest < MiniTest::Test
   # TODO: verify dependencies are updated on module reload
 end
 
-# class TestAPITest < Minitest::Test
-#   def test_test_method
-#     m = import('./modules/test/fact')
-#     assert_kind_of(Array, m.__tests)
-#     assert_equal(1, m.__tests.size)
-#     assert_kind_of(Proc, m.__tests.first)
-#   end
-# end
+class PackerTest < Minitest::Test
+  def setup
+    Modulation.reset!
+    $inc = 0
+  end
+
+  def teardown
+    Modulation.reset!
+  end
+
+  require_relative '../lib/modulation/packer'
+  require 'tempfile'
+  
+  def test_packer
+    code = Modulation::Packer.pack(File.expand_path('./modules/packer_app.rb', File.dirname(__FILE__)))
+    f = Tempfile.open('packer_app')#, 'w+')
+    f << code
+    f.close
+
+    assert_equal "1\n", `ruby #{f.path}`
+  ensure
+    f.unlink
+  end
+end
