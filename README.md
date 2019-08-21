@@ -83,7 +83,8 @@ easy to understand.
 - Module dependencies can be [introspected](#dependency-introspection).
 - Facilitates [unit-testing](#unit-testing-modules) of private methods and
   constants.
-- Can load all source files in directory at once.
+- Can load all source files in directory [at once](#importing-all-source-files-in-a-directory).
+- Pack entire applications [into a single file](#packing-applications-with-modulation).
 
 ## Installing Modulation
 
@@ -516,6 +517,42 @@ m1 = import('./m1')
 m1.__depedencies #=> [<Module m2>]
 m1.__dependencies.first.__dependent_modules #=> [<Module m1>]
 ```
+
+## Running Modulation-based applications
+
+Modulation provides a binary script for running Modulation-based applications.
+`mdl` is a wrapper around Ruby that loads your application's main file as a
+module, and then runs your application's entry point method. Let's look at a
+sample application:
+
+*app.rb*
+```ruby
+def greet(name)
+  puts "Hello, #{name}!"
+end
+
+def main
+  print "Enter your name: "
+  name = gets
+  greet(name)
+end
+```
+
+To run this application, execute `mdl app.rb`, or `mdl run app.rb`. `mdl` will
+automatically require the `modulation` gem and call the application's entry
+point, `#main`.
+
+## Packing applications with Modulation
+
+> *Note*: application packing is at the present time an experimental feature.
+> There might be security concerns for packaging your app, such as leaking
+> filenames from the developer's machine.
+
+Modulation can also be used to package your entire application into a single
+portable file that can be copied to another machine and run as is. To package
+your app, use `mdl pack`. This command will perform a dynamic analysis of all
+the app's dependencies and will put them together into a single Ruby file.
+For more information have a look at the [app](examples/app) example.
 
 ## Writing gems using Modulation
 

@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
-require './lib/modulation'
+require 'modulation'
 
 def self.run
   ARGV.each do |arg|
@@ -39,7 +39,7 @@ def self.pack
     mod.__traverse_dependencies { |m| paths << m.__module_info[:location] }
   end
   
-  require './lib/modulation/packing'
+  require 'modulation/packing'
   STDOUT << Modulation::Packing.pack(paths, hide_filenames: true)
 end
 
