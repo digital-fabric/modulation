@@ -25,6 +25,27 @@ a functional style, minimizing boilerplate code.
 > Modulation, it is not intended as a comprehensive solution for using 
 > third-party libraries.
 
+## Features
+
+- Provides complete isolation of each module: constant definitions in one file
+  do not leak into another.
+- Enforces explicit exporting and importing of methods, classes, modules and 
+  constants.
+- Supports circular dependencies.
+- Supports [default exports](#default-exports) for modules exporting a single
+  class or value.
+- Modules can be [lazy loaded](#lazy-loading) to improve start up time and
+  memory consumption.
+- Modules can be [reloaded](#reloading-modules) at runtime without breaking your 
+  code in wierd ways.
+- Allows [mocking of dependencies](#mocking-dependencies) for testing purposes.
+- Can be used to [write gems](#writing-gems-using-modulation).
+- Module dependencies can be [introspected](#dependency-introspection).
+- Facilitates [unit-testing](#unit-testing-modules) of private methods and
+  constants.
+- Can load all source files in directory [at once](#importing-all-source-files-in-a-directory).
+- Pack entire applications [into a single file](#packing-applications-with-modulation).
+
 ## Rationale
 
 You're probably asking yourself "what the ****?" , but when your Ruby app grows
@@ -65,33 +86,12 @@ are hidden unless explicitly exported, and the global namespace remains
 clutter-free. All dependencies between source files are explicit, visible, and 
 easy to understand.
 
-## Features
-
-- Provides complete isolation of each module: constant definitions in one file
-  do not leak into another.
-- Enforces explicit exporting and importing of methods, classes, modules and 
-  constants.
-- Supports circular dependencies.
-- Supports [default exports](#default-exports) for modules exporting a single
-  class or value.
-- Modules can be [lazy loaded](#lazy-loading) to improve start up time and
-  memory consumption.
-- Modules can be [reloaded](#reloading-modules) at runtime without breaking your 
-  code in wierd ways.
-- Allows [mocking of dependencies](#mocking-dependencies) for testing purposes.
-- Can be used to [write gems](#writing-gems-using-modulation).
-- Module dependencies can be [introspected](#dependency-introspection).
-- Facilitates [unit-testing](#unit-testing-modules) of private methods and
-  constants.
-- Can load all source files in directory [at once](#importing-all-source-files-in-a-directory).
-- Pack entire applications [into a single file](#packing-applications-with-modulation).
-
 ## Installing Modulation
 
-You can install the Modulation as a gem, or add it in your `Gemfile`:
+You can install the Modulation using `gem install`, or add it to your `Gemfile`:
 
-```bash
-$ gem install modulation
+```ruby
+gem 'modulation'
 ```
 
 ## Organizing your code with Modulation
