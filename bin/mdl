@@ -10,6 +10,10 @@ def self.run
     mod = import(File.expand_path(fn))
     mod.send(method) if method
   end
+rescue StandardError => e
+  backtrace = e.backtrace.reject { |l| l =~ /^(#{Modulation::DIR})|(bin\/mdl)/ }
+  e.set_backtrace(backtrace)
+  raise e
 end
 
 def collect_deps(fn, paths)
