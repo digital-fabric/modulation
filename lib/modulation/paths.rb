@@ -4,14 +4,37 @@ module Modulation
   # Implements methods for expanding relative or incomplete module file names
   module Paths
     class << self
-      TAGGED_REGEXP = /^@(.+)$/.freeze
-
-      def tagged_path(path)
-        path[TAGGED_REGEXP, 1]
+      def process(path, caller_location)
+        tagged_path(path) || absolute_path(path, caller_location) ||
+          lookup_gem_path(path)
       end
 
       # Regexp for extracting filename from caller reference
-      CALLER_FILE_REGEXP = /^([^\:]+)\:/.freeze
+      CALLER_FILE_REGEXP = /^([^\:]+)\:?/.freeze
+      TAGGED_REGEXP = /^@([^\/]+)(\/.+)?$/.freeze
+
+      def add_tags(tags, caller_location)
+        caller_file = caller_location[CALLER_FILE_REGEXP, 1]
+        caller_dir = caller_file ? File.dirname(caller_file) : nil
+
+        @tags ||= {}
+        tags.each do |k, path|
+          @tags[k.to_s] = caller_dir ? File.expand_path(path, caller_dir) : path
+        end
+      end
+
+      def tagged_path(path)
+        return nil unless @tags
+
+        _, tag, path = path.match(TAGGED_REGEXP).to_a
+        return nil unless tag
+
+        base_path = @tags[tag]
+        return nil unless base_path
+
+        path = path ? File.join(base_path, path) : base_path
+        check_path(path)
+      end
 
       # Resolves the absolute path to the provided reference. If the file is not
       # found, will try to resolve to a gem

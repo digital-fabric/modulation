@@ -32,8 +32,7 @@ module Modulation
     # @param caller_location [String] caller location
     # @return [Module] loaded module object
     def import(path, caller_location = caller(1..1).first)
-      abs_path = Paths.absolute_path(path, caller_location) ||
-                 Paths.lookup_gem_path(path)
+      abs_path = Paths.process(path, caller_location)
 
       case abs_path
       when String
@@ -68,63 +67,6 @@ module Modulation
         name = File.basename(fn) =~ /^(.+)\.rb$/ && Regexp.last_match(1)
         name = yield name, mod if block_given?
         h[name] = mod
-      end
-    end
-
-    # Adds all or part of a module's methods to a target object
-    # If no symbols are given, all methods are added
-    # @param mod [Module] imported module
-    # @param target [Object] object to add methods to
-    # @param symbols [Array<Symbol>] list of methods to add
-    # @return [void]
-    def add_module_methods(mod, target, *symbols)
-      methods = mod.singleton_class.instance_methods(false)
-      unless symbols.empty?
-        symbols.select! { |s| s =~ /^[a-z]/ }
-        methods = filter_exported_symbols(methods, symbols)
-      end
-      methods.each do |sym|
-        target.send(:define_method, sym, &mod.method(sym))
-      end
-    end
-
-    # Adds all or part of a module's constants to a target object
-    # If no symbols are given, all constants are added
-    # @param mod [Module] imported module
-    # @param target [Object] object to add constants to
-    # @param symbols [Array<Symbol>] list of constants to add
-    # @return [void]
-    def add_module_constants(mod, target, *symbols)
-      exported = mod.__module_info[:exported_symbols]
-      unless symbols.empty?
-        symbols.select! { |s| s =~ /^[A-Z]/ }
-        exported = filter_exported_symbols(exported, symbols)
-      end
-      mod.singleton_class.constants(false).each do |sym|
-        next unless exported.include?(sym)
-
-        target.const_set(sym, mod.singleton_class.const_get(sym))
-      end
-    end
-
-    def filter_exported_symbols(exported, requested)
-      not_exported = requested - exported
-      unless not_exported.empty?
-        raise NameError, "symbol #{not_exported.first.inspect} not exported"
-      end
-
-      exported & requested
-    end
-
-    # Defines a const_missing method used for auto-importing on a given object
-    # @param receiver [Object] object to receive the const_missing method call
-    # @param auto_import_hash [Hash] a hash mapping constant names to a source
-    #   file and a caller location
-    # @return [void]
-    def define_auto_import_const_missing_method(receiver, auto_import_hash)
-      receiver.singleton_class.define_method(:const_missing) do |sym|
-        (path, caller_location) = auto_import_hash[sym]
-        path ? const_set(sym, import(path, caller_location)) : super(sym)
       end
     end
 
@@ -179,6 +121,10 @@ module Modulation
       yield if block_given?
     ensure
       @loaded_modules[path] = old_module if block_given?
+    end
+
+    def add_tags(tags)
+      Paths.add_tags(tags, caller(1..1).first)
     end
   end
 end

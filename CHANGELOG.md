@@ -1,9 +1,10 @@
-* Improve application packer.
+* Implement tagged sources
+* Improve application packer
 
 0.27 2019-08-21
 ---------------
 
-* Add initial packing functionality.
+* Add initial packing functionality
 
 0.26 2019-08-20
 ---------------

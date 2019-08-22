@@ -44,7 +44,8 @@ a functional style, minimizing boilerplate code.
 - Facilitates [unit-testing](#unit-testing-modules) of private methods and
   constants.
 - Can load all source files in directory [at once](#importing-all-source-files-in-a-directory).
-- Pack entire applications [into a single file](#packing-applications-with-modulation).
+- Packs entire applications [into a single
+  file](#packing-applications-with-modulation).
 
 ## Rationale
 
@@ -198,8 +199,18 @@ User = import('./models')::User
 user = User.new(...)
 ```
 
-> **Note about paths**: module paths are always relative to the file
-> calling the `#import` method, just like `#require_relative`.
+### Using tags to designate common subdirectories
+
+Normally, module paths are always relative to the file calling the `#import`
+method, just like `#require_relative`. This can become a problem once you start
+moving your source files around. In addition, in applications where your source
+files are arranged in multiple directories, it can quickly become tedious to do
+stuff like `Post = import('../models/post')`.
+
+Modulation provides an alternative to relative paths in the form of tagged
+sources. A tagged source is simply a path associated with a label. For example,
+an application may tag `lib/models` simply as `@models`. Once tags are defined,
+they can be used when importing files, e.g. `import('@models/post')`.
 
 ### Importing all source files in a directory
 
@@ -488,7 +499,7 @@ settings = settings.__reload!
 
 Before a module is reloaded, all of its methods and constants are removed. In
 some cases, a module might need to retain state across reloads. You can do this
-by simply using object attributes:
+by simply using instance variables:
 
 ```ruby
 export :value, :inc
@@ -505,8 +516,8 @@ end
 ```
 
 Care must be taken not to reassign values outside of methods, as this will
-overwrite any value retained in the attribute. To assign initial values, use
-the `||=` operator as in the example above. See also the
+overwrite any value retained in the instance variable. To assign initial values,
+use the `||=` operator as in the example above. See also the
 [reload example](examples/reload).
 
 ## Dependency introspection

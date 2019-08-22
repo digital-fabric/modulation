@@ -629,3 +629,43 @@ class PackerTest < Minitest::Test
     f.unlink
   end
 end
+
+class TagsTest < Minitest::Test
+  def setup
+    Modulation::Paths.send(:remove_instance_variable, :@tags) rescue nil
+  end
+
+  def teardown
+    Modulation::Paths.send(:remove_instance_variable, :@tags) rescue nil
+  end
+
+  def test_tagged_path
+    p = Modulation::Paths
+    # no tags
+    assert_nil p.tagged_path('blah')
+    assert_nil p.tagged_path('@blah')
+    assert_nil p.tagged_path('@blah/hite')
+
+    p.add_tags({
+      views: './modules/subdir',
+      the_app: '../examples/app/app'
+    }, "#{__FILE__}:1")
+
+    assert_nil p.tagged_path('blah')
+    assert_nil p.tagged_path('@blah')
+    assert_nil p.tagged_path('@views')
+    
+    assert_equal File.join(__dir__, 'modules/subdir/a.rb'),
+      p.tagged_path('@views/a')
+    assert_nil p.tagged_path('@views/foo')
+    assert_equal File.expand_path(File.join(__dir__, '../examples/app/app.rb')),
+      p.tagged_path('@the_app')
+    assert_nil p.tagged_path('@the_app/foo')
+  end
+
+  def test_tag_based_import
+    Modulation.add_tags(views: './modules/subdir')
+    m = import('@views/a')
+    assert_equal :A, m::A
+  end
+end

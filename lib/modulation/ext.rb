@@ -45,7 +45,7 @@ class Module
 
   def setup_auto_import_registry
     @__auto_import_registry = {}
-    Modulation.define_auto_import_const_missing_method(
+    Modulation::Builder.define_auto_import_const_missing_method(
       self,
       @__auto_import_registry
     )
@@ -56,8 +56,8 @@ class Module
   # @return [void]
   def extend_from(path)
     mod = import(path, caller(1..1).first)
-    Modulation.add_module_methods(mod, self.class)
-    Modulation.add_module_constants(mod, self)
+    Modulation::Builder.add_module_methods(mod, self.class)
+    Modulation::Builder.add_module_constants(mod, self)
   end
 
   # Includes exported methods from the given file name in the receiver
@@ -67,8 +67,8 @@ class Module
   # @return [void]
   def include_from(path, *symbols)
     mod = import(path, caller(1..1).first)
-    Modulation.add_module_methods(mod, self, *symbols)
-    Modulation.add_module_constants(mod, self, *symbols)
+    Modulation::Builder.add_module_methods(mod, self, *symbols)
+    Modulation::Builder.add_module_constants(mod, self, *symbols)
   end
 
   # Aliases the given method only if the alias does not exist, implementing in

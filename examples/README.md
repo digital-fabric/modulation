@@ -10,3 +10,4 @@ modulation:
 - [reload](reload) - module reloading
 - [router](router) - mapping and accessing modules through a uniform interface
 - [singleton](singleton) - the singleton pattern using Modulation
+- [tagged](tagged) - tagged sources
