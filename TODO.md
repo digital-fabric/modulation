@@ -1,14 +1,32 @@
+## reload all
+
+Add `Modulation.reload_all!` method that reloads all currently loaded modules.
+Reloading should be ordered according to the dependencies involved. So, first we
+go through each module, and place it before all its dependents, so it will be
+reloaded before its dependents.
+
+We can eventually also implement reloading for only changed files:
+
+```ruby
+Modulation.reload_changed!
+```
+
 ## Packer
 
-- embed an inline Gemfile: if a Gemfile exists in the given directory, embed it, with the addition of the modulation dependency.
-- as filename obfuscation: use MD5 hash on the filename. When doing an import, compare with the MD5 hash of the given path with the dictionary, then proceed normally.
-- tagged sources: to avoid having to always use relative paths, allow use to tag directories as module sources:
+- embed an inline Gemfile: if a Gemfile exists in the given directory, embed it,
+  with the addition of the modulation dependency.
+- as filename obfuscation: use MD5 hash on the filename. When doing an import,
+  compare with the MD5 hash of the given path with the dictionary, then proceed
+  normally.
+- tagged sources: to avoid having to always use relative paths, allow use to tag
+  directories as module sources:
 
   Modulation.tag views: './views'
   ...
   MyView = import '@views/my_view'
 
-  Tags may be used to determine what other files to include in the packed app. A tag may also refer to a specific file rather than a directory.
+  Tags may be used to determine what other files to include in the packed app. A
+  tag may also refer to a specific file rather than a directory.
 
 - add support for assets:
 

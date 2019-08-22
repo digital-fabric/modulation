@@ -1,3 +1,5 @@
+* Improve application packer.
+
 0.27 2019-08-21
 ---------------
 
