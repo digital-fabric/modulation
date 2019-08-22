@@ -484,6 +484,31 @@ settings = import('settings')
 settings = settings.__reload!
 ```
 
+### Retaining state between reloads
+
+Before a module is reloaded, all of its methods and constants are removed. In
+some cases, a module might need to retain state across reloads. You can do this
+by simply using object attributes:
+
+```ruby
+export :value, :inc
+
+@counter ||= 0
+
+def value
+  @counter
+end
+
+def incr
+  @counter += 1
+end
+```
+
+Care must be taken not to reassign values outside of methods, as this will
+overwrite any value retained in the attribute. To assign initial values, use
+the `||=` operator as in the example above. See also the
+[reload example](examples/reload).
+
 ## Dependency introspection
 
 Modulation allows runtime introspection of dependencies between modules. You can
