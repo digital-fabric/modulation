@@ -588,6 +588,7 @@ Modulation can also be used to package your entire application into a single
 portable file that can be copied to another machine and run as is. To package
 your app, use `mdl pack`. This command will perform a dynamic analysis of all
 the app's dependencies and will put them together into a single Ruby file.
+
 For more information have a look at the [app](examples/app) example.
 
 ## Writing gems using Modulation
