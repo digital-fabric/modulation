@@ -1,14 +1,21 @@
 # frozen_string_literal: true
 
 require_relative '../modulation'
+require_relative '../modulation/version'
 require 'zlib'
 
 module Modulation
   # Implements packing functionality
   module Packer
-    BOOTSTRAP = <<~SRC.encode('ASCII-8BIT').chomp
+    BOOTSTRAP_CODE = <<~SRC.encode('ASCII-8BIT').chomp
       # encoding: ASCII-8BIT
-      require 'bundler/setup'
+      require 'bundler/inline'
+
+      gemfile do
+        source 'https://rubygems.org'
+        gem 'modulation', '~> %<modulation_version>s'
+      end
+
       require 'modulation/packer'
       Modulation::Bootstrap.setup(DATA, %<dictionary>s)
       import(%<entry_point>s).send(:main)
@@ -20,7 +27,7 @@ module Modulation
       paths = [paths] unless paths.is_a?(Array)
       deps = collect_dependencies(paths)
       entry_point_filename = File.expand_path(paths.first)
-      dictionary, data = compute_pack_data(deps)
+      dictionary, data = generate_packed_data(deps)
       generate_bootstrap(dictionary, data, entry_point_filename)
     end
 
@@ -32,28 +39,37 @@ module Modulation
       end
     end
 
-    def self.compute_pack_data(deps)
-      last_offset = 0
+    def self.generate_packed_data(deps)
+      files = deps.each_with_object({}) do |path, dict|
+        dict[path] = IO.read(path)
+      end
+      # files[INLINE_GEMFILE_PATH] = generate_gemfile
+      pack_files(files)
+    end
+
+    def self.pack_files(files)
       data = (+'').encode('ASCII-8BIT')
-      dictionary = deps.each_with_object({}) do |path, dict|
-        # warn "Processing #{path}"
-        last_offset = add_packed_module(path, last_offset, dict, data)
+      last_offset = 0
+      dictionary = files.each_with_object({}) do |(path, content), dict|
+        zipped = Zlib::Deflate.deflate(content)
+        size = zipped.bytesize
+        
+        data << zipped
+        dict[path] = [last_offset, size]
+        last_offset += size
       end
       [dictionary, data]
     end
 
-    def self.add_packed_module(path, offset, dictionary, data)
-      zipped = Zlib::Deflate.deflate(IO.read(path))
-      length = zipped.bytesize
-      dictionary[path] = [offset, length]
-      data << zipped
-      offset + length
-    end
+    # def self.generate_gemfile
+    #   format(INLINE_GEMFILE_CODE)
+    # end
 
     def self.generate_bootstrap(dictionary, data, entry_point)
-      format(BOOTSTRAP, dictionary: dictionary.inspect,
-                        entry_point: entry_point.inspect,
-                        data: data)
+      format(BOOTSTRAP_CODE, modulation_version: Modulation::VERSION,
+                             dictionary: dictionary.inspect,
+                             entry_point: entry_point.inspect,
+                             data: data)
     end
   end
 
