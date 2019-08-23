@@ -1,3 +1,5 @@
+* Add preliminary inline Gemfile to packaged apps
+
 0.28 2019-08-23
 ---------------
 

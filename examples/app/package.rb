@@ -1,6 +1,9 @@
 # encoding: ASCII-8BIT
-require 'bundler/setup'
-require 'modulation/packer'
+require 'bundler/inline'
+gemfile do
+source 'https://rubygems.org'
+gem 'modulation', '~> 0.28', require: 'modulation/packer'
+end
 Modulation::Bootstrap.setup(DATA, {"/Users/sharon/repo/modulation/examples/app/app.rb"=>[0, 245], "/Users/sharon/repo/modulation/examples/app/lancelot.rb"=>[245, 122], "/Users/sharon/repo/modulation/examples/app/robin.rb"=>[367, 120]})
 import("/Users/sharon/repo/modulation/examples/app/app.rb").send(:main)
 __END__

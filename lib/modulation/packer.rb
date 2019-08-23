@@ -7,16 +7,15 @@ require 'zlib'
 module Modulation
   # Implements packing functionality
   module Packer
-    BOOTSTRAP_CODE = <<~SRC.encode('ASCII-8BIT').chomp
+    BOOTSTRAP_CODE = <<~SRC
       # encoding: ASCII-8BIT
       require 'bundler/inline'
 
       gemfile do
         source 'https://rubygems.org'
-        gem 'modulation', '~> %<modulation_version>s'
+        gem 'modulation', '~> %<modulation_version>s', require: 'modulation/packer'
       end
 
-      require 'modulation/packer'
       Modulation::Bootstrap.setup(DATA, %<dictionary>s)
       import(%<entry_point>s).send(:main)
       __END__
@@ -43,7 +42,6 @@ module Modulation
       files = deps.each_with_object({}) do |path, dict|
         dict[path] = IO.read(path)
       end
-      # files[INLINE_GEMFILE_PATH] = generate_gemfile
       pack_files(files)
     end
 
@@ -53,7 +51,7 @@ module Modulation
       dictionary = files.each_with_object({}) do |(path, content), dict|
         zipped = Zlib::Deflate.deflate(content)
         size = zipped.bytesize
-        
+
         data << zipped
         dict[path] = [last_offset, size]
         last_offset += size
@@ -61,15 +59,15 @@ module Modulation
       [dictionary, data]
     end
 
-    # def self.generate_gemfile
-    #   format(INLINE_GEMFILE_CODE)
-    # end
-
     def self.generate_bootstrap(dictionary, data, entry_point)
-      format(BOOTSTRAP_CODE, modulation_version: Modulation::VERSION,
-                             dictionary: dictionary.inspect,
-                             entry_point: entry_point.inspect,
-                             data: data)
+      format(bootstrap_template, modulation_version: Modulation::VERSION,
+                                 dictionary: dictionary.inspect,
+                                 entry_point: entry_point.inspect,
+                                 data: data)
+    end
+
+    def self.bootstrap_template
+      BOOTSTRAP_CODE.encode('ASCII-8BIT').gsub(/^\s+/, '').chomp
     end
   end
 
