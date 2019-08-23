@@ -1,3 +1,6 @@
+0.29 2019-08-23
+---------------
+
 * Implement auto_import_map
 * Add preliminary inline Gemfile to packaged apps
 

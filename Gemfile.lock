@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    modulation (0.28)
+    modulation (0.29)
 
 GEM
   remote: https://rubygems.org/
