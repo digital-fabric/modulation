@@ -26,6 +26,10 @@ module Kernel
   def import_map(path, caller_location = caller(1..1).first, &block)
     Modulation.import_map(path, caller_location, &block)
   end
+
+  def auto_import_map(path, caller_location = caller(1..1).first, &block)
+    Modulation.auto_import_map(path, caller_location, &block)
+  end
 end
 
 # Module extensions

@@ -70,6 +70,18 @@ module Modulation
       end
     end
 
+    def auto_import_map(path, caller_location = caller(1..1).first)
+      abs_path = Paths.absolute_dir_path(path, caller_location)
+      Hash.new do |h, k|
+        fn = Paths.check_path(File.join(abs_path, k.to_s))
+        return nil unless fn
+        
+        mod = @loaded_modules[fn] || create_module_from_file(fn)
+        k = yield k, mod if block_given?
+        h[k] = mod
+      end
+    end
+
     # Creates a new module from a source file
     # @param path [String] source file name
     # @return [Module] module

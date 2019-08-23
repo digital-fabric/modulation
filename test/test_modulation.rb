@@ -560,6 +560,36 @@ class ImportMapTest < MiniTest::Test
   end
 end
 
+class AutoImportMapTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_that_import_map_loads_all_files_matching_pattern
+    m = auto_import_map('./modules/subdir')
+    assert_kind_of(Hash, m)
+    assert_equal(0, m.size)
+    assert_equal(m['a'], import('./modules/subdir/a'))
+    assert_equal(m['b'], import('./modules/subdir/b'))
+    assert_equal(2, m.size)
+    assert_equal(m['c1'], import('./modules/subdir/c1'))
+    assert_equal(m['c2'], import('./modules/subdir/c2'))
+    assert_equal(4, m.size)
+  end
+
+  def test_that_import_map_accepts_block_for_mapping_filenames
+    m = auto_import_map('./modules/subdir') { |n, m| n.to_sym }
+    assert_kind_of(Hash, m)
+    assert_equal(0, m.size)
+    assert_equal(m[:a], import('./modules/subdir/a'))
+    assert_equal(1, m.size)
+    assert_equal(m[:b], import('./modules/subdir/b'))
+    assert_equal(m[:c1], import('./modules/subdir/c1'))
+    assert_equal(m[:c2], import('./modules/subdir/c2'))
+    assert_equal(4, m.size)
+  end
+end
+
 class DependenciesTest < MiniTest::Test
   def setup
     Modulation.reset!

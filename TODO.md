@@ -1,3 +1,22 @@
+## Roadmap
+
+### 1.0
+
+- Add auto_import_map for lazy loading into map
+- include app's Gemfile in packed app
+- propagated reload (reload all dependents of a reloaded module)
+- convert *all* reality codebase to using Modulation + Affect.
+
+### 1.1
+
+- reload all/changed
+- add support for packing assets
+- pack reality into single file with all assets
+
+### 1.2
+
+- hooks: before_load, after_load etc
+
 ## reload all
 
 Add `Modulation.reload_all!` method that reloads all currently loaded modules.
@@ -13,44 +32,9 @@ Modulation.reload_changed!
 
 ## Packer
 
-- embed an inline Gemfile: if a Gemfile exists in the given directory, embed it,
-  with the addition of the modulation dependency.
-- as filename obfuscation: use MD5 hash on the filename. When doing an import,
+- filename obfuscation: use MD5 hash on the filename. When doing an import,
   compare with the MD5 hash of the given path with the dictionary, then proceed
   normally.
-- tagged sources: to avoid having to always use relative paths, allow use to tag
-  directories as module sources:
-
-  Modulation.tag views: './views'
-  ...
-  MyView = import '@views/my_view'
-
-  Tags may be used to determine what other files to include in the packed app. A
-  tag may also refer to a specific file rather than a directory.
-
-- add support for assets:
-
-  # instead of IO.read
-  Modulation.read '@static/js/reality.js'
-
-  # some more API's
-  Modulation.expand_path '@static/js/reality.js'
-  Modulation.ls '@static'
-  Modulation.each '@static/**/*.js' { ... }
-
-
-
-## tagged sources
-
-```ruby
-Modulation.tag(
-  controllers:  './src/controllers',
-  views:        './src/views'
-)
-
-...
-MyController import('@controllers/my_controller')
-```
 
 ## Creating modules on the fly
 
@@ -84,28 +68,6 @@ m = Modulation.new do { |mod|
 - raise on missing `export` or `export_default`
 - if `export_default` refers to a method, turn it into a proc
 
-## Define root path for non-relative paths
-
-```ruby
-Modulation.root = 'lib' # automatically expand path to aboslute path
-
-import('support/mod') # absolute ref, expands to lib/support/mod
-```
-
-But this might break once importable gems are used. Maybe a better solution
-would be to define the root inside a block:
-
-```ruby
-Modulation.with('lib') do
-  DNS = import('dns')
-  DB  = import('db')
-end
-```
-
-But actually, I'm not so sure this is such a useful thing. I think a more
-sensible solution to using non-relative paths is to treat non-relative paths as
-gem refs, and all relative paths as, well, relative.
-
 ## Re-exporting methods and constants
 
 ```ruby
@@ -127,40 +89,6 @@ export  async: -> { ... },
         await: ->(promise) { ... }
 ```
 
-## The Hash-to-singleton pattern (like a Javascript literal object)
-(https://jrsinclair.com/articles/2018/how-to-deal-with-dirty-side-effects-in-your-pure-functional-javascript/)
-
-```ruby
-def effect(f)
-  hash_to_singleton(
-    map:          ->(g)  { effect.(->(*x) {g.(f.(*x))}) },
-    run_effects:  ->(*x) { f.(*x) },
-    join:         ->(*x) { f.(*x) },
-    chain:        ->(g)  { effect.(f).map(g).join() }
-  )
-end
-
-# implementation
-def hash_to_singleton(h)
-  Module.new.tap do |m|
-    s = m.singleton_class
-    h.each do |k, v|
-      case k
-      when /^[A-Z]/;  s.const_set(k, v)
-      when /^@/;      s.instance_variable_set(k, v)
-      else
-        s.define_method(k, v.respond_to?(:to_proc) ? v : -> {v})
-      end
-    end
-  end
-end
-
-f_zero = -> {
-  puts 'Starting with nothing'
-  0
-}
-```
-
 ## Auto-reload changed files:
 
 Will necessitate a dependency on a watcher - and this might lead to
@@ -175,25 +103,3 @@ Modulation.auto_reload
 # auto-reload specific dirs
 Modulation.auto_reload('lib/**/*.rb', 'vendor/**/*.rb')
 ```
-
-## Auto-compiling and caching of modules
-
-Objective:
-
-- Faster loading of modules
-- Compilation of ruby apps into a single file without source code, with [inline `gemfile`](https://bundler.io/v1.17/guides/bundler_in_a_single_file_ruby_script.html)
-- Perhaps also a simplificatio of how modules are loaded - be able to use `eval`
-  instead of `instance_eval`.
-
-Compiling to a single file:
-
-- `compile` takes a single path
-- when an `import` is encountered, the module is inlined, then saved into a
-  `__MODULES__` hash cache. Whenever the module is imported again, it's loaded 
-  from the cache.
-- The different modules are therefore inlined into a single body of source code,
-  which is then compiled into an `iseq`.
-- The Iseq is converted to binary representation and zipped.
-- The zipped binary code is written to the `DATA` section of a ruby file, along
-  with a short preamble loading the `DATA` section, unzipping it, loading the
-  `iseq` from the binary data, and finally `eval`ing the `iseq`.
