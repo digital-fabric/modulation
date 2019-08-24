@@ -1,3 +1,5 @@
+* Add symbol_keys option to import_map
+
 0.29 2019-08-23
 ---------------
 

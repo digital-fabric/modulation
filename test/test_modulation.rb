@@ -549,8 +549,8 @@ class ImportMapTest < MiniTest::Test
     assert_equal(m['c2'], import('./modules/subdir/c2'))
   end
 
-  def test_that_import_map_accepts_block_for_mapping_filenames
-    m = import_map('./modules/subdir') { |n, m| n.to_sym }
+  def test_that_import_map_accepts_options_for_symbol_keys
+    m = import_map('./modules/subdir', symbol_keys: true)
     assert_kind_of(Hash, m)
     assert_equal(4, m.size)
     assert_equal(m[:a], import('./modules/subdir/a'))

@@ -2,11 +2,13 @@
 
 # Kernel extensions
 module Kernel
+  CALLER_RANGE = (1..1).freeze
+
   # Imports a module
   # @param path [String] module file name
   # @param caller_location [String] caller location
   # @return [Module] module object
-  def import(path, caller_location = caller(1..1).first)
+  def import(path, caller_location = caller(CALLER_RANGE).first)
     Modulation.import(path, caller_location)
   end
 
@@ -14,7 +16,7 @@ module Kernel
   # @param path [String] directory path
   # @param caller_location [String] caller location
   # @return [Array] array of module objects
-  def import_all(path, caller_location = caller(1..1).first)
+  def import_all(path, caller_location = caller(CALLER_RANGE).first)
     Modulation.import_all(path, caller_location)
   end
 
@@ -23,12 +25,14 @@ module Kernel
   # @param path [String] directory path
   # @param caller_location [String] caller location
   # @return [Hash] hash mapping filenames to module objects
-  def import_map(path, caller_location = caller(1..1).first, &block)
-    Modulation.import_map(path, caller_location, &block)
+  def import_map(path, options = {},
+                 caller_location = caller(CALLER_RANGE).first)
+    Modulation.import_map(path, options, caller_location)
   end
 
-  def auto_import_map(path, caller_location = caller(1..1).first, &block)
-    Modulation.auto_import_map(path, caller_location, &block)
+  def auto_import_map(path, options = {},
+                      caller_location = caller(CALLER_RANGE).first)
+    Modulation.auto_import_map(path, options, caller_location)
   end
 end
 
@@ -38,7 +42,7 @@ class Module
   # @param sym [Symbol, Hash] constant name or hash mapping names to paths
   # @param path [String] path if sym is Symbol
   # @return [void]
-  def auto_import(sym, path = nil, caller_location = caller(1..1).first)
+  def auto_import(sym, path = nil, caller_location = caller(CALLER_RANGE).first)
     setup_auto_import_registry unless @__auto_import_registry
     if path
       @__auto_import_registry[sym] = [path, caller_location]
@@ -59,7 +63,7 @@ class Module
   # @param path [String] module filename
   # @return [void]
   def extend_from(path)
-    mod = import(path, caller(1..1).first)
+    mod = import(path, caller(CALLER_RANGE).first)
     Modulation::Builder.add_module_methods(mod, self.class)
     Modulation::Builder.add_module_constants(mod, self)
   end
@@ -70,7 +74,7 @@ class Module
   # @param symbols [Array<Symbol>] list of symbols to include
   # @return [void]
   def include_from(path, *symbols)
-    mod = import(path, caller(1..1).first)
+    mod = import(path, caller(CALLER_RANGE).first)
     Modulation::Builder.add_module_methods(mod, self, *symbols)
     Modulation::Builder.add_module_constants(mod, self, *symbols)
   end

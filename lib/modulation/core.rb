@@ -7,6 +7,8 @@ module Modulation
   require_relative './module_mixin'
 
   class << self
+    CALLER_RANGE = (1..1).freeze
+
     # @return [Hash] hash of loaded modules, mapping absolute paths to modules
     attr_reader :loaded_modules
 
@@ -31,7 +33,7 @@ module Modulation
     # @param path [String] unqualified file name
     # @param caller_location [String] caller location
     # @return [Module] loaded module object
-    def import(path, caller_location = caller(1..1).first)
+    def import(path, caller_location = caller(CALLER_RANGE).first)
       abs_path = Paths.process(path, caller_location)
 
       case abs_path
@@ -48,7 +50,7 @@ module Modulation
     # @ param path [String] relative directory path
     # @param caller_location [String] caller location
     # @return [Array] array of module objects
-    def import_all(path, caller_location = caller(1..1).first)
+    def import_all(path, caller_location = caller(CALLER_RANGE).first)
       abs_path = Paths.absolute_dir_path(path, caller_location)
       Dir["#{abs_path}/**/*.rb"].map do |fn|
         @loaded_modules[fn] || create_module_from_file(fn)
@@ -58,19 +60,22 @@ module Modulation
     # Imports all source files in given directory, returning a hash mapping
     # filenames to modules
     # @ param path [String] relative directory path
+    # @ param options [Hash] options
     # @param caller_location [String] caller location
     # @return [Hash] hash mapping filenames to modules
-    def import_map(path, caller_location = caller(1..1).first)
+    def import_map(path, options = {},
+                   caller_location = caller(CALLER_RANGE).first)
       abs_path = Paths.absolute_dir_path(path, caller_location)
+      use_symbols = options[:symbol_keys]
       Dir["#{abs_path}/**/*.rb"].each_with_object({}) do |fn, h|
         mod = @loaded_modules[fn] || create_module_from_file(fn)
         name = File.basename(fn) =~ /^(.+)\.rb$/ && Regexp.last_match(1)
-        name = yield name, mod if block_given?
-        h[name] = mod
+        h[use_symbols ? name.to_sym : name] = mod
       end
     end
 
-    def auto_import_map(path, caller_location = caller(1..1).first)
+    def auto_import_map(path, options = {},
+                        caller_location = caller(CALLER_RANGE).first)
       abs_path = Paths.absolute_dir_path(path, caller_location)
       Hash.new do |h, k|
         fn = Paths.check_path(File.join(abs_path, k.to_s))
@@ -126,7 +131,7 @@ module Modulation
     # @param mod [Module] module
     # @param caller_location [String] caller location
     # @return [void]
-    def mock(path, mod, caller_location = caller(1..1).first)
+    def mock(path, mod, caller_location = caller(CALLER_RANGE).first)
       path = Paths.absolute_path(path, caller_location)
       old_module = @loaded_modules[path]
       @loaded_modules[path] = mod
@@ -136,7 +141,7 @@ module Modulation
     end
 
     def add_tags(tags)
-      Paths.add_tags(tags, caller(1..1).first)
+      Paths.add_tags(tags, caller(CALLER_RANGE).first)
     end
   end
 end
