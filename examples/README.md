@@ -5,6 +5,7 @@ modulation:
 
 - [app](app) - packaging an app with all its dependencies
 - [callable](callable) - using a callable module
+- [export_self](export_self) - a module that exports a proc returning itself
 - [forward](forward) - forwarding method calls to a hidden object
 - [lambdas](lambdas) - a module written using lambdas
 - [reload](reload) - module reloading
