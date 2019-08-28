@@ -58,6 +58,16 @@ module Modulation
           end
         end
       end
+
+      NOT_FOUND_MSG = '%s %s not found in module'
+
+      def raise_exported_symbol_not_found_error(sym, mod, kind)
+        msg = format(
+          NOT_FOUND_MSG, kind == :method ? 'Method' : 'Constant', sym
+        )
+        error = NameError.new(msg)
+        Modulation.raise_error(error, mod.__export_backtrace)
+      end
     end
   end
 end

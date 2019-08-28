@@ -24,7 +24,7 @@ module Modulation
 
       def get_module_constant(mod, value)
         unless mod.singleton_class.constants(true).include?(value)
-          raise_exported_symbol_not_found_error(value, mod, :const)
+          Exports.raise_exported_symbol_not_found_error(value, mod, :const)
         end
 
         mod.singleton_class.const_get(value)
@@ -32,20 +32,10 @@ module Modulation
 
       def get_module_method(mod, value)
         unless mod.singleton_class.instance_methods(true).include?(value)
-          raise_exported_symbol_not_found_error(value, mod, :method)
+          Exports.raise_exported_symbol_not_found_error(value, mod, :method)
         end
 
         proc { |*args, &block| mod.send(value, *args, &block) }
-      end
-
-      NOT_FOUND_MSG = '%s %s not found in module'
-
-      def raise_exported_symbol_not_found_error(sym, mod, kind)
-        msg = format(
-          NOT_FOUND_MSG, kind == :method ? 'Method' : 'Constant', sym
-        )
-        error = NameError.new(msg)
-        Modulation.raise_error(error, mod.__export_backtrace)
       end
 
       # Error message to be displayed when trying to set a singleton value as

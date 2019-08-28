@@ -1,14 +1,58 @@
+## Find the best technique for the following pattern:
+
+```ruby
+# a.rb
+export_default :C
+
+# we have a class
+class C
+  def foo
+    :bar
+  end
+end
+
+# b.rb
+C = import('./a')
+
+# and we wish to patch it
+# see also: http://blog.jayfields.com/2008/04/alternatives-for-redefining-methods.html
+module Patch
+  def foo
+    super
+  end
+end
+
+C.include Patch
+```
+
+## add export_all method
+
+Example:
+
+```ruby
+# node_types.rb
+export_all
+
+GROUP = 1
+POINT = 2
+ALARM = 3
+```
+
+## import_map, auto_import_map doesn't work with tags
+
+**Add test case**
+Culprit is Paths.absolute_dir_path
+
 ## Roadmap
 
 ### 1.0
 
-- Add auto_import_map for lazy loading into map
-- include app's Gemfile in packed app
-- propagated reload (reload all dependents of a reloaded module)
 - convert *all* reality codebase to using Modulation + Affect.
 
 ### 1.1
 
+- include app's Gemfile in packed app
+- propagated reload (reload all dependents of a reloaded module)
 - reload all/changed
 - add support for packing assets
 - pack reality into single file with all assets
