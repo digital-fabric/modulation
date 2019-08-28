@@ -1,3 +1,8 @@
+0.31 2019-08-28
+---------------
+
+* Fix error handling when default_export symbol is not found
+
 0.30 2019-08-24
 ---------------
 
