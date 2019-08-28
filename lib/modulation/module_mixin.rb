@@ -11,6 +11,8 @@ module Modulation
     # @param symbols [Array] array of symbols
     # @return [void]
     def export(*symbols)
+      self.__export_backtrace = caller
+
       case symbols.first
       when Hash
         symbols = __convert_export_hash(symbols.first)
@@ -19,7 +21,6 @@ module Modulation
       end
 
       __exported_symbols.concat(symbols)
-      __export_backtrace = caller
     end
 
     def __convert_export_hash(hash)
