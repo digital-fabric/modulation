@@ -1,28 +1,32 @@
-## Find the best technique for the following pattern:
+## Add auto_import_all
 
+*lib/foo/bar.rb*
 ```ruby
-# a.rb
-export_default :C
+export baz: 42
+```
 
-# we have a class
-class C
-  def foo
-    :bar
-  end
+*app.rb*
+```ruby
+# auto_import with no arguments means import all
+auto_import
+
+# passing a path sets the root directory for imports
+auto_import './lib'
+
+# an alternative, to do auto_import for an entire project
+Modulation.auto_import
+
+# passing an argument to auto_import sets the root directory for imports
+Modulation.auto_import './lib'
+
+def main
+  # If foo.rb is found, it is loaded into Foo. In the present example, there's a
+  # foo directory, so it Foo is set to an empty module, with a #const_missing
+  # method that does auto-importing. Foo::Bar then causes the loading of
+  # lib/foo/bar.rb, and Bar is set to the loaded module.
+  # and 
+  puts Foo::Bar.baz
 end
-
-# b.rb
-C = import('./a')
-
-# and we wish to patch it
-# see also: http://blog.jayfields.com/2008/04/alternatives-for-redefining-methods.html
-module Patch
-  def foo
-    super
-  end
-end
-
-C.include Patch
 ```
 
 ## add export_all method
@@ -38,7 +42,7 @@ POINT = 2
 ALARM = 3
 ```
 
-## import_map, auto_import_map doesn't work with tags
+## import_map, auto_import_map, include_from, extend_from doesn't work with tags
 
 **Add test case**
 Culprit is Paths.absolute_dir_path

@@ -5,6 +5,7 @@
 
 [INSTALL](#installing-modulation) |
 [GUIDE](#organizing-your-code-with-modulation) |
+[API](#api-reference) |
 [EXAMPLES](examples) |
 [RDOC](https://www.rubydoc.info/gems/modulation/)
 
@@ -65,6 +66,8 @@ issues:
 - There's no easy way to hide implementation-specific classes or methods. Yes,
   there's `#private`, `#private_constant` etc, but by default everything is 
   `#public`!
+- Extracting functionality is harder when modules are namespaced and
+  dependencies are implicit.
 - Writing reusable functional code requires wrapping it in modules using 
   `class << self`, `def self.foo ...`, `extend self` or `include Singleton`
   (the pain of implementing singletons in Ruby has been
@@ -81,11 +84,10 @@ codebases is... not as elegant or painfree as I would expect from a
 first-class development environment. I also wanted to have a better solution
 for writing in a functional style.
 
-So I came up with Modulation, a small gem (less than 300 LOC) that takes a 
-different approach to organizing Ruby code: any so-called global declarations 
-are hidden unless explicitly exported, and the global namespace remains 
-clutter-free. All dependencies between source files are explicit, visible, and 
-easy to understand.
+So I came up with Modulation, a small gem that takes a different approach to
+organizing Ruby code: any so-called global declarations are hidden unless
+explicitly exported, and the global namespace remains clutter-free. All
+dependencies between source files are explicit, visible, and easy to understand.
 
 ## Installing Modulation
 
@@ -108,6 +110,9 @@ inside the module and normally cannot be accessed from the outside.
 Each source file is evaluated in the context of a newly-created `Module` 
 instance, with some additional methods for introspection and miscellaneous
 operations such as [hot reloading](#reloading-modules).
+
+Modulation provides an alternative APIs for loading modules. Instead of using
+`require` and `require_relative`, you use `import`, `import_map` and other APIs.
 
 ### Exporting declarations
 
@@ -689,6 +694,40 @@ end
 
   ...
   ```
+
+## API Reference
+
+This section will be expanded on in a future release.
+
+#### `__module_info`
+
+### `__reload!`
+
+#### `alias_method_once()`
+
+#### `auto_import()`
+
+#### `auto_import_map()`
+
+#### `export()`
+
+#### `export_default()`
+
+#### `extend_from()`
+
+#### `import()`
+
+#### `import_all()`
+
+#### `import_map()`
+
+#### `include_from()`
+
+#### `Modulation.full_backtrace!`
+
+#### `Modulation.reload()`
+
+#### `MODULE`
 
 ## Why you should not use Modulation
 
