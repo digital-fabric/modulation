@@ -67,7 +67,7 @@ module Modulation
                    caller_location = caller(CALLER_RANGE).first)
       abs_path = Paths.absolute_dir_path(path, caller_location)
       use_symbols = options[:symbol_keys]
-      Dir["#{abs_path}/**/*.rb"].each_with_object({}) do |fn, h|
+      Dir["#{abs_path}/*.rb"].each_with_object({}) do |fn, h|
         mod = @loaded_modules[fn] || create_module_from_file(fn)
         name = File.basename(fn) =~ /^(.+)\.rb$/ && Regexp.last_match(1)
         h[use_symbols ? name.to_sym : name] = mod
@@ -79,12 +79,15 @@ module Modulation
       abs_path = Paths.absolute_dir_path(path, caller_location)
       Hash.new do |h, k|
         fn = Paths.check_path(File.join(abs_path, k.to_s))
-        return nil unless fn
-        
-        mod = @loaded_modules[fn] || create_module_from_file(fn)
-        k = yield k, mod if block_given?
-        h[k] = mod
+        h[k] = find_auto_import_module(fn, path, options)
       end
+    end
+
+    def find_auto_import_module(fn, path, options)
+      return @loaded_modules[fn] || create_module_from_file(fn) if fn
+      return options[:not_found] if options.has_key?(:not_found)
+      
+      raise "Module not found #{path}"
     end
 
     # Creates a new module from a source file

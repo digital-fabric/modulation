@@ -573,7 +573,7 @@ class AutoImportMapTest < MiniTest::Test
     Modulation.reset!
   end
 
-  def test_that_import_map_loads_all_files_matching_pattern
+  def test_that_auto_import_map_loads_files_on_demand
     m = auto_import_map('./modules/subdir')
     assert_kind_of(Hash, m)
     assert_equal(0, m.size)
@@ -585,16 +585,41 @@ class AutoImportMapTest < MiniTest::Test
     assert_equal(4, m.size)
   end
 
-  def test_that_import_map_accepts_block_for_mapping_filenames
-    m = auto_import_map('./modules/subdir') { |n, m| n.to_sym }
+  def test_that_auto_import_map_works_with_symbols
+    m = auto_import_map('./modules/subdir')
     assert_kind_of(Hash, m)
     assert_equal(0, m.size)
     assert_equal(m[:a], import('./modules/subdir/a'))
-    assert_equal(1, m.size)
     assert_equal(m[:b], import('./modules/subdir/b'))
+    assert_equal(2, m.size)
     assert_equal(m[:c1], import('./modules/subdir/c1'))
     assert_equal(m[:c2], import('./modules/subdir/c2'))
     assert_equal(4, m.size)
+  end
+
+  def test_that_auto_import_map_raises_on_file_not_found
+    m = auto_import_map('./modules/subdir')
+    assert_kind_of(Hash, m)
+    
+    assert_equal(m[:a], import('./modules/subdir/a'))
+    assert_equal(1, m.size)
+    
+    assert_raises { m[:foo] }
+    assert_equal(1, m.size)
+  end
+
+  def test_auto_import_map_options
+    m = auto_import_map './modules/subdir', not_found: nil
+    assert_kind_of Hash, m
+
+    assert_equal import('./modules/subdir/a'), m[:a]
+    assert_nil m[:foo]
+
+    m = auto_import_map './modules/subdir', not_found: 42
+    assert_kind_of Hash, m
+
+    assert_equal import('./modules/subdir/a'), m[:a]
+    assert_equal 42, m[:foo]
   end
 end
 

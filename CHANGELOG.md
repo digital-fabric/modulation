@@ -1,3 +1,6 @@
+* Refactor auto_import_map, add not_found option
+* Fix backtrace for exports of missing symbols
+
 0.31 2019-08-28
 ---------------
 
