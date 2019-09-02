@@ -85,10 +85,14 @@ module Modulation
       end
     end
 
-    def find_auto_import_module(fn, path, options)
-      return @loaded_modules[fn] || create_module_from_file(fn, caller) if fn
-      return options[:not_found] if options.has_key?(:not_found)
-      
+    def find_auto_import_module(filename, path, options)
+      if filename
+        return @loaded_modules[filename] ||
+               create_module_from_file(filename, caller)
+      end
+
+      return options[:not_found] if options.key?(:not_found)
+
       raise "Module not found #{path}"
     end
 
@@ -97,8 +101,6 @@ module Modulation
     # @return [Module] module
     def create_module_from_file(path, import_caller)
       Builder.make(location: path, caller: import_caller)
-    rescue StandardError => e
-      raise_error(e)#, import_caller)
     end
 
     # (Re-)raises an error, potentially filtering its backtrace to remove stack

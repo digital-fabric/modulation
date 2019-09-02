@@ -32,8 +32,8 @@ module Modulation
       @__export_directives ||= []
 
       @__export_directives << {
-        method:        :export,
-        args:          symbols,
+        method: :export,
+        args: symbols,
         export_caller: caller
       }
     end
@@ -116,7 +116,7 @@ module Modulation
 
     def __reset_dependencies
       return unless @__dependencies
-      
+
       @__dependencies.each do |mod|
         next unless mod.respond_to?(:__dependent_modules)
 

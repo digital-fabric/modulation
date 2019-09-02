@@ -16,9 +16,8 @@ module Modulation
 
       def export_directive(mod, directive)
         send directive[:method], mod, *directive[:args]
-      rescue => error
-        Modulation.raise_error error,
-          directive[:export_caller]
+      rescue NameError => e
+        Modulation.raise_error e, directive[:export_caller]
       end
 
       def export(mod, *symbols)
@@ -39,17 +38,17 @@ module Modulation
 
         symbols.each do |sym|
           if sym =~ Modulation::RE_CONST
-            validate_exported_symbol(mod, sym, defined_constants, :const)
+            validate_exported_symbol(sym, defined_constants, :const)
           else
-            validate_exported_symbol(mod, sym, defined_methods, :method)
+            validate_exported_symbol(sym, defined_methods, :method)
           end
         end
       end
 
-      def validate_exported_symbol(mod, sym, list, kind)
-        unless list.include? sym
-          raise_exported_symbol_not_found_error(sym, mod, kind)
-        end
+      def validate_exported_symbol(sym, list, kind)
+        return if list.include? sym
+
+        raise_exported_symbol_not_found_error(sym, kind)
       end
 
       # @return [Array] array of exported symbols
@@ -89,7 +88,7 @@ module Modulation
         mod.__module_info[:exported_symbols] = symbols
         singleton = mod.singleton_class
 
-        privatize_non_exported_methods(mod, singleton, symbols)
+        privatize_non_exported_methods(singleton, symbols)
         expose_exported_constants(mod, singleton, symbols)
       end
 
@@ -97,7 +96,7 @@ module Modulation
       # @param singleton [Class] sinleton for module
       # @param symbols [Array] array of exported symbols
       # @return [void]
-      def privatize_non_exported_methods(mod, singleton, symbols)
+      def privatize_non_exported_methods(singleton, symbols)
         singleton.instance_methods(false).each do |sym|
           next if symbols.include?(sym)
 
@@ -128,13 +127,11 @@ module Modulation
 
       NOT_FOUND_MSG = '%s %s not found in module'
 
-      def raise_exported_symbol_not_found_error(sym, mod, kind)
+      def raise_exported_symbol_not_found_error(sym, kind)
         msg = format(
           NOT_FOUND_MSG, kind == :method ? 'Method' : 'Constant', sym
         )
         raise NameError, msg
-        # error = NameError.new(msg)
-        # Modulation.raise_error(error, mod.__export_backtrace)
       end
     end
   end

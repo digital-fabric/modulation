@@ -24,7 +24,7 @@ module Modulation
 
       def get_module_constant(mod, value)
         unless mod.singleton_class.constants(true).include?(value)
-          Exports.raise_exported_symbol_not_found_error(value, mod, :const)
+          Exports.raise_exported_symbol_not_found_error(value, :const)
         end
 
         mod.singleton_class.const_get(value)
@@ -32,7 +32,7 @@ module Modulation
 
       def get_module_method(mod, value)
         unless mod.singleton_class.instance_methods(true).include?(value)
-          Exports.raise_exported_symbol_not_found_error(value, mod, :method)
+          Exports.raise_exported_symbol_not_found_error(value, :method)
         end
 
         proc { |*args, &block| mod.send(value, *args, &block) }
