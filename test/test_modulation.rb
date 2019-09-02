@@ -2,6 +2,13 @@ require 'minitest/autorun'
 require_relative '../lib/modulation.rb'
 Modulation.full_backtrace!
 
+def Modulation.with_clean_backtrace
+  @full_backtrace = false
+  yield
+ensure
+  @full_backtrace = true
+end
+
 MODULES_DIR = File.join(File.dirname(__FILE__), 'modules')
 RELOADED_FN = File.join(MODULES_DIR, 'reloaded.rb')
 
@@ -96,6 +103,38 @@ class ExportTest < Minitest::Test
     assert_equal :baz, m.foo
     assert_equal 'ZZZ', m.bar
     assert_equal 'Hello world!', m.greeting('world')
+  end
+
+  def test_additive_export
+    m = import './modules/additive'
+
+    assert_equal :foo, m.foo
+    assert_equal :bar, m.bar
+    assert_equal :baz, m::BAZ
+  end
+
+  def test_export_with_export_default
+    assert_raises { import './modules/export_with_export_default' }
+  end
+
+  def hijack_error
+    begin
+      yield
+    rescue => e
+      return e
+    end
+  end
+
+  def test_that_bad_exports_show_correct_backtrace
+    Modulation.with_clean_backtrace do
+      import_line = __LINE__
+      error = hijack_error { import './modules/bad_export' }
+
+      assert_kind_of(NameError, error)
+      module_file = File.expand_path('./modules/bad_export.rb', __dir__)
+      assert_match /^#{module_file}\:1/, error.backtrace[0]
+      assert_match /^#{__FILE__}\:#{import_line + 1}/, error.backtrace[1]
+    end
   end
 end
 

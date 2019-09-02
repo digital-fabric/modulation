@@ -1,10 +1,87 @@
 # frozen_string_literal: true
 
 module Modulation
-  # Export functionality
+  # Functionality related to symbol export
   module Exports
     class << self
-      # Marks all non-exported methods as private
+      # Performs the exporting of symbols after the module has loaded
+      def perform_exports(mod)
+        directives = mod.__export_directives
+        exported_symbols = directives.inject [] do |exported, directive|
+          symbols = export_directive mod, directive
+          exported + symbols
+        end
+        set_exported_symbols mod, exported_symbols
+      end
+
+      def export_directive(mod, directive)
+        send directive[:method], mod, *directive[:args]
+      rescue => error
+        Modulation.raise_error error,
+          directive[:export_caller]
+      end
+
+      def export(mod, *symbols)
+        case symbols.first
+        when Hash
+          symbols = export_hash(mod, symbols.first)
+        when Array
+          symbols = symbols.first
+        end
+
+        validate_exported_symbols(mod, symbols)
+        symbols
+      end
+
+      def validate_exported_symbols(mod, symbols)
+        defined_methods = mod.singleton_class.instance_methods(true)
+        defined_constants = mod.singleton_class.constants(false)
+
+        symbols.each do |sym|
+          if sym =~ Modulation::RE_CONST
+            validate_exported_symbol(mod, sym, defined_constants, :const)
+          else
+            validate_exported_symbol(mod, sym, defined_methods, :method)
+          end
+        end
+      end
+
+      def validate_exported_symbol(mod, sym, list, kind)
+        unless list.include? sym
+          raise_exported_symbol_not_found_error(sym, mod, kind)
+        end
+      end
+
+      # @return [Array] array of exported symbols
+      def export_hash(mod, hash)
+        singleton = mod.singleton_class
+        hash.each { |k, v| export_hash_entry(singleton, k, v) }
+        hash.keys
+      end
+
+      def export_hash_entry(singleton, key, value)
+        symbol_value = value.is_a?(Symbol)
+        const_value = value =~ Modulation::RE_CONST
+        if value && const_value && singleton.const_defined?(value)
+          value = singleton.const_get(value)
+        end
+
+        generate_exported_hash_entry(singleton, key, value, symbol_value)
+      end
+
+      def generate_exported_hash_entry(singleton, key, value, symbol_value)
+        const_key = key =~ Modulation::RE_CONST
+        if const_key
+          singleton.const_set(key, value)
+        elsif symbol_value && singleton.method_defined?(value)
+          singleton.alias_method(key, value)
+        else
+          value_proc = value.is_a?(Proc) ? value : proc { value }
+          singleton.define_method(key, &value_proc)
+        end
+      end
+
+      # Marks all non-exported methods as private, exposes exported constants
       # @param mod [Module] module with exported symbols
       # @param symbols [Array] array of exported symbols
       # @return [void]
@@ -21,12 +98,6 @@ module Modulation
       # @param symbols [Array] array of exported symbols
       # @return [void]
       def privatize_non_exported_methods(mod, singleton, symbols)
-        defined_methods = singleton.instance_methods(true)
-        difference = symbols.select { |s| s =~ /^[a-z]/ } - defined_methods
-        unless difference.empty?
-          raise_exported_symbol_not_found_error(difference.first, mod, :method)
-        end
-
         singleton.instance_methods(false).each do |sym|
           next if symbols.include?(sym)
 
@@ -41,10 +112,6 @@ module Modulation
       # @return [void]
       def expose_exported_constants(mod, singleton, symbols)
         defined_constants = singleton.constants(false)
-        difference = symbols.select { |s| s =~ /^[A-Z]/ } - defined_constants
-        unless difference.empty?
-          raise_exported_symbol_not_found_error(difference.first, mod, :const)
-        end
         process_module_constants(mod, singleton, symbols, defined_constants)
       end
 
@@ -65,8 +132,9 @@ module Modulation
         msg = format(
           NOT_FOUND_MSG, kind == :method ? 'Method' : 'Constant', sym
         )
-        error = NameError.new(msg)
-        Modulation.raise_error(error, mod.__export_backtrace)
+        raise NameError, msg
+        # error = NameError.new(msg)
+        # Modulation.raise_error(error, mod.__export_backtrace)
       end
     end
   end

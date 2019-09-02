@@ -1,3 +1,28 @@
+## Make exports additive
+
+## Defer calls to export until after the module code is eval'd
+
+## Add export_from_receiver
+
+*node.rb*
+```ruby
+# this sets up a `#method_missing` method behind the scenes.
+export_from_receiver :Node
+
+class Node < import('./base')::PGShardedModel
+  def self.foo
+    :bar
+  end
+end
+```
+
+*elsewhere.rb*
+```ruby
+Node = import '@models/node'
+...
+p Node.foo
+```
+
 ## Add auto_import_all
 
 *lib/foo/bar.rb*

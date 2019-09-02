@@ -7,57 +7,38 @@ module Modulation
     attr_accessor :__module_info
     attr_reader :__export_default_info
 
+    def __before_reload
+      @__module_info[:exported_symbols] = []
+      @__export_directives = nil
+      __reset_dependencies
+    end
+
+    def __export_directives
+      @__export_directives || []
+    end
+
+    def __exported_symbols
+      __module_info[:exported_symbols]
+    end
+
     # Adds given symbols to the exported_symbols array
     # @param symbols [Array] array of symbols
     # @return [void]
     def export(*symbols)
-      self.__export_backtrace = caller
-
-      case symbols.first
-      when Hash
-        symbols = __convert_export_hash(symbols.first)
-      when Array
-        symbols = symbols.first
+      if @__export_default_info
+        raise 'Cannot mix calls to export and export_default in same module'
       end
 
-      __exported_symbols.concat(symbols)
-    end
+      @__export_directives ||= []
 
-    def __convert_export_hash(hash)
-      @__exported_hash = hash
-      hash.keys
+      @__export_directives << {
+        method:        :export,
+        args:          symbols,
+        export_caller: caller
+      }
     end
-
-    RE_CONST = /^[A-Z]/.freeze
 
     def __post_load
-      return unless @__exported_hash
-
-      singleton = singleton_class
-      @__exported_hash.map do |k, v|
-        __convert_export_hash_entry(singleton, k, v)
-        k
-      end
-    end
-
-    def __convert_export_hash_entry(singleton, key, value)
-      symbol = value.is_a?(Symbol)
-      if symbol && value =~ RE_CONST && singleton.const_defined?(value)
-        value = singleton.const_get(value)
-      end
-
-      __add_exported_hash_entry(singleton, key, value, symbol)
-    end
-
-    def __add_exported_hash_entry(singleton, key, value, symbol)
-      if key =~ RE_CONST
-        singleton.const_set(key, value)
-      elsif symbol && singleton.method_defined?(value)
-        singleton.alias_method(key, value)
-      else
-        value_proc = value.is_a?(Proc) ? value : proc { value }
-        singleton.define_method(key, &value_proc)
-      end
     end
 
     # Sets a module's value, so when imported it will represent the given value,
@@ -65,7 +46,10 @@ module Modulation
     # @param value [Symbol, any] symbol or value
     # @return [void]
     def export_default(value)
-      self.__export_backtrace = caller
+      unless __export_directives.empty?
+        raise "Cannot mix calls to export and export_default in the same module"
+      end
+
       @__export_default_info = { value: value, caller: caller }
     end
 
@@ -84,41 +68,6 @@ module Modulation
     # @return [Module] module
     def __reload!
       Modulation.reload(self)
-    end
-
-    # Defers exporting of symbols for a namespace (nested module), to be
-    # performed after the entire module has been loaded
-    # @param namespace [Module] namespace module
-    # @param symbols [Array] array of symbols
-    # @return [void]
-    def __defer_namespace_export(namespace, symbols)
-      @__namespace_exports ||= Hash.new { |h, k| h[k] = [] }
-      @__namespace_exports[namespace].concat(symbols)
-    end
-
-    # Performs exporting of symbols for all namespaces defined in the module,
-    # marking unexported methods and constants as private
-    # @return [void]
-    def __perform_deferred_namespace_exports
-      return unless @__namespace_exports
-
-      @__namespace_exports.each do |m, symbols|
-        Builder.set_exported_symbols(m, symbols)
-      end
-    end
-
-    # Returns exported_symbols array
-    # @return [Array] array of exported symbols
-    def __exported_symbols
-      @__exported_symbols ||= []
-    end
-
-    def __export_backtrace
-      @__export_backtrace
-    end
-
-    def __export_backtrace=(backtrace)
-      @__export_backtrace = backtrace
     end
 
     # Allow modules to use attr_accessor/reader/writer and include methods by
@@ -169,12 +118,14 @@ module Modulation
     end
 
     def __reset_dependencies
-      __dependencies.each do |mod|
+      return unless @__dependencies
+      
+      @__dependencies.each do |mod|
         next unless mod.respond_to?(:__dependent_modules)
 
         mod.__dependent_modules.delete(self)
       end
-      __dependencies.clear
+      @__dependencies.clear
     end
   end
 end

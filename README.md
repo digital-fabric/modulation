@@ -179,6 +179,17 @@ Any capitalized key will be interpreted as a const, otherwise it will be defined
 as a method. If the value is a symbol, Modulation will look for the
 corresponding method or const definition and will treat the key as an alias.
 
+The `export` method can be called multiple times. Its behavior is additive:
+
+```ruby
+# this:
+export :foo, :bar
+
+# is the same as this:
+export :foo
+export :bar
+```
+
 ### Importing declarations
 
 Declarations from another module can be imported using `#import`:

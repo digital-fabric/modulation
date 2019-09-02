@@ -65,7 +65,7 @@ module Modulation
             default[:value], info, mod, default[:caller]
           )
         else
-          Exports.set_exported_symbols(mod, mod.__exported_symbols)
+          Exports.perform_exports(mod)
           mod
         end
       end
@@ -80,7 +80,7 @@ module Modulation
 
         cleanup_module(mod)
         load_module_code(mod, mod.__module_info)
-        Exports.set_exported_symbols(mod, mod.__exported_symbols)
+        Exports.perform_exports(mod)
       ensure
         Thread.current[:__current_module] = prev_module
         $VERBOSE = orig_verbose
@@ -97,8 +97,7 @@ module Modulation
         singleton.instance_methods(false).each(&undef_method)
         singleton.private_instance_methods(false).each(&undef_method)
 
-        mod.__exported_symbols.clear
-        mod.__reset_dependencies
+        mod.__before_reload
       end
 
       # Adds all or part of a module's methods to a target object

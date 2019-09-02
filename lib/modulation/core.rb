@@ -6,6 +6,8 @@ module Modulation
   require_relative './builder'
   require_relative './module_mixin'
 
+  RE_CONST = /^[A-Z]/.freeze
+
   class << self
     CALLER_RANGE = (1..1).freeze
 
@@ -38,7 +40,7 @@ module Modulation
 
       case abs_path
       when String
-        @loaded_modules[abs_path] || create_module_from_file(abs_path)
+        @loaded_modules[abs_path] || create_module_from_file(abs_path, caller)
       when :require_gem
         raise_error(LoadError.new(GEM_REQUIRE_ERROR_MESSAGE), caller)
       else
@@ -53,7 +55,7 @@ module Modulation
     def import_all(path, caller_location = caller(CALLER_RANGE).first)
       abs_path = Paths.absolute_dir_path(path, caller_location)
       Dir["#{abs_path}/**/*.rb"].map do |fn|
-        @loaded_modules[fn] || create_module_from_file(fn)
+        @loaded_modules[fn] || create_module_from_file(fn, caller)
       end
     end
 
@@ -68,7 +70,7 @@ module Modulation
       abs_path = Paths.absolute_dir_path(path, caller_location)
       use_symbols = options[:symbol_keys]
       Dir["#{abs_path}/*.rb"].each_with_object({}) do |fn, h|
-        mod = @loaded_modules[fn] || create_module_from_file(fn)
+        mod = @loaded_modules[fn] || create_module_from_file(fn, caller)
         name = File.basename(fn) =~ /^(.+)\.rb$/ && Regexp.last_match(1)
         h[use_symbols ? name.to_sym : name] = mod
       end
@@ -84,7 +86,7 @@ module Modulation
     end
 
     def find_auto_import_module(fn, path, options)
-      return @loaded_modules[fn] || create_module_from_file(fn) if fn
+      return @loaded_modules[fn] || create_module_from_file(fn, caller) if fn
       return options[:not_found] if options.has_key?(:not_found)
       
       raise "Module not found #{path}"
@@ -93,10 +95,10 @@ module Modulation
     # Creates a new module from a source file
     # @param path [String] source file name
     # @return [Module] module
-    def create_module_from_file(path)
-      Builder.make(location: path)
+    def create_module_from_file(path, import_caller)
+      Builder.make(location: path, caller: import_caller)
     rescue StandardError => e
-      raise_error(e)
+      raise_error(e)#, import_caller)
     end
 
     # (Re-)raises an error, potentially filtering its backtrace to remove stack
