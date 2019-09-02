@@ -56,7 +56,6 @@ module Modulation
       def load_module_code(mod, info)
         path = info[:location]
         mod.instance_eval(info[:source] || IO.read(path), path)
-        mod.__post_load
       end
 
       def finalize_module_exports(info, mod)

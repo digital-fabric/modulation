@@ -38,16 +38,13 @@ module Modulation
       }
     end
 
-    def __post_load
-    end
-
     # Sets a module's value, so when imported it will represent the given value,
     # instead of a module facade
     # @param value [Symbol, any] symbol or value
     # @return [void]
     def export_default(value)
       unless __export_directives.empty?
-        raise "Cannot mix calls to export and export_default in the same module"
+        raise 'Cannot mix calls to export and export_default in the same module'
       end
 
       @__export_default_info = { value: value, caller: caller }

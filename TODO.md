@@ -1,7 +1,3 @@
-## Make exports additive
-
-## Defer calls to export until after the module code is eval'd
-
 ## Add export_from_receiver
 
 *node.rb*
