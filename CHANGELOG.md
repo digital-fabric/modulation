@@ -1,3 +1,6 @@
+0.32 2019-09-03
+---------------
+
 * Implement export_from_receiver
 * Implement additive exports
 * Refactor auto_import_map, add not_found option
