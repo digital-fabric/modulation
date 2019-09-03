@@ -28,24 +28,19 @@ a functional style, minimizing boilerplate code.
 
 ## Features
 
-- Provides complete isolation of each module: constant definitions in one file
-  do not leak into another.
-- Enforces explicit exporting and importing of methods, classes, modules and 
-  constants.
-- Supports circular dependencies.
-- Supports [default exports](#default-exports) for modules exporting a single
+- Complete isolation of each module.
+- Explicit exporting and importing of methods and constants.
+- Support for circular dependencies.
+- Support for [default exports](#default-exports) for modules exporting a single
   class or value.
-- Modules can be [lazy loaded](#lazy-loading) to improve start up time and
-  memory consumption.
-- Modules can be [reloaded](#reloading-modules) at runtime without breaking your 
-  code in wierd ways.
-- Allows [mocking of dependencies](#mocking-dependencies) for testing purposes.
+- [Lazy Loading](#lazy-loading) improves start up time and memory consumption.
+- [Hot module reloading](#reloading-modules)
+- [Mocking of dependencies](#mocking-dependencies) for testing purposes.
 - Can be used to [write gems](#writing-gems-using-modulation).
-- Module dependencies can be [introspected](#dependency-introspection).
-- Facilitates [unit-testing](#unit-testing-modules) of private methods and
+- [Dependency introspection](#dependency-introspection).
+- Easier [unit-testing](#unit-testing-modules) of private methods and
   constants.
-- Can load all source files in directory [at once](#importing-all-source-files-in-a-directory).
-- Packs entire applications [into a single
+- Pack entire applications [into a single
   file](#packing-applications-with-modulation).
 
 ## Rationale
