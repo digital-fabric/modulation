@@ -30,10 +30,22 @@ module Modulation
       end
 
       @__export_directives ||= []
-
       @__export_directives << {
         method: :export,
         args: symbols,
+        export_caller: caller
+      }
+    end
+
+    def export_from_receiver(name)
+      if @__export_default_info
+        raise 'Cannot mix calls to export_from_receiver and export_default in same module'
+      end
+
+      @__export_directives ||= []
+      @__export_directives << {
+        method: :export_from_receiver,
+        args: name,
         export_caller: caller
       }
     end

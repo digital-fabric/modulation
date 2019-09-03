@@ -719,6 +719,8 @@ This section will be expanded on in a future release.
 
 #### `export_default()`
 
+#### `export_from_receiver()`
+
 #### `extend_from()`
 
 #### `import()`
@@ -734,6 +736,8 @@ This section will be expanded on in a future release.
 #### `Modulation.reload()`
 
 #### `MODULE`
+
+#### `MODULE.__module_info`
 
 ## Why you should not use Modulation
 

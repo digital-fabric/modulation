@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative './export_from_receiver'
+
 module Modulation
   # Functionality related to symbol export
   module Exports
@@ -30,6 +32,14 @@ module Modulation
 
         validate_exported_symbols(mod, symbols)
         symbols
+      end
+
+      def export_from_receiver(mod, name)
+        if name =~ Modulation::RE_CONST
+          ExportFromReceiver.from_const(mod, name)
+        else
+          raise 'export_from_receiver expects a const reference'
+        end
       end
 
       def validate_exported_symbols(mod, symbols)

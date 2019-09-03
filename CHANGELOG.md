@@ -1,3 +1,4 @@
+* Implement export_from_receiver
 * Implement additive exports
 * Refactor auto_import_map, add not_found option
 * Fix backtrace for exports of missing symbols

@@ -111,7 +111,10 @@ module Modulation
     def raise_error(error, backtrace = nil)
       if backtrace
         unless @full_backtrace
-          backtrace = backtrace.reject { |l| l =~ /^#{Modulation::DIR}/ }
+          i = 0
+          backtrace = backtrace.reject do |l|
+            (i += 1) > 1 && l =~ /^#{Modulation::DIR}/
+          end
         end
         error.set_backtrace(backtrace)
       end

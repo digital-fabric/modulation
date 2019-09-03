@@ -138,6 +138,34 @@ class ExportTest < Minitest::Test
   end
 end
 
+class ExportFromReceiverTest < MiniTest::Test
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_export_from_receiver
+    m = import './modules/receiver'
+
+    assert_equal :foo, m.foo
+    assert_equal :baz, m.bar
+    
+    assert_equal 42, m::MOL
+
+    assert_raises(NameError) { m.baz }
+  end
+
+  def test_missing_receiver
+    assert_raises(NameError) { import './modules/missing_receiver' }
+  end
+
+  def test_export_from_subclass
+    m = import './modules/receiver_sub'
+
+    assert_equal :foo, m.foo
+    assert_equal :bar, m.bar
+  end
+end
+
 class ExposeTest < MiniTest::Test
   def setup
     @a = import('./modules/a').__expose!

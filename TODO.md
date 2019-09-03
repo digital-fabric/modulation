@@ -1,22 +1,14 @@
-## Add export_from_receiver
+## add export_all method
 
-*node.rb*
+Example:
+
 ```ruby
-# this sets up a `#method_missing` method behind the scenes.
-export_from_receiver :Node
+# node_types.rb
+export_all
 
-class Node < import('./base')::PGShardedModel
-  def self.foo
-    :bar
-  end
-end
-```
-
-*elsewhere.rb*
-```ruby
-Node = import '@models/node'
-...
-p Node.foo
+GROUP = 1
+POINT = 2
+ALARM = 3
 ```
 
 ## Add auto_import_all
@@ -48,19 +40,6 @@ def main
   # and 
   puts Foo::Bar.baz
 end
-```
-
-## add export_all method
-
-Example:
-
-```ruby
-# node_types.rb
-export_all
-
-GROUP = 1
-POINT = 2
-ALARM = 3
 ```
 
 ## import_map, auto_import_map, include_from, extend_from doesn't work with tags
