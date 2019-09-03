@@ -215,6 +215,17 @@ class ExportDefaultTest < MiniTest::Test
       import('./modules/missing_export_default_method')
     }
   end
+
+  # def test_circular_export_default
+  #   c1 = import('./modules/circular_default1')
+  #   c2 = import('./modules/circular_default2')
+
+  #   assert_kind_of Class, c1
+  #   assert_kind_of Class, c2
+
+  #   assert_equal(:bar, c1.new.foo)
+  #   assert_equal(:baz, c2.new.bar)
+  # end
 end
 
 class ExtendFrom1Test < MiniTest::Test
@@ -381,14 +392,6 @@ class CircularRefTest < MiniTest::Test
 
     assert_equal(42, m1.meaning_of_life)
     assert_equal(42, m2.reexported)
-  end
-
-  def test_circular_export_default
-    c1 = import('./modules/circular_default1')
-    c2 = import('./modules/circular_default2')
-
-    assert_equal(:bar, c1.new.foo)
-    # assert_equal(:baz, c2.new.bar)
   end
 end
 

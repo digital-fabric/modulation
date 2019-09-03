@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative('exports')
-require_relative('default_export')
+require_relative('export_default')
 
 module Modulation
   # Implements creation of module instances
@@ -60,7 +60,7 @@ module Modulation
 
       def finalize_module_exports(info, mod)
         if (default = mod.__export_default_info)
-          DefaultExport.set_module_default_value(
+          ExportDefault.set_module_default_value(
             default[:value], info, mod, default[:caller]
           )
         else
