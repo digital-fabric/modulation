@@ -21,13 +21,15 @@ module Modulation
         end
       end
 
+      RE_RESERVED_METHOD = /^__/.freeze
+
       def receiver_methods(receiver)
         ignored_klass = case receiver
                         when Class, Module then receiver.class
                         else Object
                         end
-        
-        methods = receiver.methods.select { |m| m !~ /^__/ }
+
+        methods = receiver.methods.reject { |m| m =~ RE_RESERVED_METHOD }
         methods - ignored_klass.instance_methods
       end
 

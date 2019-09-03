@@ -125,7 +125,7 @@ module Modulation
       def add_module_constants(mod, target, *symbols)
         exported = mod.__module_info[:exported_symbols]
         unless symbols.empty?
-          symbols.select! { |s| s =~ /^[A-Z]/ }
+          symbols.select! { |s| s =~ Modulation::RE_CONST }
           exported = filter_exported_symbols(exported, symbols)
         end
         mod.singleton_class.constants(false).each do |sym|

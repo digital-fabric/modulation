@@ -14,8 +14,7 @@ module Modulation
       def transform_export_default_value(value, mod)
         return value unless value.is_a?(Symbol)
 
-        case value
-        when /^[A-Z]/
+        if value =~ Modulation::RE_CONST
           get_module_constant(mod, value)
         else
           get_module_method(mod, value)

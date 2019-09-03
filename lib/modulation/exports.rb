@@ -35,11 +35,11 @@ module Modulation
       end
 
       def export_from_receiver(mod, name)
-        if name =~ Modulation::RE_CONST
-          ExportFromReceiver.from_const(mod, name)
-        else
+        if name !~ Modulation::RE_CONST
           raise 'export_from_receiver expects a const reference'
         end
+
+        ExportFromReceiver.from_const(mod, name)
       end
 
       def validate_exported_symbols(mod, symbols)

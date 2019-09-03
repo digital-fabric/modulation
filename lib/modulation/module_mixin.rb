@@ -37,10 +37,12 @@ module Modulation
       }
     end
 
+    EXPORT_DEFAULT_ERROR_MSG = <<~MSG
+      Cannot mix calls to export_from_receiver and export_default in same module
+    MSG
+
     def export_from_receiver(name)
-      if @__export_default_info
-        raise 'Cannot mix calls to export_from_receiver and export_default in same module'
-      end
+      raise EXPORT_DEFAULT_ERROR_MSG if @__export_default_info
 
       @__export_directives ||= []
       @__export_directives << {
