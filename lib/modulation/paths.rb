@@ -5,7 +5,8 @@ module Modulation
   module Paths
     class << self
       def process(path, caller_location)
-        tagged_path(path) || absolute_path(path, caller_location) ||
+        path = expand_tag(path)
+        absolute_path(path, caller_location) ||
           lookup_gem_path(path)
       end
 
@@ -23,17 +24,13 @@ module Modulation
         end
       end
 
-      def tagged_path(path)
-        return nil unless @tags
+      RE_TAG = /^@([^\/]+)/.freeze
 
-        _, tag, path = path.match(TAGGED_REGEXP).to_a
-        return nil unless tag
-
-        base_path = @tags[tag]
-        return nil unless base_path
-
-        path = path ? File.join(base_path, path) : base_path
-        check_path(path)
+      def expand_tag(path)
+        path.sub RE_TAG do
+          tag = Regexp.last_match[1]
+          (@tags && @tags[tag]) || (raise "Invalid tag #{tag}")
+        end
       end
 
       # Resolves the absolute path to the provided reference. If the file is not
@@ -54,6 +51,7 @@ module Modulation
       # @param caller_location [String] caller location
       # @return [String] absolute directory path
       def absolute_dir_path(path, caller_location)
+        path = expand_tag(path)
         caller_file = caller_location[CALLER_FILE_REGEXP, 1]
         return nil unless caller_file
 

@@ -11,7 +11,7 @@ POINT = 2
 ALARM = 3
 ```
 
-## Add auto_import_all
+## Add auto_import without 
 
 *lib/foo/bar.rb*
 ```ruby
@@ -20,7 +20,7 @@ export baz: 42
 
 *app.rb*
 ```ruby
-# auto_import with no arguments means import all
+# auto_import with no arguments means import all from __dir__
 auto_import
 
 # passing a path sets the root directory for imports
@@ -41,11 +41,6 @@ def main
   puts Foo::Bar.baz
 end
 ```
-
-## import_map, auto_import_map, include_from, extend_from doesn't work with tags
-
-**Add test case**
-Culprit is Paths.absolute_dir_path
 
 ## Roadmap
 
@@ -78,6 +73,8 @@ We can eventually also implement reloading for only changed files:
 Modulation.reload_changed!
 ```
 
+See below...
+
 ## Packer
 
 - filename obfuscation: use MD5 hash on the filename. When doing an import,
@@ -88,19 +85,19 @@ Modulation.reload_changed!
 
 ```ruby
 # using eg
-m = Modulation.new a: ->(x) { x + 1 }, b: ->(x) { x * 2}
+m = Modulation.create a: ->(x) { x + 1 }, b: ->(x) { x * 2}
 
 # from string
-m = Modulation.new <<~RUBY
+m = Modulation.create <<~RUBY<<~EOF, 
 export :foo
 
 def foo
   :bar
 end
-RUBY
+EOF
 
 # from block
-m = Modulation.new do { |mod|
+m = Modulation.create do { |mod|
   export :foo
 
   def foo
@@ -113,9 +110,6 @@ m = Modulation.new do { |mod|
 }
 ```
 
-- raise on missing `export` or `export_default`
-- if `export_default` refers to a method, turn it into a proc
-
 ## Re-exporting methods and constants
 
 ```ruby
@@ -126,15 +120,12 @@ Promise = Async::Promise
 export :Promise
 
 # re-export method
+Async = import('async')
 export Async.method(:async)
-```
 
-* Exporting a Hash
-
-```ruby
-# procs are converted to module methods
-export  async: -> { ... },
-        await: ->(promise) { ... }
+# or maybe
+Async = import('async')
+export_from_receiver :Async
 ```
 
 ## Auto-reload changed files:
@@ -146,8 +137,8 @@ API:
 
 ```ruby
 # auto-reload any loaded module if changed
-Modulation.auto_reload
+Modulation.reload_changed!
 
 # auto-reload specific dirs
-Modulation.auto_reload('lib/**/*.rb', 'vendor/**/*.rb')
+Modulation.reload_changed!('./lib/**/*.rb', './vendor/**/*.rb')
 ```

@@ -772,33 +772,85 @@ class TagsTest < Minitest::Test
     Modulation::Paths.send(:remove_instance_variable, :@tags) rescue nil
   end
 
-  def test_tagged_path
+  def test_expand_tag
     p = Modulation::Paths
     # no tags
-    assert_nil p.tagged_path('blah')
-    assert_nil p.tagged_path('@blah')
-    assert_nil p.tagged_path('@blah/hite')
+    assert_equal 'blah', p.expand_tag('blah')
+    assert_raises(RuntimeError) { p.expand_tag('@blah') }
+    assert_raises(RuntimeError) { p.expand_tag('@blah/hite') }
 
     p.add_tags({
       views: './modules/subdir',
       the_app: '../examples/app/app'
     }, "#{__FILE__}:1")
 
-    assert_nil p.tagged_path('blah')
-    assert_nil p.tagged_path('@blah')
-    assert_nil p.tagged_path('@views')
+    views_dir = File.expand_path (File.join __dir__, 'modules/subdir')
+    app_dir = File.expand_path (File.join __dir__, '../examples/app/app')
+
+    assert_equal 'blah', p.expand_tag('blah')
+    assert_raises(RuntimeError) { p.expand_tag('@blah') }
+    assert_equal views_dir, p.expand_tag('@views')
     
-    assert_equal File.join(__dir__, 'modules/subdir/a.rb'),
-      p.tagged_path('@views/a')
-    assert_nil p.tagged_path('@views/foo')
-    assert_equal File.expand_path(File.join(__dir__, '../examples/app/app.rb')),
-      p.tagged_path('@the_app')
-    assert_nil p.tagged_path('@the_app/foo')
+    assert_equal File.join(views_dir, 'a'), p.expand_tag('@views/a')
+    assert_equal File.join(views_dir, 'foo'), p.expand_tag('@views/foo')
+    assert_equal app_dir, p.expand_tag('@the_app')
+    assert_equal File.join(app_dir, 'foo'), p.expand_tag('@the_app/foo')
   end
 
   def test_tag_based_import
     Modulation.add_tags(views: './modules/subdir')
     m = import('@views/a')
     assert_equal :A, m::A
+  end
+
+  def test_tag_based_import_map
+    Modulation.add_tags views: './modules/subdir'
+    m = import_map('@views')
+    assert_kind_of(Hash, m)
+    assert_equal(4, m.size)
+    assert_equal(m['a'], import('./modules/subdir/a'))
+    assert_equal(m['b'], import('./modules/subdir/b'))
+    assert_equal(m['c1'], import('./modules/subdir/c1'))
+    assert_equal(m['c2'], import('./modules/subdir/c2'))
+  end
+
+  def test_tag_based_auto_import_map
+    Modulation.add_tags views: './modules/subdir'
+    m = auto_import_map('@views')
+    assert_kind_of(Hash, m)
+    assert_equal(0, m.size)
+    assert_equal(m['a'], import('./modules/subdir/a'))
+    assert_equal(m['b'], import('./modules/subdir/b'))
+    assert_equal(2, m.size)
+    assert_equal(m['c1'], import('./modules/subdir/c1'))
+    assert_equal(m['c2'], import('./modules/subdir/c2'))
+    assert_equal(4, m.size)
+  end
+
+  def test_tag_based_include_from
+    Modulation.add_tags mods: './modules'
+    @c = Class.new
+    @c.include_from('@mods/ext')
+
+    @o = @c.new
+    assert_respond_to(@o, :a)
+    assert_respond_to(@o, :b)
+    assert_raises(NameError) {@o.c}
+
+    assert_equal :a, @o.a
+    assert_equal :b, @o.b
+  end
+
+  def test_tag_based_extend_from
+    Modulation.add_tags mods: './modules'
+    @m = Module.new
+    @m.extend_from('@mods/ext')
+
+    assert_respond_to(@m, :a)
+    assert_respond_to(@m, :b)
+    assert_raises(NameError) {@m.c}
+
+    assert_equal :a, @m.a
+    assert_equal :b, @m.b
   end
 end
