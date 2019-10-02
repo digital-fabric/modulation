@@ -404,8 +404,8 @@ m = Modulation.create do { |mod|
 m.foo
 ```
 
-The creation of a module with singleton methods using a hash prototype is also
-available as a separate gem called [eg](https://github.com/digital-fabric/eg/).
+The creation of a objects using a hash prototype is also available as a separate
+gem called [eg](https://github.com/digital-fabric/eg/).
 
 ### Unit testing modules
 

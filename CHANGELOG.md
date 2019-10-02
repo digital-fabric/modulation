@@ -1,3 +1,6 @@
+0.33 2019-10-02
+---------------
+
 * Add backward compatibility with Ruby 2.4.x
 * Add support for creating modules programmatically
 * Fix use of tags in import_map, auto_import_map, include_from, extend_from
