@@ -55,7 +55,7 @@ module Modulation
       # @return [void]
       def load_module_code(mod, info)
         path = info[:location]
-        mod.instance_eval(info[:source] || IO.read(path), path)
+        mod.instance_eval(info[:source] || IO.read(path), path || '(source)')
       end
 
       def finalize_module_exports(info, mod)
@@ -150,7 +150,7 @@ module Modulation
       #   file and a caller location
       # @return [void]
       def define_auto_import_const_missing_method(receiver, auto_import_hash)
-        receiver.singleton_class.define_method(:const_missing) do |sym|
+        receiver.singleton_class.send(:define_method, :const_missing) do |sym|
           (path, caller_location) = auto_import_hash[sym]
           path ? const_set(sym, import(path, caller_location)) : super(sym)
         end

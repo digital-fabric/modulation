@@ -86,7 +86,7 @@ module Modulation
           singleton.alias_method(key, value)
         else
           value_proc = value.is_a?(Proc) ? value : proc { value }
-          singleton.define_method(key, &value_proc)
+          singleton.send(:define_method, key, &value_proc)
         end
       end
 

@@ -15,7 +15,7 @@ module Modulation
       # @return [Array] list of receiver methods
       def create_forwarding_methods(mod, receiver)
         receiver_methods(receiver).each do |m|
-          mod.singleton_class.define_method(m) do |*args, &block|
+          mod.singleton_class.send(:define_method, m) do |*args, &block|
             receiver.send(m, *args, &block)
           end
         end

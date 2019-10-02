@@ -4,6 +4,7 @@
 module Modulation
   require_relative './paths'
   require_relative './builder'
+  require_relative './creator'
   require_relative './module_mixin'
 
   RE_CONST = /^[A-Z]/.freeze
@@ -152,6 +153,19 @@ module Modulation
 
     def add_tags(tags)
       Paths.add_tags(tags, caller(CALLER_RANGE).first)
+    end
+
+    def create(arg = nil, &block)
+      return Creator.from_block(block) if block
+
+      case arg
+      when Hash
+        Creator.from_hash(arg)
+      when String
+        Creator.from_string(arg)
+      else
+        raise 'Invalid argument'
+      end
     end
   end
 end

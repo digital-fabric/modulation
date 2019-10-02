@@ -38,6 +38,7 @@ a functional style, minimizing boilerplate code.
 - [Mocking of dependencies](#mocking-dependencies) for testing purposes.
 - Can be used to [write gems](#writing-gems-using-modulation).
 - [Dependency introspection](#dependency-introspection).
+- Support for [creating modules programmatically](#programmatic-module-creation).
 - Easier [unit-testing](#unit-testing-modules) of private methods and
   constants.
 - Pack entire applications [into a single
@@ -360,6 +361,51 @@ end
 
 what_is = ::THE_MEANING_OF_LIFE
 ```
+
+### Programmatic module creation
+
+In addition to loading modules from files, modules can be created dynamically at
+runtime using `Modulation.create`. You can create modules by supplying a hash
+prototype, a string or a block:
+
+```ruby
+# Using a hash prototype
+m = Modulation.create(
+  add: -> x, y { x + y },
+  mul: -> x, y { x * y }
+)
+m.add(2, 3)
+m.mul(2, 3)
+
+# Using a string
+m = Modulation.create <<~RUBY
+export :foo
+
+def foo
+  :bar
+end
+RUBY
+
+m.foo
+
+# Using a block
+m = Modulation.create do { |mod|
+  export :foo
+
+  def foo
+    :bar
+  end
+
+  class mod::BAZ
+    ...
+  end
+}
+
+m.foo
+```
+
+The creation of a module with singleton methods using a hash prototype is also
+available as a separate gem called [eg](https://github.com/digital-fabric/eg/).
 
 ### Unit testing modules
 

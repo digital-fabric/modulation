@@ -765,10 +765,12 @@ end
 
 class TagsTest < Minitest::Test
   def setup
+    Modulation.reset!
     Modulation::Paths.send(:remove_instance_variable, :@tags) rescue nil
   end
 
   def teardown
+    Modulation.reset!
     Modulation::Paths.send(:remove_instance_variable, :@tags) rescue nil
   end
 
@@ -852,5 +854,59 @@ class TagsTest < Minitest::Test
 
     assert_equal :a, @m.a
     assert_equal :b, @m.b
+  end
+end
+
+class ProgrammaticModuleTest < Minitest::Test
+  def setup
+    Modulation.reset!
+  end
+
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_create_with_invalid_arg
+    assert_raises(RuntimeError) { Modulation.create }
+    assert_raises(RuntimeError) { Modulation.create :foo }
+    assert_raises(RuntimeError) { Modulation.create 42 }
+  end
+
+  def test_create_with_hash
+    m = Modulation.create foo: -> { :foo }, BAR: :bar
+    assert_kind_of Module, m
+    assert_equal :foo, m.foo
+    assert_equal :bar, m::BAR
+
+    m = Modulation.create '@count': 0, incr: -> { @count += 1 }
+    assert_equal 1, m.incr
+    assert_equal 2, m.incr
+    assert_equal 3, m.incr
+  end
+
+  def test_create_with_string
+    m = Modulation.create <<~RUBY
+      export :foo
+      
+      def foo
+        :bar
+      end
+    RUBY
+
+    assert_kind_of Module, m
+    assert_equal :bar, m.foo
+  end
+
+  def test_create_with_block
+    m = Modulation.create do
+      def foo; :bar; end
+
+      @baz = 42
+      def baz; @baz; end
+    end
+
+    assert_kind_of Module, m
+    assert_equal :bar, m.foo
+    assert_equal 42, m.baz
   end
 end
