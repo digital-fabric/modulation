@@ -691,6 +691,17 @@ class AutoImportMapTest < MiniTest::Test
     assert_equal import('./modules/subdir/a'), m[:a]
     assert_equal 42, m[:foo]
   end
+
+  def test_auto_import_map_manual_addition
+    m = auto_import_map './modules/subdir'
+
+    assert_raises { m[:foo] }
+    assert_equal 0, m.size
+
+    m[:foo] = -> { :bar }
+    assert_equal :bar, m[:foo].()
+    assert_equal 1, m.size
+  end
 end
 
 class DependenciesTest < MiniTest::Test
