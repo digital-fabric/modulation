@@ -96,7 +96,7 @@ gem 'modulation'
 ## Organizing your code with Modulation
 
 Modulation builds on the idea of a Ruby `Module` as a
-["collection of methods and constants"](https://ruby-doc.org/core-2.5.1/Module.html).
+["collection of methods and constants"](https://ruby-doc.org/core-2.6.5/Module.html).
 Using modulation, each Ruby source file becomes a module. Modules usually
 export method and constant declarations (usually an API for a specific, 
 well-defined functionality) to be shared with other modules. Modules can also
@@ -109,6 +109,8 @@ operations such as [hot reloading](#reloading-modules).
 
 Modulation provides an alternative APIs for loading modules. Instead of using
 `require` and `require_relative`, you use `import`, `import_map` and other APIs.
+
+## Basic Usage
 
 ### Exporting declarations
 
@@ -211,6 +213,16 @@ User = import('./models')::User
 user = User.new(...)
 ```
 
+### A word about paths
+
+Paths given to `import` are always considered relative to the importing file,
+unless they are absolute (e.g. `/home/dave/repo/my_app`), specify a
+[tag](#using-tags-to-designate-common-subdirectories) or reference a
+[gem](#importing-gems-using-modulation). This is true for all Modulation APIs
+that accept path arguments.
+
+## Advanced Usage
+
 ### Using tags to designate common subdirectories
 
 Normally, module paths are always relative to the file calling the `#import`
@@ -224,12 +236,25 @@ sources. A tagged source is simply a path associated with a label. For example,
 an application may tag `lib/models` simply as `@models`. Once tags are defined,
 they can be used when importing files, e.g. `import('@models/post')`.
 
+To define tags, use `Modulation.add_tags`:
+
+```ruby
+Modulation.add_tags(
+  models: '../lib/models',
+  views:  '../lib/views'
+)
+
+...
+
+User = import '@models/user'
+```
+
 ### Importing all source files in a directory
 
 To load all source files in a directory you can use `#import_all`:
 
 ```ruby
-import_all('./ext') # will load ./ext/kernel.rb, ./ext/socket.rb etc 
+import_all('./ext')
 ```
 
 Groups of modules providing a uniform interface can also be loaded using
@@ -577,7 +602,7 @@ overwrite any value retained in the instance variable. To assign initial values,
 use the `||=` operator as in the example above. See also the
 [reload example](examples/reload).
 
-## Dependency introspection
+### Dependency introspection
 
 Modulation allows runtime introspection of dependencies between modules. You can
 interrogate a module's dependencies (i.e. the modules it imports) by calling

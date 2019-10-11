@@ -44,6 +44,14 @@ end
 
 ## Roadmap
 
+### 0.34
+
+- rewrite README:
+  - update Ruby core docs links to version 2.6.5
+  - reorganize guide into basic usage, advanced features
+  - write API reference
+- Write post on reddit, rubyflow, dev.to/ruby, news.ycombinator.com
+
 ### 1.0
 
 - convert *all* reality codebase to using Modulation + Affect.
