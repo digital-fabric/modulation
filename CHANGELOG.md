@@ -1,3 +1,9 @@
+0.34 2019-10-14
+---------------
+
+* Improve README
+* Move packer, bootstrap, CLI, creator code into stock modules
+
 0.33 2019-10-02
 ---------------
 

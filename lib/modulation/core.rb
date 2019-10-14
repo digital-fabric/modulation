@@ -4,7 +4,6 @@
 module Modulation
   require_relative './paths'
   require_relative './builder'
-  require_relative './creator'
   require_relative './module_mixin'
 
   RE_CONST = /^[A-Z]/.freeze
@@ -156,13 +155,14 @@ module Modulation
     end
 
     def create(arg = nil, &block)
-      return Creator.from_block(block) if block
+      creator = import '@modulation/creator'
+      return creator.from_block(block) if block
 
       case arg
       when Hash
-        Creator.from_hash(arg)
+        creator.from_hash(arg)
       when String
-        Creator.from_string(arg)
+        creator.from_string(arg)
       else
         raise 'Invalid argument'
       end

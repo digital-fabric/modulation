@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
-require 'modulation/cli'
+require 'modulation'
 
-Modulation::CLI.new ARGV
+CLI = import '@modulation/cli'
+CLI.new ARGV
