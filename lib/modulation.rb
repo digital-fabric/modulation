@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Modulation
-  DIR = File.dirname(__FILE__)
+  DIR = __dir__
 end
 
 require_relative 'modulation/ext'

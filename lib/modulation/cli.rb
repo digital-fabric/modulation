@@ -70,8 +70,7 @@ module Modulation
     end
     
     def pack
-      require 'modulation/packer'
-      STDOUT << Modulation::Packer.pack(@argv, hide_filenames: true)
+      STDOUT << import('./modules/packer').pack(@argv, hide_filenames: true)
     end
     
     def version

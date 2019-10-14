@@ -14,13 +14,18 @@ module Modulation
       CALLER_FILE_REGEXP = /^([^\:]+)\:?/.freeze
       TAGGED_REGEXP = /^@([^\/]+)(\/.+)?$/.freeze
 
-      def add_tags(tags, caller_location)
+      def tags
+        @tags ||= {
+          'modulation' =>  File.join(Modulation::DIR, 'modulation/modules')
+        }
+      end
+
+      def add_tags(new_tags, caller_location)
         caller_file = caller_location[CALLER_FILE_REGEXP, 1]
         caller_dir = caller_file ? File.dirname(caller_file) : nil
 
-        @tags ||= {}
-        tags.each do |k, path|
-          @tags[k.to_s] = caller_dir ? File.expand_path(path, caller_dir) : path
+        new_tags.each do |k, path|
+          tags[k.to_s] = caller_dir ? File.expand_path(path, caller_dir) : path
         end
       end
 
@@ -29,7 +34,7 @@ module Modulation
       def expand_tag(path)
         path.sub RE_TAG do
           tag = Regexp.last_match[1]
-          (@tags && @tags[tag]) || (raise "Invalid tag #{tag}")
+          tags[tag] || (raise "Invalid tag #{tag}")
         end
       end
 
