@@ -11,7 +11,7 @@ POINT = 2
 ALARM = 3
 ```
 
-## Add auto_import without 
+## Add auto_import without arguments
 
 *lib/foo/bar.rb*
 ```ruby

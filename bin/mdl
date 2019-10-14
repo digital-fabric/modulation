@@ -2,42 +2,6 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
-require 'modulation'
+require 'modulation/cli'
 
-def self.run
-  ARGV.each do |arg|
-    fn, method = (arg =~ /^([^\:]+)\:(.+)$/) ? [$1, $2.to_sym] : [arg, :main]
-    mod = import(File.expand_path(fn))
-    mod.send(method) if method
-  end
-rescue StandardError => e
-  backtrace = e.backtrace.reject { |l| l =~ /^(#{Modulation::DIR})|(bin\/mdl)/ }
-  e.set_backtrace(backtrace)
-  raise e
-end
-
-def collect_deps(fn, paths)
-  if File.directory?(fn)
-    Dir["#{fn}/**/*.rb"].each { |fn| collect_deps(fn, paths) }
-  else
-    paths << File.expand_path(fn)
-    mod = import(File.expand_path(fn))
-    if mod.respond_to?(:__traverse_dependencies)
-      mod.__traverse_dependencies { |m| paths << m.__module_info[:location] }
-    end
-  end
-end
-
-def self.deps
-  paths = []
-  ARGV.each { |arg| collect_deps(arg, paths) }
-  puts *paths
-end
-
-def self.pack
-  require 'modulation/packer'
-  STDOUT << Modulation::Packer.pack(ARGV, hide_filenames: true)
-end
-
-cmd = ARGV.shift
-respond_to?(cmd.to_sym) ? send(cmd) : (ARGV.unshift(cmd); run)
+Modulation::CLI.new ARGV

@@ -28,21 +28,21 @@ a functional style, minimizing boilerplate code.
 
 ## Features
 
-- Complete isolation of each module.
-- Explicit exporting and importing of methods and constants.
-- Support for circular dependencies.
-- Support for [default exports](#default-exports) for modules exporting a single
-  class or value.
-- [Lazy Loading](#lazy-loading) improves start up time and memory consumption.
-- [Hot module reloading](#reloading-modules)
-- [Mocking of dependencies](#mocking-dependencies) for testing purposes.
-- Can be used to [write gems](#writing-gems-using-modulation).
-- [Dependency introspection](#dependency-introspection).
-- Support for [creating modules programmatically](#programmatic-module-creation).
-- Easier [unit-testing](#unit-testing-modules) of private methods and
-  constants.
-- Pack entire applications [into a single
-  file](#packing-applications-with-modulation).
+- **[Complete isolation of each module](#organizing-your-code-with-modulation)**
+  prevents literring of the global namespace.
+- **Explicit [exporting](#exporting-declarations) and
+  [importing](#importing-declarations) of methods and constants** lets you
+  control the public interface for each module, as well as keep track of all
+  dependencies in your code.
+- **[Lazy Loading](#lazy-loading)** improves start up time and memory
+  consumption.
+- **[Hot module reloading](#reloading-modules)** streamlines your development
+  process.
+- **[Dependency mocking](#mocking-dependencies)** facilitates testing.
+- **[Dependency introspection](#dependency-introspection)** lets you introspect
+  your dependencies at runtime.
+- **[Application packing](#packing-applications-with-modulation)** lets you
+  bundle your code in a single, optionally obfuscated file (WIP).
 
 ## Rationale
 
@@ -347,6 +347,12 @@ require 'modulation'
 config = import('./config')
 db.connect(config[:host], config[:port])
 ```
+
+### Circular dependencies
+
+Circular dependencies, while not the best practice for organizing a code base,
+are sometimes useful. Modulation supports circular dependencies, with the
+exception of modules with default exports.
 
 ### Accessing a module's root namespace from nested modules within itself
 

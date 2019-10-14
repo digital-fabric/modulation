@@ -764,7 +764,7 @@ class PackerTest < Minitest::Test
   
   def test_packer
     code = Modulation::Packer.pack(File.expand_path('./modules/packer_app.rb', File.dirname(__FILE__)))
-    f = Tempfile.open('packer_app')#, 'w+')
+    f = Tempfile.open('packed_app')
     f << code
     f.close
 
