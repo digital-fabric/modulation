@@ -14,19 +14,18 @@ BOOTSTRAP_CODE = <<~SRC
     gem 'modulation', '~> %<modulation_version>s'
   end
 
-  Bootstrap = import('@modulation/bootstrap')
-  Bootstrap.setup(DATA, %<dictionary>s)
-  import(%<entry_point>s).send(:main)
+  import('@modulation/bootstrap').run(DATA, %<dict_offset>d)
   __END__
   %<data>s
 SRC
 
 def pack(paths, _options = {})
   paths = [paths] unless paths.is_a?(Array)
-  deps = collect_dependencies(paths)
   entry_point_filename = File.expand_path(paths.first)
-  dictionary, data = generate_packed_data(deps)
-  generate_bootstrap(dictionary, data, entry_point_filename)
+
+  deps = collect_dependencies(paths)
+  package_info = generate_packed_data(deps, entry_point_filename)
+  generate_bootstrap(package_info, entry_point_filename)
 end
 
 def collect_dependencies(paths)
@@ -37,17 +36,20 @@ def collect_dependencies(paths)
   end
 end
 
-def generate_packed_data(deps)
+def generate_packed_data(deps, entry_point_filename)
   files = deps.each_with_object({}) do |path, dict|
     dict[path] = IO.read(path)
   end
-  pack_files(files)
+  pack_files(files, entry_point_filename)
 end
 
-def pack_files(files)
+def pack_files(files, entry_point_filename)
   data = (+'').encode('ASCII-8BIT')
   last_offset = 0
-  dictionary = files.each_with_object({}) do |(path, content), dict|
+  dictionary = {
+    entry_point: entry_point_filename
+  }
+  files.each_with_object(dictionary) do |(path, content), dict|
     zipped = Zlib::Deflate.deflate(content)
     size = zipped.bytesize
 
@@ -55,16 +57,21 @@ def pack_files(files)
     dict[path] = [last_offset, size]
     last_offset += size
   end
-  [dictionary, data]
+  packed_dictionary = Zlib::Deflate.deflate(dictionary.inspect)
+  data << packed_dictionary
+
+  {
+    dict_offset:  last_offset,
+    data:         data
+  }
 end
 
-def generate_bootstrap(dictionary, data, entry_point)
+def generate_bootstrap(package_info, entry_point)
   format(
     bootstrap_template,
     modulation_version: Modulation::VERSION,
-    dictionary: dictionary.inspect,
-    entry_point: entry_point.inspect,
-    data: data
+    dict_offset:        package_info[:dict_offset],
+    data:               package_info[:data]
   )
 end
 

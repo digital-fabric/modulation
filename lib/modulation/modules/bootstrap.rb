@@ -1,14 +1,19 @@
 # frozen_string_literal: true
 
-export :setup, :transform_module_info
+export :run, :transform_module_info
 
 require 'zlib'
 
-def setup(data, dictionary)
+def run(data, dict_offset)
+  setup(data, dict_offset)
+  import(@dictionary[:entry_point]).send(:main)
+end
+
+def setup(data, dict_offset)
   patch_builder
   @data = data
   @data_offset = data.pos
-  @dictionary = dictionary
+  @dictionary = read_dictionary(dict_offset)
 end
 
 def patch_builder
@@ -30,6 +35,11 @@ end
 
 def find(path)
   @dictionary[path]
+end
+
+def read_dictionary(offset)
+  @data.seek(@data_offset + offset)
+  eval Zlib::Inflate.inflate(@data.read)
 end
 
 def read_file(path)

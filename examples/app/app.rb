@@ -2,7 +2,6 @@ Lancelot = import('./lancelot')
 Robin = import('./robin')
 
 def ask(m)
-  puts
   puts "Asking #{m.name}..."
   print "What is your name? "
   puts m.name
