@@ -34,6 +34,8 @@ a functional style, minimizing boilerplate code.
   [importing](#importing-declarations) of methods and constants** lets you
   control the public interface for each module, as well as keep track of all
   dependencies in your code.
+- **[Tagged paths](#using-tags-to-designate-common-subdirectories)** simplify
+  the management of dependencies in large applications.
 - **[Lazy Loading](#lazy-loading)** improves start up time and memory
   consumption.
 - **[Hot module reloading](#reloading-modules)** streamlines your development
