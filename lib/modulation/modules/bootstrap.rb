@@ -27,9 +27,8 @@ def patch_builder
 end
 
 def transform_module_info(info)
-  if find(info[:location])
-    info[:source] = read_file(info[:location])
-  end
+  location = info[:location]
+  info[:source] = read_file(location) if location
   info
 end
 

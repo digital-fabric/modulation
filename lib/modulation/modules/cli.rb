@@ -2,6 +2,7 @@
 
 export_default :CLI
 
+# Command line interface functionality
 class CLI
   def initialize(argv)
     @argv = argv
@@ -25,15 +26,15 @@ class CLI
     cleanup_backtrace(e)
     raise e
   end
-  
+
   def run_file(arg)
     fn, method = filename_and_method_from_arg(arg)
     mod = import(File.expand_path(fn))
     mod.send(method) if method
   end
-  
+
   FILENAME_AND_METHOD_RE = /^([^\:]+)\:(.+)$/.freeze
-  
+
   def filename_and_method_from_arg(arg)
     if arg =~ FILENAME_AND_METHOD_RE
       match = Regexp.last_match
@@ -42,14 +43,14 @@ class CLI
       [arg, :main]
     end
   end
-  
+
   BACKTRACE_RE = /^(#{Modulation::DIR})|(bin\/mdl)/.freeze
-  
+
   def cleanup_backtrace(error)
     backtrace = error.backtrace.reject { |l| l =~ BACKTRACE_RE }
     error.set_backtrace(backtrace)
   end
-  
+
   def collect_deps(path, array)
     if File.directory?(path)
       Dir["#{path}/**/*.rb"].each { |fn| collect_deps(fn, array) }
@@ -61,17 +62,17 @@ class CLI
       end
     end
   end
-  
+
   def deps
     paths = []
     @argv.each { |arg| collect_deps(arg, paths) }
     puts(*paths)
   end
-  
+
   def pack
     STDOUT << import('@modulation/packer').pack(@argv, hide_filenames: true)
   end
-  
+
   def version
     puts "Modulation version #{Modulation::VERSION}"
   end

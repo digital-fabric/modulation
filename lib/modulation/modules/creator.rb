@@ -4,7 +4,7 @@ export :from_block,
        :from_hash,
        :from_string
 
-RE_ATTR   = /^@(.+)$/.freeze
+RE_ATTR = /^@(.+)$/.freeze
 
 def from_block(block)
   Module.new.tap { |m| m.instance_eval(&block) }
@@ -16,20 +16,22 @@ end
 def from_hash(hash)
   Module.new.tap do |m|
     s = m.singleton_class
-    hash.each do |k, v|
-      if k =~ Modulation::RE_CONST
-        m.const_set(k, v)
-      elsif k =~ RE_ATTR
-        m.instance_variable_set(k, v)
-      elsif v.respond_to?(:to_proc)
-        s.send(:define_method, k) { |*args| instance_exec(*args, &v) }
-      else
-        s.send(:define_method, k) { v }
-      end
-    end
+    hash.each { |k, v| process_hash_entry(k, v, m, s) }
+  end
+end
+
+def process_hash_entry(key, value, mod, singleton)
+  if key =~ Modulation::RE_CONST
+    mod.const_set(key, value)
+  elsif key =~ RE_ATTR
+    mod.instance_variable_set(key, value)
+  elsif value.respond_to?(:to_proc)
+    singleton.send(:define_method, key) { |*args| instance_exec(*args, &value) }
+  else
+    singleton.send(:define_method, key) { value }
   end
 end
 
 def from_string(str)
-  m = Modulation::Builder.make(source: str)
+  Modulation::Builder.make(source: str)
 end

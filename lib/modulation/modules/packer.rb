@@ -44,29 +44,27 @@ def generate_packed_data(deps, entry_point_filename)
 end
 
 def pack_files(files, entry_point_filename)
+  dictionary = { entry_point: entry_point_filename }
   data = (+'').encode('ASCII-8BIT')
   last_offset = 0
-  dictionary = {
-    entry_point: entry_point_filename
-  }
   files.each_with_object(dictionary) do |(path, content), dict|
-    zipped = Zlib::Deflate.deflate(content)
-    size = zipped.bytesize
-
-    data << zipped
-    dict[path] = [last_offset, size]
-    last_offset += size
+    last_offset = add_packed_file(path, content, dict, last_offset)
   end
-  packed_dictionary = Zlib::Deflate.deflate(dictionary.inspect)
-  data << packed_dictionary
+  data << Zlib::Deflate.deflate(dictionary.inspect)
 
-  {
-    dict_offset:  last_offset,
-    data:         data
-  }
+  { dict_offset: last_offset, data: data }
 end
 
-def generate_bootstrap(package_info, entry_point)
+def add_packed_file(path, content, dict, last_offset)
+  zipped = Zlib::Deflate.deflate(content)
+  size = zipped.bytesize
+
+  data << zipped
+  dict[path] = [last_offset, size]
+  last_offset + size
+end
+
+def generate_bootstrap(package_info, _entry_point)
   format(
     bootstrap_template,
     modulation_version: Modulation::VERSION,

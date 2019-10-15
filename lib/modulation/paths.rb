@@ -16,8 +16,12 @@ module Modulation
 
       def tags
         @tags ||= {
-          'modulation' =>  File.join(Modulation::DIR, 'modulation/modules')
+          'modulation' => modules_path
         }
+      end
+
+      def modules_path
+        File.join(Modulation::DIR, 'modulation/modules')
       end
 
       def add_tags(new_tags, caller_location)

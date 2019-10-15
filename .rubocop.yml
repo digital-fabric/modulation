@@ -8,6 +8,7 @@ AllCops:
     - '**/*.gemspec'
     - 'test/**/*.rb'
     - 'examples/**/*.rb'
+    - 'Gemfile'
 
 # Style/ModuleFunction:
   # Enabled: false
@@ -16,3 +17,13 @@ Style/RegexpLiteral:
 
 Naming/MemoizedInstanceVariableName:
   Enabled: false
+
+Layout/AlignHash:
+  EnforcedColonStyle: table
+
+Security/Eval:
+  Exclude:
+    - 'lib/modulation/modules/bootstrap.rb'
+
+Metrics/ModuleLength:
+  Max: 110 # default is 100

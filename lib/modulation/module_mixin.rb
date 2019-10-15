@@ -31,8 +31,8 @@ module Modulation
 
       @__export_directives ||= []
       @__export_directives << {
-        method: :export,
-        args: symbols,
+        method:        :export,
+        args:          symbols,
         export_caller: caller
       }
     end
@@ -46,8 +46,8 @@ module Modulation
 
       @__export_directives ||= []
       @__export_directives << {
-        method: :export_from_receiver,
-        args: name,
+        method:        :export_from_receiver,
+        args:          name,
         export_caller: caller
       }
     end
