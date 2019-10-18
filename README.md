@@ -588,6 +588,30 @@ settings = import('settings')
 settings = settings.__reload!
 ```
 
+Please note that Modulation does not include a directory watcher that
+automatically reloads changed modules. This is due to multiple considerations
+that include the chosen threading model, or the reactor engine in use, or even
+the chosen solution for watching files (whether it's an external gem or an
+internal tool).
+
+It is, however, quite trivial to watch files using
+[`directory_watcher`](https://rubygems.org/gems/directory_watcher/):
+
+```ruby
+require 'directory_watcher'
+
+dw = DirectoryWatcher.new 'lib', glob: '**/*.rb', interval: 2, pre_load: true
+dw.add_observer do |*events|
+  events.each do |e|
+    next unless e.type == :modified
+
+    Modulation.reload e.path
+  end
+end
+
+dw.start
+```
+
 ### Retaining state between reloads
 
 Before a module is reloaded, all of its methods and constants are removed. In

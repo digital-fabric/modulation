@@ -1,8 +1,13 @@
+1.0 2019-10-18
+--------------
+
+* Cleanup code
+* Obfuscate bootstrap dictionary code in packages
+* Move packer, bootstrap, CLI, creator code into stock modules
+
 0.34 2019-10-14
 ---------------
 
-* Obfuscate bootstrapping code in packages
-* Move packer, bootstrap, CLI, creator code into stock modules
 * Improve README
 
 0.33 2019-10-02

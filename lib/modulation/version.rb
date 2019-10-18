@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module Modulation
-  VERSION = '0.34'
+  VERSION = '1.0'
 end
