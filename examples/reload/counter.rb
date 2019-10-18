@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 export :value, :incr, :reloaded?
 
 @reloaded = !!@counter

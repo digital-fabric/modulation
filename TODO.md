@@ -44,17 +44,10 @@ end
 
 ## Roadmap
 
-### 0.34
-
-- rewrite README:
-  - update Ruby core docs links to version 2.6.5
-  - reorganize guide into basic usage, advanced features
-  - write API reference
-- Write post on reddit, rubyflow, dev.to/ruby, news.ycombinator.com
-
 ### 1.0
 
 - convert *all* reality codebase to using Modulation + Affect.
+- Write post on reddit, rubyflow, dev.to/ruby, news.ycombinator.com
 
 ### 1.1
 
@@ -68,55 +61,11 @@ end
 
 - hooks: before_load, after_load etc
 
-## reload all
-
-Add `Modulation.reload_all!` method that reloads all currently loaded modules.
-Reloading should be ordered according to the dependencies involved. So, first we
-go through each module, and place it before all its dependents, so it will be
-reloaded before its dependents.
-
-We can eventually also implement reloading for only changed files:
-
-```ruby
-Modulation.reload_changed!
-```
-
-See below...
-
 ## Packer
 
 - filename obfuscation: use MD5 hash on the filename. When doing an import,
   compare with the MD5 hash of the given path with the dictionary, then proceed
   normally.
-
-## Creating modules on the fly
-
-```ruby
-# using eg
-m = Modulation.create a: ->(x) { x + 1 }, b: ->(x) { x * 2}
-
-# from string
-m = Modulation.create <<~RUBY<<~EOF, 
-export :foo
-
-def foo
-  :bar
-end
-EOF
-
-# from block
-m = Modulation.create do { |mod|
-  export :foo
-
-  def foo
-    :bar
-  end
-
-  class mod::BAZ
-    ...
-  end
-}
-```
 
 ## Re-exporting methods and constants
 
@@ -138,15 +87,20 @@ export_from_receiver :Async
 
 ## Auto-reload changed files:
 
-Will necessitate a dependency on a watcher - and this might lead to
-complications if a reactor lib (nuclear, async, EM etc) is used.
-
 API:
 
 ```ruby
 # auto-reload any loaded module if changed
-Modulation.reload_changed!
+Modulation.reload_updated!
 
 # auto-reload specific dirs
-Modulation.reload_changed!('./lib/**/*.rb', './vendor/**/*.rb')
+Modulation.reload_updated!('./lib/**/*.rb', './vendor/**/*.rb')
+
+# return a list of updated modules
+Modulation.updated_modules
+
 ```
+
+Do a `File.stat` on the module when loading it. Whenever `reload_updated!` is
+called, go over all loaded modules and compare the stat. If `Errno::ENOENT` is
+raised, remove the module.

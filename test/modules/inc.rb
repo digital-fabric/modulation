@@ -1,1 +1,1 @@
-$inc += 1
+Thread.current[:inc] += 1

@@ -1,8 +1,10 @@
-add = ->(x, y) { x + y }
-mul = ->(x, y) { x * y}
-pow = ->(x, y) { x ** y }
+# frozen_string_literal: true
 
-export_default ->(op, x, y) {
+add = ->(x, y) { x + y }
+mul = ->(x, y) { x * y }
+pow = ->(x, y) { x**y }
+
+export_default lambda { |op, x, y|
   case op
   when :add
     add.(x, y)
@@ -11,6 +13,6 @@ export_default ->(op, x, y) {
   when :pow
     pow.(x, y)
   else
-    raise "Invalid op"
+    raise 'Invalid op'
   end
 }

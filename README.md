@@ -40,7 +40,7 @@ a functional style, minimizing boilerplate code.
   consumption.
 - **[Hot module reloading](#reloading-modules)** streamlines your development
   process.
-- **[Dependency mocking](#mocking-dependencies)** facilitates testing.
+- **[Module mocking](#mocking-modules)** facilitates testing.
 - **[Dependency introspection](#dependency-introspection)** lets you introspect
   your dependencies at runtime.
 - **[Application packing](#packing-applications-with-modulation)** lets you
@@ -474,7 +474,7 @@ class FibTest < Minitest::Test
 end
 ```
 
-### Mocking dependencies
+### Mocking modules
 
 Modules loaded by Modulation can be easily mocked when running tests or specs,
 using `Modulation.mock`:
@@ -504,6 +504,9 @@ class UserControllerTest < Minitest::Test
   end
 end
 ```
+
+`Modulation.mock` accepts a module path and a receiver, and the module stays
+mocked within the given block.
 
 ### Lazy Loading
 
@@ -782,41 +785,52 @@ end
 
 ## API Reference
 
-This section will be expanded on in a future release.
+### Kernel
 
-#### `__module_info`
+#### `Kernel#auto_import_map(path, options = {})`
 
-### `__reload!`
+Returns a hash mapping keys to corresponding module files inside the given
+directory path. Modules are loaded automatically upon accessing hash keys.
 
-#### `alias_method_once()`
+#### `Kernel#import(path)`
 
-#### `auto_import()`
+#### `Kernel#import_all(path)`
 
-#### `auto_import_map()`
+#### `Kernel#import_map(path, options = {})`
 
-#### `export()`
+### Module
 
-#### `export_default()`
+#### `Module#__module_info`
 
-#### `export_from_receiver()`
+Returns a hash containing information about the module. This currently includes
+the following entries:
 
-#### `extend_from()`
+location|Absolute module file path
+exported_symbols|Array containing all symbols exported by the module
 
-#### `import()`
+### `Module#__reload!`
 
-#### `import_all()`
+#### `Module#alias_method_once(new_name, old_name)`
 
-#### `import_map()`
+#### `Module#auto_import(sym, path)`
 
-#### `include_from()`
+#### `Module#export(*symbols)`
+
+#### `Module#export_default(value)`
+
+#### `Module#export_from_receiver(receiver)`
+
+#### `Module#extend_from(path)`
+
+#### `Module#include_from(path, *symbols)`
+
+#### `Module::MODULE`
+
+### Modulation
 
 #### `Modulation.full_backtrace!`
 
-#### `Modulation.reload()`
-
-#### `MODULE`
-
-#### `MODULE.__module_info`
+#### `Modulation.reload`
 
 ## Why you should not use Modulation
 

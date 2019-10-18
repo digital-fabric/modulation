@@ -113,7 +113,7 @@ module Modulation
 
     def __traverse_dependencies(&block)
       __dependencies.each do |mod|
-        block.call mod
+        block.(mod)
         if mod.respond_to?(:__traverse_dependencies)
           mod.__traverse_dependencies(&block)
         end

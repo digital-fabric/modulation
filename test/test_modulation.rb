@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'minitest/autorun'
 require_relative '../lib/modulation.rb'
 Modulation.full_backtrace!
@@ -9,7 +11,7 @@ ensure
   @full_backtrace = true
 end
 
-MODULES_DIR = File.join(File.dirname(__FILE__), 'modules')
+MODULES_DIR = File.join(__dir__, 'modules')
 RELOADED_FN = File.join(MODULES_DIR, 'reloaded.rb')
 
 class FileHandlingTest < Minitest::Test
@@ -22,9 +24,8 @@ class FileHandlingTest < Minitest::Test
   end
 
   def test_that_import_raises_on_file_not_found
-    assert_raises(Exception) {import('./not_found')}
+    assert_raises(Exception) { import('./not_found') }
   end
-
 
   def test_that_import_takes_filename_without_rb_extension
     a1 = import('./modules/a')
@@ -34,22 +35,21 @@ class FileHandlingTest < Minitest::Test
   end
 
   def test_that_import_loads_the_same_file_only_once
-    $inc = 0
+    Thread.current[:inc] = 0
     import('./modules/inc')
     import('./modules/inc')
 
-    assert_equal(1, $inc)
+    assert_equal(1, Thread.current[:inc])
   end
 
   def test_that_filenames_are_always_relative
-    $inc = 0
+    Thread.current[:inc] = 0
     import('./modules/b1')
-    assert_equal(1, $inc)
+    assert_equal(1, Thread.current[:inc])
 
-    fn_b1 =   File.expand_path('modules/b1.rb', File.dirname(__FILE__))
-    fn_b2 =   File.expand_path('modules/b/b2.rb', File.dirname(__FILE__))
-    fn_inc =  File.expand_path('modules/inc.rb', File.dirname(__FILE__))
-
+    fn_b1 =   File.expand_path('modules/b1.rb', __dir__)
+    fn_b2 =   File.expand_path('modules/b/b2.rb', __dir__)
+    fn_inc =  File.expand_path('modules/inc.rb', __dir__)
     assert_equal([fn_b2, fn_b1, fn_inc], Modulation.loaded_modules.keys.sort)
   end
 end
@@ -64,7 +64,7 @@ class ExportTest < Minitest::Test
   end
 
   def test_that_non_exported_consts_are_not_accessible
-    assert_raises(NameError) {@a::PrivateClass}
+    assert_raises(NameError) { @a::PrivateClass }
   end
 
   def test_that_non_exported_consts_are_saved_in_module_info
@@ -76,11 +76,11 @@ class ExportTest < Minitest::Test
   end
 
   def test_that_non_exported_methods_are_not_accessible
-    assert_raises(NameError) {@a.private_method}
+    assert_raises(NameError) { @a.private_method }
   end
 
   def test_that_exported_methods_are_accessible
-    assert_equal "private", @a.exported_method
+    assert_equal 'private', @a.exported_method
   end
 
   def test_that_private_class_is_accessible_to_module
@@ -88,13 +88,13 @@ class ExportTest < Minitest::Test
   end
 
   def test_that_not_found_export_symbol_raises
-    assert_raises(NameError) {
+    assert_raises(NameError) do
       import('./modules/missing_exported_const')
-    }
+    end
 
-    assert_raises(NameError) {
+    assert_raises(NameError) do
       import('./modules/missing_exported_method')
-    }
+    end
   end
 
   def test_hash_export
@@ -118,11 +118,9 @@ class ExportTest < Minitest::Test
   end
 
   def hijack_error
-    begin
-      yield
-    rescue => e
-      return e
-    end
+    yield
+  rescue StandardError => e
+    e
   end
 
   def test_that_bad_exports_show_correct_backtrace
@@ -132,8 +130,8 @@ class ExportTest < Minitest::Test
 
       assert_kind_of(NameError, error)
       module_file = File.expand_path('./modules/bad_export.rb', __dir__)
-      assert_match /^#{module_file}\:1/, error.backtrace[0]
-      assert_match /^#{__FILE__}\:#{import_line + 1}/, error.backtrace[1]
+      assert_match(/^#{module_file}\:1/, error.backtrace[0])
+      assert_match(/^#{__FILE__}\:#{import_line + 1}/, error.backtrace[1])
     end
   end
 end
@@ -148,7 +146,7 @@ class ExportFromReceiverTest < MiniTest::Test
 
     assert_equal :foo, m.foo
     assert_equal :baz, m.bar
-    
+
     assert_equal 42, m::MOL
 
     assert_raises(NameError) { m.baz }
@@ -183,37 +181,41 @@ end
 
 class ExportDefaultTest < MiniTest::Test
   def teardown
-    FileUtils.rm(RELOADED_FN) rescue nil
+    begin
+      FileUtils.rm(RELOADED_FN)
+    rescue StandardError
+      nil
+    end
     Modulation.reset!
   end
 
   def write_template(code)
     Modulation.reset!
-    File.open(RELOADED_FN, 'w+') {|f| f << code}
+    File.open(RELOADED_FN, 'w+') { |f| f << code }
   end
 
   def test_default_export_types
-    write_template("export_default :abc")
-    assert_raises(NameError) {import('./modules/reloaded')}
+    write_template('export_default :abc')
+    assert_raises(NameError) { import('./modules/reloaded') }
 
-    write_template("export_default 42")
-    assert_raises(TypeError) {import('./modules/reloaded')}
+    write_template('export_default 42')
+    assert_raises(TypeError) { import('./modules/reloaded') }
 
-    write_template("export_default false")
-    assert_raises(TypeError) {import('./modules/reloaded')}
+    write_template('export_default false')
+    assert_raises(TypeError) { import('./modules/reloaded') }
 
     write_template("export_default 'abc'")
     assert_equal('abc', import('./modules/reloaded'))
   end
 
   def test_that_not_found_export__default_symbol_raises
-    assert_raises(NameError) {
+    assert_raises(NameError) do
       import('./modules/missing_export_default_const')
-    }
+    end
 
-    assert_raises(NameError) {
+    assert_raises(NameError) do
       import('./modules/missing_export_default_method')
-    }
+    end
   end
 
   # def test_circular_export_default
@@ -241,7 +243,7 @@ class ExtendFrom1Test < MiniTest::Test
   def test_that_extend_from_extends_a_module
     assert_respond_to(@m, :a)
     assert_respond_to(@m, :b)
-    assert_raises(NameError) {@m.c}
+    assert_raises(NameError) { @m.c }
 
     assert_equal :a, @m.a
     assert_equal :b, @m.b
@@ -283,7 +285,7 @@ class IncludeFromTest < MiniTest::Test
     @o = @c.new
     assert_respond_to(@o, :a)
     assert_respond_to(@o, :b)
-    assert_raises(NameError) {@o.c}
+    assert_raises(NameError) { @o.c }
 
     assert_equal :a, @o.a
     assert_equal :b, @o.b
@@ -324,18 +326,24 @@ class DefaultModuleWithReexportedConstantsTest < MiniTest::Test
 
   def test_that_default_module_includes_reexported_constants
     @m = import('./modules/default_module')
-    assert_equal("forty two", @m::CONST)
-    assert_equal("hello!", @m::ImportedClass.new.greet)
+    assert_equal('forty two', @m::CONST)
+    assert_equal('hello!', @m::ImportedClass.new.greet)
   end
 end
 
 class GemTest < MiniTest::Test
   def setup
-    Object.remove_const(:MyGem) rescue nil
+    Object.remove_const(:MyGem)
+  rescue StandardError
+    nil
   end
 
   def teardown
-    Object.remove_const(:MyGem) rescue nil
+    begin
+      Object.remove_const(:MyGem)
+    rescue StandardError
+      nil
+    end
     Modulation.reset!
   end
 
@@ -344,17 +352,17 @@ class GemTest < MiniTest::Test
 
     assert(MyGem.is_a?(Module))
 
-    assert_equal("forty two", MyGem::CONST)
+    assert_equal('forty two', MyGem::CONST)
     assert_kind_of(Class, MyGem::MyClass)
-    assert_equal("hello!", MyGem::MyClass.new.greet)
+    assert_equal('hello!', MyGem::MyClass.new.greet)
   end
 
   def test_that_an_imported_gem_exports_its_namespace
     @m = import('./modules/my_gem')
 
-    assert_equal("forty two", @m::CONST)
+    assert_equal('forty two', @m::CONST)
     assert_kind_of(Class, @m::MyClass)
-    assert_equal("hello!", @m::MyClass.new.greet)
+    assert_equal('hello!', @m::MyClass.new.greet)
   end
 
   def test_that_importing_a_regular_gem_raises_error
@@ -377,7 +385,7 @@ class ModuleRefTest < MiniTest::Test
     assert_equal(42, m.meaning_of_life)
     assert_equal(42, m::ContainedModule.test)
 
-    assert_raises(NameError) {m::ContainedModule.test_private}
+    assert_raises(NameError) { m::ContainedModule.test_private }
   end
 end
 
@@ -420,8 +428,8 @@ class ReloadTest < MiniTest::Test
     Modulation.reset!
   end
 
-  def write_template(fn)
-    File.open(RELOADED_FN, 'w+') {|f| f << IO.read(fn)}
+  def write_template(path)
+    File.open(RELOADED_FN, 'w+') { |f| f << IO.read(path) }
   end
 
   def test_that_a_module_can_be_reloaded
@@ -435,7 +443,7 @@ class ReloadTest < MiniTest::Test
     m.reload_dependency
 
     assert_equal(m.call_me, 'David')
-    assert_raises(NameError) {m.hide_and_seek}
+    assert_raises(NameError) { m.hide_and_seek }
   end
 
   def test_that_a_module_can_be_reloaded_without_breaking_deps
@@ -449,7 +457,7 @@ class ReloadTest < MiniTest::Test
     Modulation.reload(RELOADED_FN)
 
     assert_equal(m.call_me, 'David')
-    assert_raises(NameError) {m.hide_and_seek}
+    assert_raises(NameError) { m.hide_and_seek }
   end
 
   def test_reloading_by_filename
@@ -463,7 +471,7 @@ class ReloadTest < MiniTest::Test
     Modulation.reload(RELOADED_FN)
 
     assert_equal(m.call_me, 'David')
-    assert_raises(NameError) {m.hide_and_seek}
+    assert_raises(NameError) { m.hide_and_seek }
   end
 
   def test_that_a_default_export_can_be_reloaded
@@ -471,13 +479,13 @@ class ReloadTest < MiniTest::Test
     m = import('./modules/reloaded')
 
     assert_kind_of(String, m)
-    assert_equal("Hello", m)
+    assert_equal('Hello', m)
 
     write_template(File.join(MODULES_DIR, 'template_reloaded_default_2.rb'))
     m = m.__reload!
 
     assert_kind_of(Hash, m)
-    assert_equal({"Hello" => "world"}, m)
+    assert_equal({ 'Hello' => 'world' }, m)
   end
 end
 
@@ -487,7 +495,7 @@ class MockTest < MiniTest::Test
   end
 
   module Mockery
-    extend self
+    module_function
 
     def message
       'mocked'
@@ -541,50 +549,49 @@ class AutoImportTest < MiniTest::Test
   def test_that_auto_import_loads_module
     m = import('./modules/auto_import')
 
-    fn1 = File.expand_path('modules/auto_import.rb', File.dirname(__FILE__))
+    fn1 = File.expand_path('modules/auto_import.rb', __dir__)
     assert_equal([fn1], Modulation.loaded_modules.keys)
 
     assert_equal('bar', m.foo)
 
-    fn2 = File.expand_path('modules/auto_import_bar.rb', File.dirname(__FILE__))
+    fn2 = File.expand_path('modules/auto_import_bar.rb', __dir__)
     assert_equal([fn1, fn2], Modulation.loaded_modules.keys)
   end
 
   def test_auto_import_in_nested_module
     m = import('./modules/auto_import_nested')
 
-    fn1 = File.expand_path('modules/auto_import_nested.rb', File.dirname(__FILE__))
+    fn1 = File.expand_path('modules/auto_import_nested.rb', __dir__)
     assert_equal([fn1], Modulation.loaded_modules.keys)
 
     assert_equal('bar', m::BAR)
 
-    fn2 = File.expand_path('modules/auto_import_bar.rb', File.dirname(__FILE__))
+    fn2 = File.expand_path('modules/auto_import_bar.rb', __dir__)
     assert_equal([fn1, fn2], Modulation.loaded_modules.keys)
   end
 
   def test_auto_import_with_hash_argument
     m = import('./modules/auto_import_hash')
 
-    fn1 = File.expand_path('modules/auto_import_hash.rb', File.dirname(__FILE__))
+    fn1 = File.expand_path('modules/auto_import_hash.rb', __dir__)
     assert_equal([fn1], Modulation.loaded_modules.keys)
 
     assert_equal('bar', m::M::BAR)
 
-    fn2 = File.expand_path('modules/auto_import_bar.rb', File.dirname(__FILE__))
+    fn2 = File.expand_path('modules/auto_import_bar.rb', __dir__)
     assert_equal([fn1, fn2], Modulation.loaded_modules.keys)
 
     assert_equal('baz', m::M::BAZ)
 
-    fn3 = File.expand_path('modules/auto_import_baz.rb', File.dirname(__FILE__))
+    fn3 = File.expand_path('modules/auto_import_baz.rb', __dir__)
     assert_equal([fn1, fn2, fn3], Modulation.loaded_modules.keys)
   end
 
   module Foo
     auto_import(
-      BAR: './bar',
+      BAR: './bar'
     )
   end
-
 
   def test_auto_import_const_missing_fall_through
     assert_raises(NameError) { Foo::BAZ }
@@ -597,17 +604,18 @@ class ImportAllTest < MiniTest::Test
   end
 
   def test_that_import_all_loads_all_files_matching_pattern
-    m = import_all('./modules/subdir')
-    assert_kind_of(Array, m)
+    modules = import_all('./modules/subdir')
+    assert_kind_of(Array, modules)
     fn_a = File.expand_path('./modules/subdir/a.rb', __dir__)
     fn_b = File.expand_path('./modules/subdir/b.rb', __dir__)
     fn_c1 = File.expand_path('./modules/subdir/c1.rb', __dir__)
     fn_c2 = File.expand_path('./modules/subdir/c2.rb', __dir__)
 
-    assert_equal([fn_a, fn_b, fn_c1, fn_c2], Modulation.loaded_modules.keys.sort) 
+    paths = Modulation.loaded_modules.keys.sort
+    assert_equal([fn_a, fn_b, fn_c1, fn_c2], paths)
     assert_equal(
-      Modulation.loaded_modules.keys.sort, 
-      m.map { |m| m.__module_info[:location] }.sort
+      Modulation.loaded_modules.keys.sort,
+      modules.map { |m| m.__module_info[:location] }.sort
     )
   end
 end
@@ -670,10 +678,10 @@ class AutoImportMapTest < MiniTest::Test
   def test_that_auto_import_map_raises_on_file_not_found
     m = auto_import_map('./modules/subdir')
     assert_kind_of(Hash, m)
-    
+
     assert_equal(m[:a], import('./modules/subdir/a'))
     assert_equal(1, m.size)
-    
+
     assert_raises { m[:foo] }
     assert_equal(1, m.size)
   end
@@ -699,7 +707,7 @@ class AutoImportMapTest < MiniTest::Test
     assert_equal 0, m.size
 
     m[:foo] = -> { :bar }
-    assert_equal :bar, m[:foo].()
+    assert_equal :bar, m[:foo].call
     assert_equal 1, m.size
   end
 end
@@ -707,7 +715,7 @@ end
 class DependenciesTest < MiniTest::Test
   def setup
     Modulation.reset!
-    $inc = 0
+    Thread.current[:inc] = 0
   end
 
   def teardown
@@ -730,10 +738,10 @@ class DependenciesTest < MiniTest::Test
     result = []
     b1.__traverse_dependencies do |m|
       fn = m.__module_info[:location]
-      result << (fn =~ /([a-z0-9]+)\.rb$/ && $1)
+      result << (fn =~ /([a-z0-9]+)\.rb$/ && Regexp.last_match(1))
     end
 
-    assert_equal(%w{b2 inc}, result)
+    assert_equal(%w[b2 inc], result)
   end
 
   def test_dependent_modules
@@ -752,7 +760,7 @@ end
 class PackerTest < Minitest::Test
   def setup
     Modulation.reset!
-    $inc = 0
+    Thread.current[:inc] = 0
   end
 
   def teardown
@@ -761,28 +769,37 @@ class PackerTest < Minitest::Test
 
   Packer = import '@modulation/packer'
   require 'tempfile'
-  
+
   def test_packer
-    code = Packer.pack(File.expand_path('./modules/packer_app.rb', File.dirname(__FILE__)))
+    app_path = File.expand_path('./modules/packer_app.rb', __dir__)
+    code = Packer.pack(app_path)
     f = Tempfile.open('packed_app')
     f << code
     f.close
 
     assert_equal "1\n", `ruby #{f.path}`
   ensure
-    f.unlink
+    f&.unlink
   end
 end
 
 class TagsTest < Minitest::Test
   def setup
     Modulation.reset!
-    Modulation::Paths.send(:remove_instance_variable, :@tags) rescue nil
+    begin
+      Modulation::Paths.send(:remove_instance_variable, :@tags)
+    rescue StandardError
+      nil
+    end
   end
 
   def teardown
     Modulation.reset!
-    Modulation::Paths.send(:remove_instance_variable, :@tags) rescue nil
+    begin
+      Modulation::Paths.send(:remove_instance_variable, :@tags)
+    rescue StandardError
+      nil
+    end
   end
 
   def test_expand_tag
@@ -793,17 +810,17 @@ class TagsTest < Minitest::Test
     assert_raises(RuntimeError) { p.expand_tag('@blah/hite') }
 
     p.add_tags({
-      views: './modules/subdir',
-      the_app: '../examples/app/app'
-    }, "#{__FILE__}:1")
+                 views:   './modules/subdir',
+                 the_app: '../examples/app/app'
+               }, "#{__FILE__}:1")
 
-    views_dir = File.expand_path (File.join __dir__, 'modules/subdir')
-    app_dir = File.expand_path (File.join __dir__, '../examples/app/app')
+    views_dir = File.expand_path(File.join(__dir__, 'modules/subdir'))
+    app_dir = File.expand_path(File.join(__dir__, '../examples/app/app'))
 
     assert_equal 'blah', p.expand_tag('blah')
     assert_raises(RuntimeError) { p.expand_tag('@blah') }
     assert_equal views_dir, p.expand_tag('@views')
-    
+
     assert_equal File.join(views_dir, 'a'), p.expand_tag('@views/a')
     assert_equal File.join(views_dir, 'foo'), p.expand_tag('@views/foo')
     assert_equal app_dir, p.expand_tag('@the_app')
@@ -848,7 +865,7 @@ class TagsTest < Minitest::Test
     @o = @c.new
     assert_respond_to(@o, :a)
     assert_respond_to(@o, :b)
-    assert_raises(NameError) {@o.c}
+    assert_raises(NameError) { @o.c }
 
     assert_equal :a, @o.a
     assert_equal :b, @o.b
@@ -861,7 +878,7 @@ class TagsTest < Minitest::Test
 
     assert_respond_to(@m, :a)
     assert_respond_to(@m, :b)
-    assert_raises(NameError) {@m.c}
+    assert_raises(NameError) { @m.c }
 
     assert_equal :a, @m.a
     assert_equal :b, @m.b
@@ -898,7 +915,7 @@ class ProgrammaticModuleTest < Minitest::Test
   def test_create_with_string
     m = Modulation.create <<~RUBY
       export :foo
-      
+
       def foo
         :bar
       end
@@ -910,10 +927,12 @@ class ProgrammaticModuleTest < Minitest::Test
 
   def test_create_with_block
     m = Modulation.create do
-      def foo; :bar; end
+      def foo
+        :bar
+      end
 
       @baz = 42
-      def baz; @baz; end
+      singleton_class.send :attr_reader, :baz
     end
 
     assert_kind_of Module, m

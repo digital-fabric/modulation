@@ -48,14 +48,14 @@ def pack_files(files, entry_point_filename)
   data = (+'').encode('ASCII-8BIT')
   last_offset = 0
   files.each_with_object(dictionary) do |(path, content), dict|
-    last_offset = add_packed_file(path, content, dict, last_offset)
+    last_offset = add_packed_file(path, content, data, dict, last_offset)
   end
   data << Zlib::Deflate.deflate(dictionary.inspect)
 
   { dict_offset: last_offset, data: data }
 end
 
-def add_packed_file(path, content, dict, last_offset)
+def add_packed_file(path, content, data, dict, last_offset)
   zipped = Zlib::Deflate.deflate(content)
   size = zipped.bytesize
 

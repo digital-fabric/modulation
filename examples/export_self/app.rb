@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 class << (Effects = Module.new)
-  Handlers = {
+  HANDLRES = {
     log: import('./log'),
-    say: -> what { puts what },
+    say: ->(what) { puts what },
     ask: -> { STDIN.gets }
-  }
+  }.freeze
 
   def method_missing(sym, *args)
-    Handlers[sym].call(*args)
+    HANDLRES[sym].(*args)
   end
 end
 

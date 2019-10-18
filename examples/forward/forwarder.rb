@@ -1,8 +1,8 @@
+# frozen_string_literal: true
+
 export :receiver=
 
-def receiver=(receiver)
-  @receiver = receiver
-end
+attr_writer :receiver
 
 def method_missing(sym, *args, &block)
   @receiver.send(sym, *args, &block)

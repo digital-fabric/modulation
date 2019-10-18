@@ -7,7 +7,7 @@ AllCops:
   Exclude:
     - '**/*.gemspec'
     - 'test/**/*.rb'
-    - 'examples/**/*.rb'
+    - 'examples/app/package.rb'
     - 'Gemfile'
 
 # Style/ModuleFunction:
@@ -27,3 +27,39 @@ Security/Eval:
 
 Metrics/ModuleLength:
   Max: 110 # default is 100
+
+Lint/NestedMethodDefinition:
+  Exclude:
+    - 'test/test_modulation.rb'
+
+Metrics/MethodLength:
+  Exclude:
+    - 'test/**/*.rb'
+    - 'examples/**/*.rb'
+
+Metrics/AbcSize:
+  Exclude:
+    - 'test/**/*.rb'
+    - 'examples/**/*.rb'
+
+Style/LambdaCall:
+  EnforcedStyle: braces
+
+Style/DoubleNegation:
+  Enabled: false
+
+Style/MissingRespondToMissing:
+  Exclude:
+    - 'examples/**/*.rb'
+
+Style/MethodMissingSuper:
+  Exclude:
+    - 'examples/**/*.rb'
+
+Naming/UncommunicativeMethodParamName:
+  Exclude:
+    - 'examples/**/*.rb'
+
+Style/FrozenStringLiteralComment:
+  Exclude:
+  - 'examples/**/*.rb'

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 export_default -> { MODULE }
 
 def log(level, msg)
