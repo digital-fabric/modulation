@@ -712,6 +712,32 @@ class AutoImportMapTest < MiniTest::Test
   end
 end
 
+class MODULETest < MiniTest::Test
+  def setup
+    @m = import('./modules/MODULE')
+  end
+
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_MODULE_access
+    assert_equal @m, @m.mod
+  end
+
+  def test_MODULE_constants
+    assert_equal :foo, @m.foo
+  end
+
+  def test_MODULE_methods
+    assert_equal :bar, @m.bar
+  end
+
+  def test_MODULE_send
+    assert_equal :baz, @m.baz
+  end
+end
+
 class DependenciesTest < MiniTest::Test
   def setup
     Modulation.reset!
@@ -938,5 +964,21 @@ class ProgrammaticModuleTest < Minitest::Test
     assert_kind_of Module, m
     assert_equal :bar, m.foo
     assert_equal 42, m.baz
+  end
+end
+
+class EmptyTest < Minitest::Test
+  def setup
+    Modulation.reset!
+  end
+
+  def teardown
+    Modulation.reset!
+  end
+
+  def test_empty_module
+    m = import('./modules/empty')
+
+    assert_kind_of Module, m
   end
 end
