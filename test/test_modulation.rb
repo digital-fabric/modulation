@@ -14,7 +14,7 @@ end
 MODULES_DIR = File.join(__dir__, 'modules')
 RELOADED_FN = File.join(MODULES_DIR, 'reloaded.rb')
 
-class FileHandlingTest < Minitest::Test
+class Minitest::Test
   def setup
     Modulation.reset!
   end
@@ -22,7 +22,9 @@ class FileHandlingTest < Minitest::Test
   def teardown
     Modulation.reset!
   end
+end
 
+class FileHandlingTest < Minitest::Test
   def test_that_import_raises_on_file_not_found
     assert_raises(Exception) { import('./not_found') }
   end
@@ -56,11 +58,8 @@ end
 
 class ExportTest < Minitest::Test
   def setup
+    super
     @a = import('./modules/a')
-  end
-
-  def teardown
-    Modulation.reset!
   end
 
   def test_that_non_exported_consts_are_not_accessible
@@ -166,11 +165,8 @@ end
 
 class ExposeTest < MiniTest::Test
   def setup
+    super
     @a = import('./modules/a').__expose!
-  end
-
-  def teardown
-    Modulation.reset!
   end
 
   def test_that_expose_exposes_private_methods
@@ -232,12 +228,9 @@ end
 
 class ExtendFrom1Test < MiniTest::Test
   def setup
+    super
     @m = Module.new
     @m.extend_from('modules/ext')
-  end
-
-  def teardown
-    Modulation.reset!
   end
 
   def test_that_extend_from_extends_a_module
@@ -252,13 +245,10 @@ end
 
 class ExtendFrom2Test < MiniTest::Test
   def setup
+    super
     @m = Module.new
     @m.extend_from('./modules/extend_from1')
     @m.extend_from('./modules/extend_from2')
-  end
-
-  def teardown
-    Modulation.reset!
   end
 
   def test_that_extend_from_doesnt_mix_private_methods
@@ -273,12 +263,9 @@ end
 
 class IncludeFromTest < MiniTest::Test
   def setup
+    super
     @c = Class.new
     @c.include_from('modules/ext')
-  end
-
-  def teardown
-    Modulation.reset!
   end
 
   def test_that_include_from_adds_instance_methods_to_class
@@ -333,6 +320,7 @@ end
 
 class GemTest < MiniTest::Test
   def setup
+    super
     Object.remove_const(:MyGem)
   rescue StandardError
     nil
@@ -344,7 +332,7 @@ class GemTest < MiniTest::Test
     rescue StandardError
       nil
     end
-    Modulation.reset!
+    super
   end
 
   def test_that_a_required_gem_defines_its_namespace
@@ -714,11 +702,8 @@ end
 
 class MODULETest < MiniTest::Test
   def setup
+    super
     @m = import('./modules/MODULE')
-  end
-
-  def teardown
-    Modulation.reset!
   end
 
   def test_MODULE_access
@@ -740,12 +725,8 @@ end
 
 class DependenciesTest < MiniTest::Test
   def setup
-    Modulation.reset!
+    super
     Thread.current[:inc] = 0
-  end
-
-  def teardown
-    Modulation.reset!
   end
 
   def test_dependencies
@@ -785,12 +766,8 @@ end
 
 class PackerTest < Minitest::Test
   def setup
-    Modulation.reset!
+    super
     Thread.current[:inc] = 0
-  end
-
-  def teardown
-    Modulation.reset!
   end
 
   Packer = import '@modulation/packer'
@@ -811,7 +788,7 @@ end
 
 class TagsTest < Minitest::Test
   def setup
-    Modulation.reset!
+    super
     begin
       Modulation::Paths.send(:remove_instance_variable, :@tags)
     rescue StandardError
@@ -820,7 +797,7 @@ class TagsTest < Minitest::Test
   end
 
   def teardown
-    Modulation.reset!
+    super
     begin
       Modulation::Paths.send(:remove_instance_variable, :@tags)
     rescue StandardError
@@ -912,14 +889,6 @@ class TagsTest < Minitest::Test
 end
 
 class ProgrammaticModuleTest < Minitest::Test
-  def setup
-    Modulation.reset!
-  end
-
-  def teardown
-    Modulation.reset!
-  end
-
   def test_create_with_invalid_arg
     assert_raises(RuntimeError) { Modulation.create }
     assert_raises(RuntimeError) { Modulation.create :foo }
@@ -968,14 +937,6 @@ class ProgrammaticModuleTest < Minitest::Test
 end
 
 class EmptyTest < Minitest::Test
-  def setup
-    Modulation.reset!
-  end
-
-  def teardown
-    Modulation.reset!
-  end
-
   def test_empty_module
     m = import('./modules/empty')
 
