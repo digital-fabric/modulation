@@ -21,6 +21,8 @@ module hierarchies.
   s.extra_rdoc_files = ["README.md", "CHANGELOG.md"]
   s.executables   = ['mdl']
 
+  s.add_development_dependency "bundler"
+  s.add_development_dependency "rake"
   s.add_development_dependency  'minitest', '5.11.3'
   s.add_development_dependency  'redis', '4.0.1'
 end
