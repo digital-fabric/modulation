@@ -4,26 +4,16 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Repo checkout
-      uses: actions/checkout@v2
-
-    - name: Set up Ruby 2.6
-      uses: actions/setup-ruby@v1
+    - uses: actions/checkout@v1
+    - uses: actions/setup-ruby@v1
       with:
-        ruby-version: 2.6.x
-
-    - name: RubyGems, Bundler Update
-      run:  gem update --system --no-document --conservative
-
+        ruby-version: 2.6.5
     - name: Install dependencies
       run: |
         gem install bundler
         bundle install
-
-    - name: test
+    - name: Run tests
       run:  bundle exec rake test
-      timeout-minutes: 10
