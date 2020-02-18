@@ -9,7 +9,7 @@ jobs:
 
     steps:
     - name: Repo checkout
-    - uses: actions/checkout@v2
+      uses: actions/checkout@v2
 
     - name: Set up Ruby 2.6
       uses: actions/setup-ruby@v1
@@ -21,9 +21,7 @@ jobs:
 
     - name: bundle install
       run:  bundle install --path .bundle/gems --without development
-        
 
     - name: test
       run:  bundle exec rake test
       timeout-minutes: 10
-      
