@@ -1,5 +1,9 @@
 # Modulation - Explicit Dependency Management for Ruby
 
+[![Gem Version](https://badge.fury.io/rb/modulation.svg)](http://rubygems.org/gems/modulation)
+![Modulation Test](https://github.com/digital-fabric/modulation/workflows/Tests/badge.svg)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/digital-fabric/modulation/blob/master/LICENSE)
+
 > Modulation | mɒdjʊˈleɪʃ(ə)n | *Music* -  a change from one key to another in a
 > piece of music.
 
@@ -8,6 +12,7 @@
 [API](#api-reference) |
 [EXAMPLES](examples) |
 [RDOC](https://www.rubydoc.info/gems/modulation/)
+
 
 Modulation provides an alternative way of organizing your Ruby code. Modulation
 lets you explicitly import and export declarations in order to better control 
