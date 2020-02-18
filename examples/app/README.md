@@ -19,7 +19,7 @@ code.
 
 Using Bundler's [inline gemfile
 feature](https://bundler.io/v2.0/guides/bundler_in_a_single_file_ruby_script.html),
-the Modulation is installed automatically.
+the Modulation gem is installed automatically.
 
 In the future, packaging apps will also support:
 

@@ -109,8 +109,9 @@ Each source file is evaluated in the context of a newly-created `Module`
 instance, with some additional methods for introspection and miscellaneous
 operations such as [hot reloading](#reloading-modules).
 
-Modulation provides an alternative APIs for loading modules. Instead of using
-`require` and `require_relative`, you use `import`, `import_map` and other APIs.
+Modulation provides alternative APIs for loading modules. Instead of using
+`require` and `require_relative`, we use `import`, `import_map` etc, discussed
+in detail in the [API reference](#api-reference).
 
 ## Basic Usage
 
@@ -817,6 +818,9 @@ Returns a hash mapping keys to corresponding module files inside the given
 directory path. Modules are loaded automatically upon accessing hash keys.
 
 #### `Kernel#import(path)`
+
+Returns a loaded module identified by the given path. The path can contain
+[tags](#using-tags-to-designate-common-subdirectories)
 
 #### `Kernel#import_all(path)`
 

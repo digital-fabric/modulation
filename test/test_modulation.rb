@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
+require 'bundler/setup'
 require 'minitest/autorun'
-require_relative '../lib/modulation.rb'
+require 'tempfile'
+require 'modulation'
+
 Modulation.full_backtrace!
 
 def Modulation.with_clean_backtrace
@@ -771,7 +774,6 @@ class PackerTest < Minitest::Test
   end
 
   Packer = import '@modulation/packer'
-  require 'tempfile'
 
   def test_packer
     app_path = File.expand_path('./modules/packer_app.rb', __dir__)

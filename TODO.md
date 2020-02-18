@@ -44,13 +44,9 @@ end
 
 ## Roadmap
 
-### 1.0
-
-- convert *all* reality codebase to using Modulation + Affect.
-- Write post on reddit, rubyflow, dev.to/ruby, news.ycombinator.com
-
 ### 1.1
 
+- Deal with things like auto_import, auto_import_map
 - include app's Gemfile in packed app
 - propagated reload (reload all dependents of a reloaded module)
 - reload all/changed
