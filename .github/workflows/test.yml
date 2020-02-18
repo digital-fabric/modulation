@@ -19,8 +19,10 @@ jobs:
     - name: RubyGems, Bundler Update
       run:  gem update --system --no-document --conservative
 
-    - name: bundle install
-      run:  bundle install --path .bundle/gems --without development
+    - name: Install dependencies
+      run: |
+        gem install bundler
+        bundle install
 
     - name: test
       run:  bundle exec rake test
