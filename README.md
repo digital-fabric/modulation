@@ -1,7 +1,7 @@
 # Modulation - Explicit Dependency Management for Ruby
 
 [![Gem Version](https://badge.fury.io/rb/modulation.svg)](http://rubygems.org/gems/modulation)
-![Modulation Test](https://github.com/digital-fabric/modulation/workflows/Tests/badge.svg)
+[![Modulation Test](https://github.com/digital-fabric/modulation/workflows/Tests/badge.svg)](https://github.com/digital-fabric/modulation/actions?query=workflow%3ATests)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/digital-fabric/modulation/blob/master/LICENSE)
 
 > Modulation | mɒdjʊˈleɪʃ(ə)n | *Music* -  a change from one key to another in a
