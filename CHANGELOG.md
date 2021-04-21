@@ -1,3 +1,8 @@
+1.0.1 2021-04-21
+----------------
+
+* Override inspect method for classes defined in modules (#7)
+
 1.0 2019-10-18
 --------------
 
