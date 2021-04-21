@@ -7,7 +7,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     minitest (5.11.3)
-    rake (13.0.1)
+    rake (13.0.3)
     redis (4.0.1)
 
 PLATFORMS
@@ -21,4 +21,4 @@ DEPENDENCIES
   redis (= 4.0.1)
 
 BUNDLED WITH
-   1.17.3
+   2.1.4
