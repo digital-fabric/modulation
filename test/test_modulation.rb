@@ -726,6 +726,20 @@ class MODULETest < MiniTest::Test
   end
 end
 
+class CONSTTest < MiniTest::Test
+  def setup
+    super
+    @m = import('./modules/ext')
+  end
+
+  def test_qualified_class_name
+    assert_equal "(#{@m.inspect})::C", @m::C.inspect
+
+    # c = @m::C.new
+    # assert_equal "(#{@m.inspect})::C", c.inspect
+  end
+end
+
 class DependenciesTest < MiniTest::Test
   def setup
     super

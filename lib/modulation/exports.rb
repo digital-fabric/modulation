@@ -127,11 +127,29 @@ module Modulation
       def process_module_constants(mod, singleton, symbols, defined_constants)
         private_constants = mod.__module_info[:private_constants] = []
         defined_constants.each do |sym|
+          next if sym == :MODULE
+
+          value = singleton.const_get(sym)
+          define_const_inspect_methods(mod, sym, value) if value.is_a?(Module)
+
           if symbols.include?(sym)
-            mod.const_set(sym, singleton.const_get(sym))
+            mod.const_set(sym, value)
           else
-            private_constants << sym unless sym == :MODULE
+            private_constants << sym
           end
+        end
+      end
+
+      CONST_INSPECT_CODE = <<~EOF
+        def inspect
+          "(%s)::%s"
+        end
+      EOF
+
+      def define_const_inspect_methods(mod, sym, value)
+        if value.method(:inspect).source_location.nil?
+          code = format(CONST_INSPECT_CODE, mod.inspect, sym)
+          value.singleton_class.module_eval(code)
         end
       end
 
