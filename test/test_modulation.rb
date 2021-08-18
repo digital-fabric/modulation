@@ -959,3 +959,19 @@ class EmptyTest < Minitest::Test
     assert_kind_of Module, m
   end
 end
+
+class CallableModuleTest < Minitest::Test
+  def test_automatic_to_proc
+    m = import('./modules/callable')
+    
+    assert m.respond_to?(:call)
+    assert m.respond_to?(:to_proc)
+    assert_equal [1, 4, 9], (1..3).map(&m)
+
+    m = import('./modules/callable_with_to_proc')
+    
+    assert m.respond_to?(:call)
+    assert m.respond_to?(:to_proc)
+    assert_equal [:foo, :foo, :foo], (1..3).map(&m)
+  end
+end

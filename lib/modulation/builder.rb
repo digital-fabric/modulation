@@ -65,6 +65,12 @@ module Modulation
           )
         else
           Exports.perform_exports(mod)
+          if mod.respond_to?(:call) && !mod.respond_to?(:to_proc)
+            def mod.to_proc
+              method(:call).to_proc
+            end
+          end
+  
           mod
         end
       end
