@@ -15,7 +15,7 @@
 
 
 Modulation provides an alternative way of organizing your Ruby code. Modulation
-lets you explicitly import and export declarations in order to better control 
+lets you explicitly import and export declarations in order to better control
 dependencies in your codebase. Modulation helps you refrain from littering
 the global namespace with a myriad modules, or complex multi-level nested
 module hierarchies.
@@ -25,10 +25,10 @@ from, and you'll have full control over which parts of a module's code you wish
 to expose to the outside world. Modulation can also help you write Ruby code in
 a functional style, minimizing boilerplate code.
 
-> Note: Modulation is not a replacement for RubyGems. Rather, Modulation is 
+> Note: Modulation is not a replacement for RubyGems. Rather, Modulation is
 > intended for managing dependencies between source files *inside* your Ruby
-> applications. Though it does support loading gems that were written using 
-> Modulation, it is not intended as a comprehensive solution for using 
+> applications. Though it does support loading gems that were written using
+> Modulation, it is not intended as a comprehensive solution for using
 > third-party libraries.
 
 ## Features
@@ -61,17 +61,17 @@ issues:
   to any other file in your codebase. All "globals" (classes, modules,
   constants) are loaded, well, globally, in a single namespace. Name conflicts
   are easy in Ruby.
-- To avoid class name conflicts, classes need to be nested under a single 
+- To avoid class name conflicts, classes need to be nested under a single
   hierarchical tree, sometime reaching 4 levels or more. Just look at Rails.
 - Since a `#require`d class or module can be loaded in any file and then made
   available to all files, it's easy to lose track of where it was loaded, and
   where it is used.
 - There's no easy way to hide implementation-specific classes or methods. Yes,
-  there's `#private`, `#private_constant` etc, but by default everything is 
+  there's `#private`, `#private_constant` etc, but by default everything is
   `#public`!
 - Extracting functionality is harder when modules are namespaced and
   dependencies are implicit.
-- Writing reusable functional code requires wrapping it in modules using 
+- Writing reusable functional code requires wrapping it in modules using
   `class << self`, `def self.foo ...`, `extend self` or `include Singleton`
   (the pain of implementing singletons in Ruby has been
   [discussed](https://practicingruby.com/articles/ruby-and-the-singleton-pattern-dont-get-along)
@@ -83,7 +83,7 @@ issues:
 > "official" API.
 
 Personally, I have found that managing dependencies with `#require` in large
-codebases is... not as elegant or painfree as I would expect from a 
+codebases is... not as elegant or painfree as I would expect from a
 first-class development environment. I also wanted to have a better solution
 for writing in a functional style.
 
@@ -105,12 +105,12 @@ gem 'modulation'
 Modulation builds on the idea of a Ruby `Module` as a
 ["collection of methods and constants"](https://ruby-doc.org/core-2.6.5/Module.html).
 Using modulation, each Ruby source file becomes a module. Modules usually
-export method and constant declarations (usually an API for a specific, 
+export method and constant declarations (usually an API for a specific,
 well-defined functionality) to be shared with other modules. Modules can also
 import declarations from other modules. Anything not exported remains hidden
 inside the module and normally cannot be accessed from the outside.
 
-Each source file is evaluated in the context of a newly-created `Module` 
+Each source file is evaluated in the context of a newly-created `Module`
 instance, with some additional methods for introspection and miscellaneous
 operations such as [hot reloading](#reloading-modules).
 
@@ -136,7 +136,7 @@ class Session
 end
 ```
 
-A module may also expose a set of methods without using `class << self`, for 
+A module may also expose a set of methods without using `class << self`, for
 example when writing in a functional style:
 
 *seq.rb*
@@ -210,7 +210,7 @@ user = Models::User.new(...)
 ...
 ```
 
-Alternatively, a module interested in a single declaration from another module 
+Alternatively, a module interested in a single declaration from another module
 can use the following technique:
 
 ```ruby
@@ -319,7 +319,7 @@ end
 
 ### Default exports
 
-A module may wish to expose just a single class or constant, in which case it 
+A module may wish to expose just a single class or constant, in which case it
 can use `#export_default`:
 
 *user.rb*
@@ -340,7 +340,7 @@ User.new(...)
 
 The default exported value can also be defined directly thus:
 
-*config.rb* 
+*config.rb*
 ```ruby
 export_default(
   host: 'localhost',
@@ -388,7 +388,7 @@ end
 
 ### Accessing the global namespace
 
-If you need to access the global namespace inside a module just prefix the 
+If you need to access the global namespace inside a module just prefix the
 class name with double colons:
 
 ```ruby
@@ -449,7 +449,7 @@ gem called [eg](https://github.com/digital-fabric/eg/).
 ### Unit testing modules
 
 Methods and constants that are not exported can be tested using the `#__expose!`
-method. Thus you can keep implementation details hidden, while being able to 
+method. Thus you can keep implementation details hidden, while being able to
 easily test them:
 
 *parser.rb*
@@ -583,7 +583,7 @@ end
 > it without even being aware it was reloaded, providing its API has not
 > changed.
 
-Reloading of modules with default exports is also possible. Modulation will  
+Reloading of modules with default exports is also possible. Modulation will
 extend the exported value with a `#__reload!` method. The value will need to be
 reassigned:
 

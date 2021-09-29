@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.summary     = 'Modulation: explicit dependency management for Ruby'
   s.description = <<~EOF
   Modulation provides an alternative way of organizing your Ruby code. Modulation
-lets you explicitly import and export declarations in order to better control 
+lets you explicitly import and export declarations in order to better control
 dependencies in your codebase. Modulation helps you refrain from littering
 the global namespace with a myriad modules, or complex multi-level nested
 module hierarchies.

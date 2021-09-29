@@ -37,7 +37,7 @@ def main
   # foo directory, so it Foo is set to an empty module, with a #const_missing
   # method that does auto-importing. Foo::Bar then causes the loading of
   # lib/foo/bar.rb, and Bar is set to the loaded module.
-  # and 
+  # and
   puts Foo::Bar.baz
 end
 ```

@@ -70,7 +70,7 @@ module Modulation
               method(:call).to_proc
             end
           end
-  
+
           mod
         end
       end
