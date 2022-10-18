@@ -40,7 +40,7 @@ module Modulation
 
       case abs_path
       when String
-        @loaded_modules[abs_path] || create_module_from_file(abs_path, caller)
+        @loaded_modules[abs_path] || import_module_from_file(abs_path, caller)
       when :require_gem
         raise_error(LoadError.new(GEM_REQUIRE_ERROR_MESSAGE), caller)
       else
@@ -49,20 +49,22 @@ module Modulation
     end
 
     # Imports all source files in given directory
-    # @ param path [String] relative directory path
+    #
+    # @param path [String] relative directory path
     # @param caller_location [String] caller location
     # @return [Array] array of module objects
     def import_all(path, caller_location = caller(CALLER_RANGE).first)
       abs_path = Paths.absolute_dir_path(path, caller_location)
       Dir["#{abs_path}/**/*.rb"].map do |fn|
-        @loaded_modules[fn] || create_module_from_file(fn, caller)
+        @loaded_modules[fn] || import_module_from_file(fn, caller)
       end
     end
 
     # Imports all source files in given directory, returning a hash mapping
-    # filenames to modules
-    # @ param path [String] relative directory path
-    # @ param options [Hash] options
+    # filenames to modules.
+    #
+    # @param path [String] relative directory path
+    # @param options [Hash] options
     # @param caller_location [String] caller location
     # @return [Hash] hash mapping filenames to modules
     def import_map(path, options = {},
@@ -70,36 +72,48 @@ module Modulation
       abs_path = Paths.absolute_dir_path(path, caller_location)
       use_symbols = options[:symbol_keys]
       Dir["#{abs_path}/*.rb"].each_with_object({}) do |fn, h|
-        mod = @loaded_modules[fn] || create_module_from_file(fn, caller)
+        mod = @loaded_modules[fn] || import_module_from_file(fn, caller)
         name = File.basename(fn) =~ /^(.+)\.rb$/ && Regexp.last_match(1)
         h[use_symbols ? name.to_sym : name] = mod
       end
     end
 
-    def auto_import_map(path, options = {},
-                        caller_location = caller(CALLER_RANGE).first)
+    # Returns a hash mapping filenames to modules, with modules being imported upon 
+    # This allows an application to load dependencies only when they are needed.
+    #
+    # @param path [String] relative directory path
+    # @param options [Hash] options
+    # @param caller_location [String] caller location
+    # @return [Hash] hash mapping filenames to modules
+    def auto_import_map(path, options = {}, caller_location = caller(CALLER_RANGE).first)
       abs_path = Paths.absolute_dir_path(path, caller_location)
       Hash.new do |h, k|
         fn = Paths.check_path(File.join(abs_path, k.to_s))
-        h[k] = find_auto_import_module(fn, path, options)
+        h[k] = find_auto_import_module(fn, options)
       end
     end
 
-    def find_auto_import_module(filename, path, options)
+    # Imports and returns the given filename. If the module does not exist,
+    # returns the value in `options[:not_found]`, otherwise raises an error.
+    #
+    # @param filename [String] filename
+    # @param options [Hash] hash of options
+    # @return [Module] imported module
+    def find_auto_import_module(filename, options)
       if filename
         return @loaded_modules[filename] ||
-               create_module_from_file(filename, caller)
+               import_module_from_file(filename, caller)
       end
 
       return options[:not_found] if options.key?(:not_found)
 
-      raise "Module not found #{path}"
+      raise "Module not found #{filename}"
     end
 
     # Creates a new module from a source file
     # @param path [String] source file name
     # @return [Module] module
-    def create_module_from_file(path, import_caller)
+    def import_module_from_file(path, import_caller)
       Builder.make(location: path, caller: import_caller)
     end
 
