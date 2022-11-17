@@ -64,7 +64,7 @@ class Module
   # @return [void]
   def extend_from(path)
     mod = import(path, caller(CALLER_RANGE).first)
-    Modulation::Builder.add_module_methods(mod, self.class)
+    Modulation::Builder.add_module_methods(mod, self.singleton_class)
     Modulation::Builder.add_module_constants(mod, self)
   end
 

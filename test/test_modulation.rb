@@ -241,6 +241,10 @@ class ExtendFrom1Test < MiniTest::Test
     assert_respond_to(@m, :b)
     assert_raises(NameError) { @m.c }
 
+    # make sure extend_from does not extend any ancestors
+    assert_raises(NameError) { Object.a }
+    assert_raises(NameError) { BasicObject.a }
+
     assert_equal :a, @m.a
     assert_equal :b, @m.b
   end
