@@ -1,3 +1,7 @@
+## 1.2 2022-11-17
+
+- Fix `extend_from` to not extend ancestors
+
 ## 1.1 2021-08-18
 
 - Add automatic `to_proc` method for callable modules
