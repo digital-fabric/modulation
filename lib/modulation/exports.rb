@@ -70,7 +70,7 @@ module Modulation
 
       def export_hash_entry(singleton, key, value)
         symbol_value = value.is_a?(Symbol)
-        const_value = value =~ Modulation::RE_CONST
+        const_value = symbol_value && value =~ Modulation::RE_CONST
         if value && const_value && singleton.const_defined?(value)
           value = singleton.const_get(value)
         end
