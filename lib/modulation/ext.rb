@@ -92,6 +92,6 @@ class Module
 end
 
 if Object.constants.include?(:Rake)
-  Rake::DSL.alias_method :rake_import, :import
-  Rake::DSL.remove_method :import
+  Rake::DSL.alias_method :rake_import, :import rescue nil
+  Rake::DSL.remove_method :import rescue nil
 end
